@@ -55,6 +55,7 @@ version 3.2 - 17 jan 2019    - gain en performances en contournant EmonLib.h
 version 3.3 - 22 fev 2019    - abandon de seuilPoff : arrêt en cas de chutte brusque d'injection 
 version 3.4 - 27 avr 2019    - changement du délestage par les seuils delestON et delestOFF
 version 3.5 - 9 july 2019    - test if no energy detected which started the WatchDog
+version XXX - 2020           - Modif JJ + test Github
 ____________________________________________________________________________________________
 
 
