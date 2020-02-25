@@ -134,7 +134,7 @@ IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
 
 // Information to be displayed
 
-bool CALIBRATION = true;   // to calibrate Vcalibration and Icalibration
+bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
 bool VERBOSE = false ;     // to verify dim and dimstep 
 bool WINTER = false	;		 	 // winter -> no wifi summer wifi
 
@@ -184,6 +184,8 @@ int interruptCounter;
 byte ack = 0; // byte received ack from client
 
 unsigned long myDelay = 5000 ; // time to leave UDP 5 sec
+unsigned long time_udp_now;
+unsigned long time_udp_limit = 5000 ; // 5 second
 unsigned long start;
 unsigned long elapsed;
 unsigned long now;
@@ -205,7 +207,7 @@ volatile bool send_UDP_wifi = false;
 
 int lectureV, memo_lectureV, lectureI;   // tensions et courants en bits (0 à 1023 bits)
 float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
-float Power_wifi ;// power to be sent by wifi
+long Power_wifi ;// power to be sent by wifi
 byte zero_crossCount = 0;       // compteur de demie-périodes
     
 // autres variables :
@@ -481,7 +483,9 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       I = Icalibration * sqrt(sumI / numberOfSamples);
     }
     rPower = Vcalibration * Icalibration * sumP / numberOfSamples;
-    Power_wifi = (int) rPower ;
+    // Power_wifi = (int) rPower ; // Power wifi using INT
+    Power_wifi =  (long) rPower ; // Power wifi using long
+    //Power_wifi =  rPower ; // Power wifi using float ==> fail
   }
 	
 // 2ème partie : calcul du taux de puissance à délester pour ne pas injecter avec dim et dimstep
@@ -589,7 +593,10 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
     (void) pvParameters;
-    String msg;
+    //String msg;
+    time_udp_now= millis(); 
+    Serial.println ("start task UDP");
+    //time_wifi_now = millis();
 
     for (;;) // A Task shall never return or exit.
     {
@@ -606,13 +613,13 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   
       // verification time to leave UDP
       
-              now = millis();         // now: timestamp
-              elapsed = now - start;  // elapsed: duration
+              //now = millis();         // now: timestamp
+              //elapsed = now - start;  // elapsed: duration
               
-              if (elapsed >= myDelay)               // comparing durations
+              if (long (millis() - time_udp_now > time_udp_limit))             // comparing durations
               {                    
               Serial.println ("time to leave UDP");
-              start = millis();       //  reset time to leave UDP
+              //start = millis();       //  reset time to leave UDP
               // init again wifi
               WiFi.disconnect();
               WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
@@ -620,17 +627,21 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               Udp.begin(localPort);
               Serial.println("init access point UDP OK");
               delay(5000);
-              start = millis();       //  reset time to leave UDP
-              reset_wifi = reset_wifi +1 ;
+              time_udp_now= millis(); // reset time to leave
+              //start = millis();       //  reset time to leave UDP
+              //reset_wifi = reset_wifi +1 ;
               
               }
          
       		send_UDP_wifi = true ; 
       		Udp.beginPacket(ipCliente,9999);   //Initiate transmission of dat
-          
-          
-          msg = String(Power_wifi, 3);
-          Udp.write((uint8_t *) msg.c_str(),12); 
+          Udp.print(Power_wifi) ;
+
+          Serial.print ("power_wifi");
+          Serial.println (Power_wifi);
+
+          //msg = String(Power_wifi, 3);
+          //Udp.write((uint8_t *) msg.c_str(),12); 
           // Udp.write("hello"); 
       		//Udp.write(&Power_wifi,1); // 
       		Udp.endPacket();  // Close communication
@@ -640,8 +651,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               if (packetSize) 
             		{
                     int len = Udp.read(&ack, 1);
-                    start = millis();       //  reset time to leave UDP
-                    
+                    //start = millis();       //  reset time to leave UDP
+                    time_udp_now= millis(); // reset time to leave
             		}
                
   //		 } // end check switches for calibration verbose and winter
