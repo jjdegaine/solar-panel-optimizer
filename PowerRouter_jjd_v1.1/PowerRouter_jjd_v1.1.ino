@@ -537,13 +537,13 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
           memo_temps = temps_actuel;
  
-          Serial.print("P= ");
-          Serial.print(String(-rPower/1000,0));   
-          Serial.print("w");
+          // Serial.print("P= ");
+          // Serial.print(String(-rPower/1000,0));   
+          // Serial.print("w");
     
-          Serial.print("T= ");
-          Serial.print( map(dim, 0, dimmax, 99, 0) );
-          Serial.print("%");
+          // Serial.print("T= ");
+          // Serial.print( map(dim, 0, dimmax, 99, 0) );
+          // Serial.print("%");
         
           Serial.print("DELESTAGE ");              
           if( delestage == true ) {  
@@ -563,16 +563,21 @@ void TaskUI(void *pvParameters)  // This is the task UI.
           Serial.println();
         }
         if( VERBOSE == true ) {
+          Serial.print(V);
+      	  Serial.print("  |  ");
+          Serial.print(I/1000);
+          Serial.print("  |  ");
           Serial.print(rPower/1000);
           Serial.print("  ||     ");
           Serial.print(dimstep);
           Serial.print("  |  ");
           Serial.print(dim);
           Serial.print(" ||  ");
-          Serial.print(" état délestage : ");
-          Serial.print(delestage);
-          Serial.print(" décompte : ");
-          Serial.println(temps_actuel - decompte);
+          // Serial.print(" état délestage : ");
+          // Serial.print(delestage);
+          // Serial.print(" décompte : ");
+          // Serial.println(temps_actuel - decompte);
+          Serial.println();
         }
         else { delay(1); }           // obligatoire pour la stabilité
 
