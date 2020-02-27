@@ -93,7 +93,7 @@ PIN description
 
  - PIN27 input CALIBRATION
 
- - PIN34 analog for voltage measuement
+ - PIN34 analog for voltage measurement
 
  - PIN35 analog for intensity measurement
 
@@ -120,11 +120,11 @@ version 1.1 february 2020 data sent by wifi using IT_sec
 
 const int channel = 4;  // define channel 4 seems to be the best for wifi....
 
-WiFiUDP Udp; // Creation of wifi Udp instance, UDP is used to maximized the timing transfert
+WiFiUDP Udp;            // Creation of wifi Udp instance, UDP is used to maximized the timing transfert
 
 unsigned int localPort = 9999;
 
-const char *ssid = "BB9ESERVER";   // for example to be changed 
+const char *ssid = "BB9ESERVER";       // for example to be changed 
 const char *password = "BB9ESERVER";  // for examplet  to be changed
 
 
@@ -135,7 +135,7 @@ IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
 // Information to be displayed
 
 bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
-bool VERBOSE = true ;     // to verify dim and dimstep 
+bool VERBOSE = true ;       // to verify dim and dimstep 
 bool WINTER = false	;		 	 // winter -> no wifi summer wifi
 
 
@@ -144,12 +144,19 @@ float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
 
-// Valeurs en mW (milliwatts) qui déterminent les seuils : 
+// threshold Value in mW (milliwatts)
 
-int seuilP     = 50000;           // l'hystérésis d'asservissement : 3000 = 3W => hystérésis à 6W
-long delestON  = 1000;           // seuil de puissance pour démarrage du délestage
-long delestOFF = 350000;         // seuil d'arrêt du délestage
-bool etat_delest_repos  = HIGH;  // état de la sortie temporisée au repos : HIGH pour actif
+int seuilP     = 50000;           // minimum value to start SCR
+
+// threshold Value to start unballasting
+
+byte unballaston = 120                // if dim > unballaston start counter relay unballasting
+byte unballastoncounter = 10          // if dim > unballaston during 10 half period start relay unballasting
+unsigned long unballastontimemax = 60 // 1 minute
+unsigned long unballastontime          // time counter for unballast
+
+//long delestOFF = 350000;         // seuil d'arrêt du délestage
+//bool etat_delest_repos  = HIGH;  // état de la sortie temporisée au repos : HIGH pour actif
 
 // Valeur du coefficient de réaction de l'asservissement avec le dimensionnement de dimstep :
 // Incrémente dimstep par pas issue du rapport entre la puissance à dissiper et coefdeReaction
@@ -171,9 +178,12 @@ const byte zeroCrossPin      = 19;     // détecteur de phase entrée digitale
 
 // variables de gestion des interruptions (zero-crossing) :
  
-byte dimmax = 128;              // valeur max de dim pour inhiber le triac
+byte dimdephasage=29 ;					// value to be added to dim to compensate pahse between interruption
+                                // zero-cross and the real mains 0V 
+byte dimmax = 128 + dimdephasage;              // max value to stop SCR
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
-byte dimphase = 5 ;				    	// dimmphase, value to be added to compensate phase angle betwwen interruption and real zero volt
+
+byte dimphase = dim ;     // dimphase is the value used by the timing interruption to start SCR
 byte reset_wifi = 0;			// counter for wifi reset due to time to leave
 byte wifi_wait = 0;       // 
         
@@ -269,14 +279,14 @@ void IRAM_ATTR onTimer() {
   portEXIT_CRITICAL_ISR(&timerMux);
   
   
-   if(zero_cross == true && dim < dimmax)   // First check to make sure the zero-cross has 
+   if(zero_cross == true && dimphase < dimmax)   // First check to make sure the zero-cross has 
  {                                        // happened else do nothing
 
       
      
-     if(i>dim) {            // i est un compteur qui détermine le retard au fire. plus dim 
-                            // est élevé, plus de temps prendra le compteur i et plus tard
-       digitalWrite(triac_pin, HIGH);     // se fera le fire du triac
+    if(i>dimphase) {                       // i is a counter to start the SCR
+                                          // 
+       digitalWrite(triac_pin, HIGH);     // start
        delayMicroseconds(50);             // Pause briefly to ensure the triac turned on
        digitalWrite(triac_pin, LOW);      // Turn off the Triac gate, le triac reste conducteur
        i = 0;                             // Reset the accumulator
@@ -400,6 +410,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 {
   (void) pvParameters;
 
+
+
   for (;;) // A Task shall never return or exit.
   {
     
@@ -497,36 +509,39 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if( rPower > 0 ) { dimstep = (rPower/1000)/coefdeReaction + 1; } 
   else { dimstep = 1 - (rPower/1000)/coefdeReaction; }
   
-  if( rPower > seuilP ) {      // l'injection augmente, on diminue le délai d'allumage du triac
+  if( rPower < seuilP ) {      // l'injection augmente, on diminue le délai d'allumage du triac
     if( dim > dimstep )  dim -= dimstep; else  dim = 0;
   } 
-  else if( rPower < seuilP ) {                   // moins de prod : on baisse la charge modif JJ seuil p et pas -p
-  //else if( rPower < -seuilP ) {                   // moins de prod : on baisse la charge
+  else if( rPower > seuilP ) {                   // moins de prod : on baisse la charge modif JJ seuil p et pas -p
     if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
   }
 
   if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // led témoin de surcharge
   else { digitalWrite(limiteLED, LOW); }
   
+dimphase= dim + dimdephasage;  // real value to be used by the timing interruprion to start SCR
 
 // Sortie de délestage quand le seuil delestON est atteint
   
-  if( rPower > -delestON) {   // détection seuil atteint
-    delestage = true; 
-    }   
 
-  if( delestage == true ) {
-    if( unefois == false ) {
-      digitalWrite(delest_pin, etat_delest_actif);     // maj sortie délestage
-      decompte = temps_actuel;                    // initialisation du compteur
-      unefois = true;
-    }
-    if( rPower < -delestOFF ) {                   // si le conso dépasse delestOFF
-      digitalWrite(delest_pin, etat_delest_repos);    // maj sortie délestage
-      unefois = false;
-      delestage = false;
-    }
-  }                                               // fin test de délestage
+
+
+  // if( rPower > -delestON) {   // détection seuil atteint
+  //   delestage = true; 
+  //   }   
+
+  // if( delestage == true ) {
+  //   if( unefois == false ) {
+  //     digitalWrite(delest_pin, etat_delest_actif);     // maj sortie délestage
+  //     decompte = temps_actuel;                    // initialisation du compteur
+  //     unefois = true;
+  //   }
+  //   if( rPower < -delestOFF ) {                   // si le conso dépasse delestOFF
+  //     digitalWrite(delest_pin, etat_delest_repos);    // maj sortie délestage
+  //     unefois = false;
+  //     delestage = false;
+  //   }
+  // }                                               // fin test de délestage
 
 
   // affichage de ce qui se passe toutes les 2 secondes car ça bouffe du temps....
