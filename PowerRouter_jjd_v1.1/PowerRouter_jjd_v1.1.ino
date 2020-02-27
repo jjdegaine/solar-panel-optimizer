@@ -135,7 +135,7 @@ IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
 // Information to be displayed
 
 bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
-bool VERBOSE = false ;     // to verify dim and dimstep 
+bool VERBOSE = true ;     // to verify dim and dimstep 
 bool WINTER = false	;		 	 // winter -> no wifi summer wifi
 
 
@@ -146,7 +146,7 @@ byte totalCount        = 20;     // number of half perid used for measurement
 
 // Valeurs en mW (milliwatts) qui déterminent les seuils : 
 
-int seuilP     = 1000;           // l'hystérésis d'asservissement : 3000 = 3W => hystérésis à 6W
+int seuilP     = 50000;           // l'hystérésis d'asservissement : 3000 = 3W => hystérésis à 6W
 long delestON  = 1000;           // seuil de puissance pour démarrage du délestage
 long delestOFF = 350000;         // seuil d'arrêt du délestage
 bool etat_delest_repos  = HIGH;  // état de la sortie temporisée au repos : HIGH pour actif
@@ -173,7 +173,7 @@ const byte zeroCrossPin      = 19;     // détecteur de phase entrée digitale
  
 byte dimmax = 128;              // valeur max de dim pour inhiber le triac
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
-byte dimmem ;					// dimmem used to start wifi UDP communication
+byte dimphase = 5 ;				    	// dimmphase, value to be added to compensate phase angle betwwen interruption and real zero volt
 byte reset_wifi = 0;			// counter for wifi reset due to time to leave
 byte wifi_wait = 0;       // 
         
@@ -500,7 +500,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if( rPower > seuilP ) {      // l'injection augmente, on diminue le délai d'allumage du triac
     if( dim > dimstep )  dim -= dimstep; else  dim = 0;
   } 
-  else if( rPower < -seuilP ) {                   // moins de prod : on baisse la charge
+  else if( rPower < seuilP ) {                   // moins de prod : on baisse la charge modif JJ seuil p et pas -p
+  //else if( rPower < -seuilP ) {                   // moins de prod : on baisse la charge
     if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
   }
 
@@ -545,13 +546,15 @@ void TaskUI(void *pvParameters)  // This is the task UI.
           // Serial.print( map(dim, 0, dimmax, 99, 0) );
           // Serial.print("%");
         
-          Serial.print("DELESTAGE ");              
+          // Serial.print("DELESTAGE ");   
+
+
           if( delestage == true ) {  
             Serial.print(temps_actuel - decompte);
             Serial.print("s    ");
             Serial.println();
           }
-          else { Serial.print("ARRETE"); }
+        //  else { Serial.print("ARRETE"); }
         }  // fin tempo de 2 secondes
       
         if( CALIBRATION == true ) {
@@ -642,8 +645,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
       		Udp.beginPacket(ipCliente,9999);   //Initiate transmission of dat
           Udp.print(Power_wifi) ;
 
-          Serial.print ("power_wifi");
-          Serial.println (Power_wifi);
+          // Serial.print ("power_wifi");
+          // Serial.println (Power_wifi);
 
           //msg = String(Power_wifi, 3);
           //Udp.write((uint8_t *) msg.c_str(),12); 
