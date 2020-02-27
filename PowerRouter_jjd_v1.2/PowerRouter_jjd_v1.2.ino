@@ -146,10 +146,15 @@ byte totalCount        = 20;     // number of half perid used for measurement
 
 // Valeurs en mW (milliwatts) qui déterminent les seuils : 
 
-int seuilP     = 1000;           // l'hystérésis d'asservissement : 3000 = 3W => hystérésis à 6W
+int seuilP     = 50000;           // l'hystérésis d'asservissement : 3000 = 3W => hystérésis à 6W
 long delestON  = 1000;           // seuil de puissance pour démarrage du délestage
 long delestOFF = 350000;         // seuil d'arrêt du délestage
 bool etat_delest_repos  = HIGH;  // état de la sortie temporisée au repos : HIGH pour actif
+
+unsigned long unballasting_timeout = 60; // 60 secondes
+unsigned long unballasting_time;        // timer for unballasting 
+byte unballasting_counter = 0;             // counter mains half period
+byte unballasting_dim_max = dimmax-1      // value of dim to start relay
 
 // Valeur du coefficient de réaction de l'asservissement avec le dimensionnement de dimstep :
 // Incrémente dimstep par pas issue du rapport entre la puissance à dissiper et coefdeReaction
@@ -171,9 +176,11 @@ const byte zeroCrossPin      = 19;     // détecteur de phase entrée digitale
 
 // variables de gestion des interruptions (zero-crossing) :
  
+byte dimdephasage=29 ;					// dimphasage
 byte dimmax = 128;              // valeur max de dim pour inhiber le triac
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
-byte dimmem ;					// dimmem used to start wifi UDP communication
+
+byte dimphase = dim + dimdephasage; 
 byte reset_wifi = 0;			// counter for wifi reset due to time to leave
 byte wifi_wait = 0;       // 
         
@@ -269,12 +276,12 @@ void IRAM_ATTR onTimer() {
   portEXIT_CRITICAL_ISR(&timerMux);
   
   
-   if(zero_cross == true && dim < dimmax)   // First check to make sure the zero-cross has 
+   if(zero_cross == true && dimphase < (dimmax+ dimdephasage)   // First check to make sure the zero-cross has 
  {                                        // happened else do nothing
 
       
      
-     if(i>dim) {            // i est un compteur qui détermine le retard au fire. plus dim 
+     if(i>dimphase) {            // i est un compteur qui détermine le retard au fire. plus dim 
                             // est élevé, plus de temps prendra le compteur i et plus tard
        digitalWrite(triac_pin, HIGH);     // se fera le fire du triac
        delayMicroseconds(50);             // Pause briefly to ensure the triac turned on
@@ -304,7 +311,7 @@ void setup() {                  // Begin setup
  pinMode(triac_pin, OUTPUT);    // Set the Triac pin as output
  pinMode(delest_pin, OUTPUT);   // Set the Delest pin as output
  pinMode(triacLED,  OUTPUT);    // Set the LED pin as output
- pinMode(limiteLED, OUTPUT);    // Set the Delest pin LEDn as output
+ pinMode(limiteLED, OUTPUT);    // Set the limite pin LED as output
  pinMode(zeroCrossPin, INPUT_PULLUP);   // set the zerocross pin as in with pullup for interrupt
 
 
@@ -497,16 +504,19 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if( rPower > 0 ) { dimstep = (rPower/1000)/coefdeReaction + 1; } 
   else { dimstep = 1 - (rPower/1000)/coefdeReaction; }
   
-  if( rPower > seuilP ) {      // l'injection augmente, on diminue le délai d'allumage du triac
+  if( rPower < seuilP ) {      // l'injection augmente, on diminue le délai d'allumage du triac
     if( dim > dimstep )  dim -= dimstep; else  dim = 0;
   } 
-  else if( rPower < -seuilP ) {                   // moins de prod : on baisse la charge
+
+  else if( rPower > seuilP ) {                   // moins de prod : on baisse la charge
     if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
   }
 
   if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // led témoin de surcharge
   else { digitalWrite(limiteLED, LOW); }
   
+
+dimphase = dim+ dimdephasage; // Value to used by the timer interrupt.
 
 // Sortie de délestage quand le seuil delestON est atteint
   
@@ -537,22 +547,22 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
           memo_temps = temps_actuel;
  
-          Serial.print("P= ");
-          Serial.print(String(-rPower/1000,0));   
-          Serial.print("w");
+        //   Serial.print("P= ");
+        //   Serial.print(String(-rPower/1000,0));   
+        //   Serial.print("w");
     
-          Serial.print("T= ");
-          Serial.print( map(dim, 0, dimmax, 99, 0) );
-          Serial.print("%");
+        //   Serial.print("T= ");
+        //   Serial.print( map(dim, 0, dimmax, 99, 0) );
+        //   Serial.print("%");
         
-          Serial.print("DELESTAGE ");              
-          if( delestage == true ) {  
-            Serial.print(temps_actuel - decompte);
-            Serial.print("s    ");
-            Serial.println();
-          }
-          else { Serial.print("ARRETE"); }
-        }  // fin tempo de 2 secondes
+        //   Serial.print("DELESTAGE ");              
+        //   if( delestage == true ) {  
+        //     Serial.print(temps_actuel - decompte);
+        //     Serial.print("s    ");
+        //     Serial.println();
+        //   }
+        //   else { Serial.print("ARRETE"); }
+        // }  // fin tempo de 2 secondes
       
         if( CALIBRATION == true ) {
       	  Serial.print(V);
@@ -569,10 +579,14 @@ void TaskUI(void *pvParameters)  // This is the task UI.
           Serial.print("  |  ");
           Serial.print(dim);
           Serial.print(" ||  ");
-          Serial.print(" état délestage : ");
-          Serial.print(delestage);
-          Serial.print(" décompte : ");
-          Serial.println(temps_actuel - decompte);
+          Serial.print(dimphase);
+          Serial.print(" ||  ");
+          // Serial.print(" état délestage : ");
+          // Serial.print(delestage);
+          // Serial.print(" décompte : ");
+          // Serial.println(temps_actuel - decompte);
+          Serial.println();
+
         }
         else { delay(1); }           // obligatoire pour la stabilité
 
