@@ -135,7 +135,7 @@ IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
 // Information to be displayed
 
 bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
-bool VERBOSE = false ;     // to verify dim and dimstep 
+bool VERBOSE = true ;     // to verify dim and dimstep 
 bool WINTER = false	;		 	 // winter -> no wifi summer wifi
 
 
@@ -177,7 +177,7 @@ const byte zeroCrossPin      = 19;     // détecteur de phase entrée digitale
 
 // variables de gestion des interruptions (zero-crossing) :
  
-byte dimthreshold=29 ;					// dimthreshold
+byte dimthreshold=30 ;					// dimthreshold
 byte dimmax = 128;              // valeur max de dim pour inhiber le triac
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
 
@@ -228,7 +228,8 @@ unsigned int memo_temps = 0;
 bool delestage = false;         // indicateur de délestage
 bool unefois = false;           // marqueurs pour raz décopte
 bool etat_delest_actif = !etat_delest_repos; 
-
+bool relay_1 ;
+bool relay_2 ;
 
 // init timer IT
 hw_timer_t * timer = NULL;
@@ -536,17 +537,20 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt.
               {
                 unballasting_counter = 10;      // overflow
                 digitalWrite(limiteLED, HIGH) ;
+                
               }
             else 
               {
                 digitalWrite( delest_pin_relay2, HIGH) ; // set relay 2 
+                relay_2 =true;
                 unballasting_counter= 10 ;
-                unballasting_dim_min = millis() ;
+                unballasting_time = millis() ;
               }
           }     
           else
               {
               digitalWrite (delest_pin_relay1, HIGH)  ; //set relay 1
+              relay_1 = true;
               unballasting_counter= 0 ;
               }     
         }  
@@ -566,11 +570,14 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt.
         if (delest_pin_relay2 == HIGH)
         {
           digitalWrite (delest_pin_relay2, LOW) ; 
+          relay_2 = false;
           unballasting_counter = 10 ;
         }
         else
         {
           digitalWrite (delest_pin_relay1, LOW) ;
+          relay_1 = false;
+          unballasting_time= millis();
         }
       }
   }
@@ -636,9 +643,13 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt.
           Serial.print(" ||  ");
           Serial.print(dimphase);
           Serial.print(" ||  ");
-          Serial.print (delest_pin_relay1);
+          Serial.print (relay_1);
           Serial.print(" ||  ");
-          Serial.print (delest_pin_relay2);
+          Serial.print (relay_2);
+          Serial.print(" ||  ");
+          Serial.print (unballasting_counter);
+           Serial.print(" ||  ");
+           Serial.print (millis() - unballasting_time);
           // Serial.print(" état délestage : ");
           // Serial.print(delestage);
           // Serial.print(" décompte : ");
@@ -709,8 +720,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
       		Udp.beginPacket(ipCliente,9999);   //Initiate transmission of dat
           Udp.print(Power_wifi) ;
 
-          Serial.print ("power_wifi");
-          Serial.println (Power_wifi);
+          //Serial.print ("power_wifi");
+          //Serial.println (Power_wifi);
 
           //msg = String(Power_wifi, 3);
           //Udp.write((uint8_t *) msg.c_str(),12); 
