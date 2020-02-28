@@ -154,7 +154,7 @@ bool etat_delest_repos  = HIGH;  // état de la sortie temporisée au repos : HI
 unsigned long unballasting_timeout = 60; // 60 secondes
 unsigned long unballasting_time;        // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
-byte unballasting_dim_max = dimmax-1      // value of dim to start relay
+byte unballasting_dim_min = 5;             // value of dim to start relay
 
 // Valeur du coefficient de réaction de l'asservissement avec le dimensionnement de dimstep :
 // Incrémente dimstep par pas issue du rapport entre la puissance à dissiper et coefdeReaction
@@ -167,7 +167,8 @@ unsigned int coefdeReaction  = 90;
 // détermination des entrées / sorties :
 
 const byte triac_pin         = 5;    // sortie numérique de commande de charge résistive Triac
-const byte delest_pin        = 17;    // sortie pour délestage
+const byte delest_pin_relay2 = 15;    // sortie pour délestage relay 2
+const byte delest_pin_relay1 = 17;    // sortie pour délestage relay 1
 const byte triacLED          = 16;     // sortie numérique pour la LED de test du triac
 const byte limiteLED         = 18;    // sortie numérique pour la LED d'overflow
 const byte voltageSensorPin  = 34;     // détecteur de tension entrée analogique 
@@ -176,11 +177,13 @@ const byte zeroCrossPin      = 19;     // détecteur de phase entrée digitale
 
 // variables de gestion des interruptions (zero-crossing) :
  
-byte dimdephasage=29 ;					// dimphasage
+byte dimthreshold=29 ;					// dimthreshold
 byte dimmax = 128;              // valeur max de dim pour inhiber le triac
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
 
-byte dimphase = dim + dimdephasage; 
+byte dimphase = dim + dimthreshold; 
+byte dimphasemax = dimmax + dimthreshold;
+
 byte reset_wifi = 0;			// counter for wifi reset due to time to leave
 byte wifi_wait = 0;       // 
         
@@ -275,8 +278,7 @@ void IRAM_ATTR onTimer() {
   interruptCounter++;
   portEXIT_CRITICAL_ISR(&timerMux);
   
-  
-   if(zero_cross == true && dimphase < (dimmax+ dimdephasage)   // First check to make sure the zero-cross has 
+   if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
  {                                        // happened else do nothing
 
       
@@ -297,7 +299,7 @@ void IRAM_ATTR onTimer() {
 
     
      
- }                          // End zero_cross check
+ }      // End zero_cross check
 
 }
 
@@ -309,11 +311,13 @@ void IRAM_ATTR onTimer() {
 void setup() {                  // Begin setup
 
  pinMode(triac_pin, OUTPUT);    // Set the Triac pin as output
- pinMode(delest_pin, OUTPUT);   // Set the Delest pin as output
+ pinMode(delest_pin_relay1, OUTPUT);   // Set the Delest pin as output
+ pinMode(delest_pin_relay2, OUTPUT);   // Set the Delest pin as output
  pinMode(triacLED,  OUTPUT);    // Set the LED pin as output
  pinMode(limiteLED, OUTPUT);    // Set the limite pin LED as output
  pinMode(zeroCrossPin, INPUT_PULLUP);   // set the zerocross pin as in with pullup for interrupt
 
+unballasting_time= millis()*1000; // set up timer unballasting
 
 
 // initialisation de la console
@@ -328,8 +332,8 @@ void setup() {                  // Begin setup
  else Serial.println("C'est parti !"); 
  Serial.println();
 
- digitalWrite(delest_pin, etat_delest_repos);    // sortie délestage en mode par défaut
-
+ digitalWrite(delest_pin_relay1, LOW);    // sortie délestage en mode par défaut
+ digitalWrite(delest_pin_relay2, LOW);    // sortie délestage en mode par défaut
 
  
   //init wifi_udp
@@ -516,26 +520,77 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   else { digitalWrite(limiteLED, LOW); }
   
 
-dimphase = dim+ dimdephasage; // Value to used by the timer interrupt.
+dimphase = dim+ dimthreshold; // Value to used by the timer interrupt.
 
 // Sortie de délestage quand le seuil delestON est atteint
   
-  if( rPower > -delestON) {   // détection seuil atteint
-    delestage = true; 
-    }   
+  if (long (millis() - unballasting_time > unballasting_timeout))
+   {
+     if (dim < unballasting_dim_min)  // DIM is minimum => power in SCR is maximum
+      {
+        if (unballasting_counter > 10) // dim is < unballasting_dim_min during 10 half period
+        {
+          if (delest_pin_relay1 == HIGH) 
+          {
+            if(delest_pin_relay2 == HIGH)
+              {
+                unballasting_counter = 10;      // overflow
+                digitalWrite(limiteLED, HIGH) ;
+              }
+            else 
+              {
+                digitalWrite( delest_pin_relay2, HIGH) ; // set relay 2 
+                unballasting_counter= 10 ;
+                unballasting_dim_min = millis() ;
+              }
+          }     
+          else
+              {
+              digitalWrite (delest_pin_relay1, HIGH)  ; //set relay 1
+              unballasting_counter= 0 ;
+              }     
+        }  
+        else
+          {
+            unballasting_counter ++ ; 
+          }  
+        
+      }
+      // dim is more than unballasting_dim_min
+      if (unballasting_counter > 0 ) // 
+      {
+        unballasting_counter -- ;
+      }
+      else  // unballasting_counter = 0
+      {
+        if (delest_pin_relay2 == HIGH)
+        {
+          digitalWrite (delest_pin_relay2, LOW) ; 
+          unballasting_counter = 10 ;
+        }
+        else
+        {
+          digitalWrite (delest_pin_relay1, LOW) ;
+        }
+      }
+  }
 
-  if( delestage == true ) {
-    if( unefois == false ) {
-      digitalWrite(delest_pin, etat_delest_actif);     // maj sortie délestage
-      decompte = temps_actuel;                    // initialisation du compteur
-      unefois = true;
-    }
-    if( rPower < -delestOFF ) {                   // si le conso dépasse delestOFF
-      digitalWrite(delest_pin, etat_delest_repos);    // maj sortie délestage
-      unefois = false;
-      delestage = false;
-    }
-  }                                               // fin test de délestage
+  // if( rPower > -delestON) {   // détection seuil atteint
+  //   delestage = true; 
+  //   }   
+
+  // if( delestage == true ) {
+  //   if( unefois == false ) {
+  //     digitalWrite(delest_pin, etat_delest_actif);     // maj sortie délestage
+  //     decompte = temps_actuel;                    // initialisation du compteur
+  //     unefois = true;
+  //   }
+  //   if( rPower < -delestOFF ) {                   // si le conso dépasse delestOFF
+  //     digitalWrite(delest_pin, etat_delest_repos);    // maj sortie délestage
+  //     unefois = false;
+  //     delestage = false;
+  //   }
+  // }                                               // fin test de délestage
 
 
   // affichage de ce qui se passe toutes les 2 secondes car ça bouffe du temps....
@@ -562,7 +617,7 @@ dimphase = dim+ dimdephasage; // Value to used by the timer interrupt.
         //     Serial.println();
         //   }
         //   else { Serial.print("ARRETE"); }
-        // }  // fin tempo de 2 secondes
+         }  // fin tempo de 2 secondes
       
         if( CALIBRATION == true ) {
       	  Serial.print(V);
@@ -576,11 +631,14 @@ dimphase = dim+ dimdephasage; // Value to used by the timer interrupt.
           Serial.print(rPower/1000);
           Serial.print("  ||     ");
           Serial.print(dimstep);
-          Serial.print("  |  ");
+          Serial.print("  ||  ");
           Serial.print(dim);
           Serial.print(" ||  ");
           Serial.print(dimphase);
           Serial.print(" ||  ");
+          Serial.print (delest_pin_relay1);
+          Serial.print(" ||  ");
+          Serial.print (delest_pin_relay2);
           // Serial.print(" état délestage : ");
           // Serial.print(delestage);
           // Serial.print(" décompte : ");
