@@ -151,7 +151,7 @@ long delestON  = 1000;           // seuil de puissance pour démarrage du déles
 long delestOFF = 350000;         // seuil d'arrêt du délestage
 bool etat_delest_repos  = HIGH;  // état de la sortie temporisée au repos : HIGH pour actif
 
-unsigned long unballasting_timeout = 60000; // 60 secondes
+unsigned long unballasting_timeout = 10000; // 60 secondes
 unsigned long unballasting_time;        // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
@@ -527,13 +527,16 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt.
   
   if (long (millis() - unballasting_time > unballasting_timeout))
    {
+    
      if (dim < unballasting_dim_min)  // DIM is minimum => power in SCR is maximum
       {
+      
         if (unballasting_counter > 10) // dim is < unballasting_dim_min during 10 half period
         {
-          if (delest_pin_relay1 == HIGH) 
+          
+          if (relay_1 == true) 
           {
-            if(delest_pin_relay2 == HIGH)
+            if(relay_2 == true)
               {
                 unballasting_counter = 10;      // overflow
                 digitalWrite(limiteLED, HIGH) ;
@@ -558,7 +561,7 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt.
           {
             unballasting_counter ++ ; 
           }  
-        
+       unballasting_counter ++ ; 
       }
       // dim is more than unballasting_dim_min
       if (unballasting_counter > 0 ) // 
@@ -567,7 +570,7 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt.
       }
       else  // unballasting_counter = 0
       {
-        if (delest_pin_relay2 == HIGH)
+        if (relay_2 == true)
         {
           digitalWrite (delest_pin_relay2, LOW) ; 
           relay_2 = false;
