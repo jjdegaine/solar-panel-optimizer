@@ -151,7 +151,7 @@ long delestON  = 1000;           // seuil de puissance pour démarrage du déles
 long delestOFF = 350000;         // seuil d'arrêt du délestage
 bool etat_delest_repos  = HIGH;  // état de la sortie temporisée au repos : HIGH pour actif
 
-unsigned long unballasting_timeout = 60; // 60 secondes
+unsigned long unballasting_timeout = 60000; // 60 secondes
 unsigned long unballasting_time;        // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
@@ -318,7 +318,7 @@ void setup() {                  // Begin setup
  pinMode(limiteLED, OUTPUT);    // Set the limite pin LED as output
  pinMode(zeroCrossPin, INPUT_PULLUP);   // set the zerocross pin as in with pullup for interrupt
 
-unballasting_time= millis()*1000; // set up timer unballasting
+unballasting_time= millis(); // set up timer unballasting
 
 
 // initialisation de la console
