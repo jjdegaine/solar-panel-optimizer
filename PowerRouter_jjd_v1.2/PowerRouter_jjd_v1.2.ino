@@ -16,7 +16,7 @@ d'injection est proche de 3W (paramétrable) permettant par exemple de couper l'
 le programme prévoit :
 - une sonde de tension : simple transfo 230V/5V Crête à Crête sur mi-tension (2.5V)
 - une sonde de courant : 20A/25mA sur mi-tension (2.5V)
-- un module de commande par triac
+- un module de commande par SCR
 - un dispositif de détection de passage à zéro de la sinusoïde de tension secteur (par exemple 
 l'optocoupleur H11AA1)
 - la bibliothèque TimeOne.h à installer et disponible là : 
@@ -26,7 +26,7 @@ http://www.arduino.cc/playground/Code/Timer
 La gamme de puissances testée est va de 300 à 1000W
 
 merci à Ryan McLaughlin <ryanjmclaughlin@gmail.com> pour avoir étudié et mis au point la partie 
-commande du triac il y a quelques années et que j'ai repris dans ce programme :)
+commande du SCR il y a quelques années et que j'ai repris dans ce programme :)
 source : https://web.archive.org/web/20091212193047/http://www.arduino.cc:80/cgi-bin/yabb2/YaBB.pl?num=1230333861/15
 
 _________________________________________________________________
@@ -41,7 +41,7 @@ avec moi cette amélioration. Merci.
 
 hronologie des versions :
 version 0.5 - 3 mai 2018     - boucle de décrémentation dim --
-version 0.8 - 5 juil. 2018   - 1ère version fonctionnelle, pb du pic de courant du triac 
+version 0.8 - 5 juil. 2018   - 1ère version fonctionnelle, pb du pic de courant du SCR 
 version 1   - 6 juil. 2018   - ajout de la bibliothèque EmonLib.h pour mesure du secteur
 version 1.4 - 7 juil. 2018   - simplification des tests sur sPower et dim.
 version 1.6 - 8 juil. 2018   - ajout LED d'overflow + optimisation des paramètres + seuilPoff
@@ -144,6 +144,8 @@ float Vcalibration     = 0.97;   // to obtain the mains exact value
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
+byte ADC_V_0V = 476 ;
+byte ADC_I_0A = 476 ;
 
 // Threshold value for power adjustment: 
 
@@ -154,19 +156,20 @@ unsigned long unballasting_time;            // timer for unballasting
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
 
-// Coefdereaction define the DIM value to be added or substract
+// reaction rate coefficient
+// reaction_coeff define the DIM value to be added or substract
 // If too small the control loop is too slow
 // if too large the control loop is unstable
-// coefdeReaction ~ (control loop resistance power )/4  Watt
+// reaction_coeff ~ (control loop resistance power )/4  Watt
 
-unsigned int coefdeReaction  = 90; 
+unsigned int reaction_coeff  = 90; 
 
 // Input and ouput of the ESP32
 
-const byte triac_pin         = 5;     
-const byte delest_pin_relay2 = 15;    
-const byte delest_pin_relay1 = 17;    
-const byte triacLED          = 16;     
+const byte SCR_pin         = 5;     
+const byte unballast_relay2 = 15;    
+const byte unballast_relay1 = 17;    
+const byte SCRLED          = 16;     
 const byte limiteLED         = 18;    
 const byte voltageSensorPin  = 34;     
 const byte currentSensorPin  = 35;      
@@ -209,7 +212,7 @@ volatile bool wait_2msec ;
 
 // Voltage and current measurement  :
 
-int lectureV, memo_lectureV, lectureI;   // voltage and current withn ADC (0 à 1023 bits)
+int readV, memo_readV, readI;   // voltage and current withn ADC (0 à 1023 bits)
 float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
 long Power_wifi ;                   // power to be sent by wifi
 byte zero_crossCount = 0;          // half period counter
@@ -252,7 +255,7 @@ void IRAM_ATTR zero_cross_detect() {   //
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SCR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
-     digitalWrite(triacLED, LOW); //reset triac LED
+     digitalWrite(SCRLED, LOW); //reset SCR LED
      
       send_UDP ++ ;
      if (send_UDP > send_UDP_max)
@@ -283,11 +286,11 @@ void IRAM_ATTR onTimer() {
      if(i>dimphase) {            // i is a counter which is used to SCR command delay 
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
-       digitalWrite(triac_pin, HIGH);     // start SCR
+       digitalWrite(SCR_pin, HIGH);     // start SCR
        delayMicroseconds(50);             // Pause briefly to ensure the SCR turned on
-       digitalWrite(triac_pin, LOW);      // Turn off the SCR gate, 
+       digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
-       digitalWrite(triacLED, HIGH);      // start led triac 
+       digitalWrite(SCRLED, HIGH);      // start led SCR 
        zero_cross = false;
      } 
     else {  
@@ -306,10 +309,10 @@ void IRAM_ATTR onTimer() {
 
 void setup() {                  // Begin setup
 
- pinMode(triac_pin, OUTPUT);            // Set the Triac pin as output
- pinMode(delest_pin_relay1, OUTPUT);    // Set the Delest pin as output
- pinMode(delest_pin_relay2, OUTPUT);    // Set the Delest pin as output
- pinMode(triacLED,  OUTPUT);            // Set the LED pin as output
+ pinMode(SCR_pin, OUTPUT);            // Set the SCR pin as output
+ pinMode(unballast_relay1, OUTPUT);    // Set the Delest pin as output
+ pinMode(unballast_relay2, OUTPUT);    // Set the Delest pin as output
+ pinMode(SCRLED,  OUTPUT);            // Set the LED pin as output
  pinMode(limiteLED, OUTPUT);            // Set the limite pin LED as output
  pinMode(zeroCrossPin, INPUT_PULLUP);   // set the zerocross pin as in with pullup for interrupt
 
@@ -328,8 +331,8 @@ unballasting_time= millis(); // set up timer unballasting
  else Serial.println("GO"); 
  Serial.println();
 
- digitalWrite(delest_pin_relay1, LOW);    // unballast relay 1 init
- digitalWrite(delest_pin_relay2, LOW);    // unballast relay 2 init
+ digitalWrite(unballast_relay1, LOW);    // unballast relay 1 init
+ digitalWrite(unballast_relay2, LOW);    // unballast relay 2 init
 
  
   //init wifi_udp
@@ -414,7 +417,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   sumV = 0;
   sumI = 0;
   sumP = 0;
-  unsigned int temps_actuel = millis()/1000;      // timer in second
+  unsigned int time_now_second = millis()/1000;      // timer in second
 
 
 
@@ -437,24 +440,24 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     
     numberOfSamples++;                         // counter of samples U and I
     
-    memo_lectureV = lectureV;                  // 
-    lectureV = analogRead(voltageSensorPin) / 4;   // Voltage Value  0V = bit 476. 12bits ADC ==> /4 ==> max 1024
+    memo_readV = readV;                  // 
+    readV = analogRead(voltageSensorPin) / 4;   // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
     
-	if( memo_lectureV == 0 && lectureV == 0 ) { break; } // exit the while if no powersupply
-    lectureI = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit 476 12bits ADC ==> /4 ==> max 1024
+	if( memo_readV == 0 && readV == 0 ) { break; } // exit the while if no powersupply
+    readI = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit ADC_I_0A 12bits ADC ==> /4 ==> max 1024
   
   
 // RMS Current and Voltage 
 
     if( CALIBRATION == true ) {                         // 
-      sqV= (lectureV -476.0) * (lectureV -476.0);       // 476 ==> 0volt 
+      sqV= (readV -ADC_V_0V) * (readV -ADC_V_0V);             // ADC_V_0V ==> 0volt 
       sumV += sqV;               
-      sqI = (lectureI -476.0) * (lectureI -476.0);
+      sqI = (readI -ADC_I_0A) * (readI -ADC_I_0A);
 	    sumI += sqI;
     } 
     
 // instantaneous power calculation 
-    instP = ((memo_lectureV -476.0) + phasecalibration * ((lectureV -476.0) - (memo_lectureV -476))) * (lectureI -476.0); 
+    instP = ((memo_readV -ADC_V_0V) + phasecalibration * ((readV -ADC_V_0V) - (memo_readV -ADC_V_0V))) * (readI -ADC_I_0A); 
     sumP +=instP;  
 
 
@@ -503,8 +506,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 //
 // dimstep calculation.  
 //
-  if( rPower > 0 ) { dimstep = (rPower/1000)/coefdeReaction + 1; } 
-  else { dimstep = 1 - (rPower/1000)/coefdeReaction; }
+  if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
+  else { dimstep = 1 - (rPower/1000)/reaction_coeff; }
   
   // when rPower is less than seuilP ==> unlalanced power must increased ==> DIM must be reduced
 
@@ -524,7 +527,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
 
-// Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed repower charge. 
+// Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
 // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
 //  
   if (long (millis() - unballasting_time > unballasting_timeout))
@@ -546,7 +549,7 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
               }
             else 
               {
-                digitalWrite( delest_pin_relay2, HIGH) ; // set relay 2 
+                digitalWrite( unballast_relay2, HIGH) ; // set relay 2 
                 relay_2 =true;
                 unballasting_counter= 10 ;
                 unballasting_time = millis() ;
@@ -554,7 +557,7 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           }     
           else
               {
-              digitalWrite (delest_pin_relay1, HIGH)  ; //set relay 1
+              digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
               relay_1 = true;
               unballasting_counter= 0 ;
               }     
@@ -574,13 +577,13 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
       {
         if (relay_2 == true)
         {
-          digitalWrite (delest_pin_relay2, LOW) ; 
+          digitalWrite (unballast_relay2, LOW) ; 
           relay_2 = false;
           unballasting_counter = 10 ;
         }
         else
         {
-          digitalWrite (delest_pin_relay1, LOW) ;
+          digitalWrite (unballast_relay1, LOW) ;
           relay_1 = false;
           unballasting_time= millis();
         }
@@ -592,9 +595,9 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
   // Display each 2 seconds
 
 
-  if( temps_actuel >= memo_temps +2 ) {
+  if( time_now_second >= memo_temps +2 ) {
 
-          memo_temps = temps_actuel;
+          memo_temps = time_now_second;
  
         //   Serial.print("P= ");
         //   Serial.print(String(-rPower/1000,0));   
@@ -696,7 +699,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               }
          
       		send_UDP_wifi = true ; 
-      		Udp.beginPacket(ipCliente,9999);   //Initiate transmission of dat
+      		Udp.beginPacket(ipCliente,9999);   //Initiate transmission of data
           Udp.print(Power_wifi) ;
 
           //Serial.print ("power_wifi");
