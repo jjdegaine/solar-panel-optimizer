@@ -9,7 +9,7 @@ Le principe de fonctionnement est le suivant :
 - en cas d'injection il se produit la mise en route progressive d'un dispositif d'absorption 
 d'excédent de puissance 
 - la mesure du courant permet d'ajuster au mieux le niveau d'absorption de cet excédent.
-- Par ailleurs il est prévu une sortie temporisée de 30 secondes (paramétrable) lorsque le seuil 
+- Par ailleurs il est prévu une sortie temporisée de 30 secondes (paramétrable) lorsque le treshold 
 d'injection est proche de 3W (paramétrable) permettant par exemple de couper l'injection d'une 
 éolienne au profit de la charge de batteries. 
 
@@ -44,16 +44,16 @@ version 0.5 - 3 mai 2018     - boucle de décrémentation dim --
 version 0.8 - 5 juil. 2018   - 1ère version fonctionnelle, pb du pic de courant du SCR 
 version 1   - 6 juil. 2018   - ajout de la bibliothèque EmonLib.h pour mesure du secteur
 version 1.4 - 7 juil. 2018   - simplification des tests sur sPower et dim.
-version 1.6 - 8 juil. 2018   - ajout LED d'overflow + optimisation des paramètres + seuilPoff
+version 1.6 - 8 juil. 2018   - ajout LED d'overflow + optimisation des paramètres + tresholdPoff
 version 1.8 - 24 sept 2018   - ajout du pas variable sur dim avec dimstep
-version 1.9 - 12 oct. 2018   - ajout d'une sortie temporisée de 5min à seuilPoff (25W) du seuil d'injection  
+version 1.9 - 12 oct. 2018   - ajout d'une sortie temporisée de 5min à tresholdPoff (25W) du treshold d'injection  
 version 2.0 - 4 nov. 2018    - ajout d'un watchdog avec comptage de reset en EEPROM
-version 2.2 - 7 nov. 2018    - seuilPtempo variable à part entière pour le délestage + correction coquille
+version 2.2 - 7 nov. 2018    - tresholdPtempo variable à part entière pour le délestage + correction coquille
 version 2.3 - 16 dec 2018    - réaménagemet des messages console pour gagner du temps
 version 2.4 - 12 jan 2019    - ajout d'un afficheur LCD 1602 avec extension I2C
 version 3.2 - 17 jan 2019    - gain en performances en contournant EmonLib.h
-version 3.3 - 22 fev 2019    - abandon de seuilPoff : arrêt en cas de chutte brusque d'injection 
-version 3.4 - 27 avr 2019    - changement du délestage par les seuils delestON et delestOFF
+version 3.3 - 22 fev 2019    - abandon de tresholdPoff : arrêt en cas de chutte brusque d'injection 
+version 3.4 - 27 avr 2019    - changement du délestage par les tresholds delestON et delestOFF
 version 3.5 - 9 july 2019    - test if no energy detected which started the WatchDog
 version XXX - 2020           - Modif JJ + test Github
 ____________________________________________________________________________________________
@@ -149,7 +149,7 @@ byte ADC_I_0A = 476 ;
 
 // Threshold value for power adjustment: 
 
-int seuilP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
+int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
@@ -512,15 +512,15 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
   else { dimstep = 1 - (rPower/1000)/reaction_coeff; }
   
-  // when rPower is less than seuilP ==> unlalanced power must increased ==> DIM must be reduced
+  // when rPower is less than tresholdP ==> unlalanced power must increased ==> DIM must be reduced
 
-  if( rPower < seuilP ) {      
+  if( rPower < tresholdP ) {      
     if( dim > dimstep )  dim -= dimstep; else  dim = 0;
   } 
 
-// when rPower is higher than seuilP ==> unlalanced power must decreased ==> DIM must be increasad
+// when rPower is higher than tresholdP ==> unlalanced power must decreased ==> DIM must be increasad
 
-  else if( rPower > seuilP ) {                   
+  else if( rPower > tresholdP ) {                   
     if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
   }
 
