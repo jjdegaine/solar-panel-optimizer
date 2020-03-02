@@ -61,7 +61,8 @@ ________________________________________________________________________________
 
 _____________________________________________________________________
 |																                                  	|
-|              modification by J.J.Delorme 2020					          	|
+|              modification by J.J.Delorme 2020	                    |
+|                     Client version 				                       	|
 |																                                  	|
 _____________________________________________________________________
 
@@ -97,9 +98,8 @@ PIN description
 
  - PIN35 analog for intensity measurement
 
-version 1.0 january 2020
-version 1.1 february 2020 data sent by wifi using IT_sec
-version 1.2 february 2020 relay added
+version 1.0 March 2020
+
 
 */
 
@@ -131,7 +131,7 @@ const char *password = "BB9ESERVER";  // for examplet  to be changed
 
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
 IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
-
+IPAddress Subnet(255, 255, 255, 0);
 
 // Information to be displayed
 
@@ -150,6 +150,7 @@ byte ADC_I_0A = 476 ;
 // Threshold value for power adjustment: 
 
 int seuilP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
+int Seuil_relay1 = 25000;          // Threshold to start relay 1 MUST BE lower than seuilP
 
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
@@ -196,7 +197,7 @@ byte send_UDP_max = 200; // send UDP data each 200*10 msec
 volatile bool send_UDP_wifi = false;
 
 unsigned long time_udp_now;
-unsigned long time_udp_limit = 5000 ; // time to leave UDP 5 sec
+unsigned long time_udp_limit = 10000 ; // time to leave UDP 10 sec
 
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
@@ -259,12 +260,12 @@ void IRAM_ATTR zero_cross_detect() {   //
      first_it_zero_cross = true ;  // flag to start a delay 2msec
      digitalWrite(SCRLED, LOW); //reset SCR LED
      
-      send_UDP ++ ;
-     if (send_UDP > send_UDP_max)
-     {
-       send_UDP=0; // reset counter send_UDP
-       send_UDP_wifi = true ; // ready to send UDP 
-     }
+    //   send_UDP ++ ;
+    //  if (send_UDP > send_UDP_max)
+    //  {
+    //    send_UDP=0; // reset counter send_UDP
+    //    send_UDP_wifi = true ; // ready to send UDP 
+    //  }
    
 }  
 
@@ -338,12 +339,10 @@ unballasting_time= millis(); // set up timer unballasting
 
  
   //init wifi_udp
-
-
-  WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
-  delay(500); // Delay to wait Wifi init 
-  Udp.begin(localPort);
-  Serial.println("init access point UDP OK");
+  // WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
+  // delay(500); // Delay to wait Wifi init 
+  // Udp.begin(localPort);
+  // Serial.println("init access point UDP OK");
 
 
   
@@ -446,7 +445,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     readV = analogRead(voltageSensorPin) / 4;   // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
     
 	if( memo_readV == 0 && readV == 0 ) { break; } // exit the while if no powersupply
-    readI = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit ADC_I_0A 12bits ADC ==> /4 ==> max 1024
+  //  readI = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit ADC_I_0A 12bits ADC ==> /4 ==> max 1024
   
   
 // RMS Current and Voltage 
@@ -454,13 +453,13 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     if( CALIBRATION == true ) {                         // 
       sqV= (readV -ADC_V_0V) * (readV -ADC_V_0V);             // ADC_V_0V ==> 0volt 
       sumV += sqV;               
-      sqI = (readI -ADC_I_0A) * (readI -ADC_I_0A);
-	    sumI += sqI;
+    //  sqI = (readI -ADC_I_0A) * (readI -ADC_I_0A);
+	  //  sumI += sqI;
     } 
     
 // instantaneous power calculation 
-    instP = ((memo_readV -ADC_V_0V) + phasecalibration * ((readV -ADC_V_0V) - (memo_readV -ADC_V_0V))) * (readI -ADC_I_0A); 
-    sumP +=instP;  
+ //   instP = ((memo_readV -ADC_V_0V) + phasecalibration * ((readV -ADC_V_0V) - (memo_readV -ADC_V_0V))) * (readI -ADC_I_0A); 
+ //   sumP +=instP;  
 
 
 // function delay 2msec
@@ -489,23 +488,17 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 // Power calculation
 
-  if( numberOfSamples > 0 ) {
-    if( CALIBRATION == true ) { 
-      V = Vcalibration * sqrt(sumV / numberOfSamples);
-      I = Icalibration * sqrt(sumI / numberOfSamples);
-    }
-    rPower = Vcalibration * Icalibration * sumP / numberOfSamples;
-    // Power_wifi = (int) rPower ; // Power wifi using INT
-    //Power_wifi =  (long) rPower ; // Power wifi using long
   
-    Power_wifi =  rPower ; // Power wifi using float 
-  }
+  
+    rPower = Power_wifi ; // Power wifi received by Wifi
+  
 	
 //____________________________________________________________________________________________
 //
 // Power to be unbalanced to avoid injection of electricity to the grid
 //
 //____________________________________________________________________________________________
+//
 //
 // dimstep calculation.  
 //
@@ -530,13 +523,12 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
 
-// Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
-// to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
+// Relay command. The relay 1 is ON as soon as possible, before regulation with SCR
 //  
   if (long (millis() - unballasting_time > unballasting_timeout))
    {
     
-     if (dim < unballasting_dim_min)  // DIM is minimum => power in SCR is maximum
+     if (rPower < Seuil_relay1)  // rPower is lower than minimum Relay 1 must be ON
       {
       
         if (unballasting_counter > 10) // dim is < unballasting_dim_min during 10 half period
@@ -544,53 +536,35 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           
           if (relay_1 == true) 
           {
-            if(relay_2 == true)
-              {
-                unballasting_counter = 10;      // overflow
-                digitalWrite(limiteLED, HIGH) ;
-                
-              }
-            else 
-              {
-                digitalWrite( unballast_relay2, HIGH) ; // set relay 2 
-                relay_2 =true;
-                unballasting_counter= 10 ;
-                unballasting_time = millis() ;
-              }
+          unballasting_counter= 0 ;
           }     
           else
               {
               digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
               relay_1 = true;
               unballasting_counter= 0 ;
+              unballasting_time= millis();
               }     
         }  
         else
           {
             unballasting_counter ++ ; 
           }  
-       unballasting_counter ++ ; 
+    
       }
-      // dim is more than unballasting_dim_min
+      // Rpower is more than Seuil_relay1
       if (unballasting_counter > 0 ) // 
       {
         unballasting_counter -- ;
       }
       else  // unballasting_counter = 0
-      {
-        if (relay_2 == true)
-        {
-          digitalWrite (unballast_relay2, LOW) ; 
-          relay_2 = false;
-          unballasting_counter = 10 ;
-        }
-        else
+     
         {
           digitalWrite (unballast_relay1, LOW) ;
           relay_1 = false;
           unballasting_time= millis();
         }
-      }
+      
   }
 
  
@@ -648,10 +622,6 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
         }
         else { delay(1); }           // needed for stability
 
-
-
-
-
   } 
   
 }                              // end task UI
@@ -663,71 +633,59 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 //
 
 void Taskwifi_udp(void *pvParameters)  // This is a task.
+
 {
     (void) pvParameters;
-    //String msg;
-    time_udp_now= millis(); 
-    Serial.println ("start task UDP");
-    
+
+
+  delay(5); // delai obligatoire pour permettre au setup de finir  
+  WiFi.begin(ssid, password, channel);
+  WiFi.mode(WIFI_STA); // ESP-32 as client
+  WiFi.config(ipCliente, ipServidor, Subnet);
+  Udp.begin(localPort);
+  delay(5); // delai obligatoire sinon blocage
+  Serial.println("fin init UDP client");
 
     for (;;) // A Task shall never return or exit.
     {
-  	   while(send_UDP_wifi == false )
-  	   {
-  		wifi_wait=0; // loop to wait update DIM
-  	    		
-  	   }
-
-       // logic: we want wifi if not (calibration or verbose or winter)
-//       if (!((CALIBRATION or VERBOSE) or WINTER))
-
-  
-      // verification time to leave UDP
-      
-  
-              
               if (long (millis() - time_udp_now > time_udp_limit))             // comparing durations
               {                    
               Serial.println ("time to leave UDP");
             
-              WiFi.disconnect();
-              WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
-              delay(500); // ajout jj delai 
+              WiFi.begin(ssid, password, channel);
+              WiFi.mode(WIFI_STA); // ESP-32 as client
+              WiFi.config(ipCliente, ipServidor, Subnet);
               Udp.begin(localPort);
-              Serial.println("init access point UDP OK");
-              delay(5000);
-              time_udp_now= millis(); // reset time to leave
+              delay(5); // delai obligatoire sinon blocage
+              Serial.println("fin init UDP client");
+              time_udp_now= millis();
              
               
               }
          
-      		send_UDP_wifi = false ; 
-      		Udp.beginPacket(ipCliente,9999);   //Initiate transmission of data
+  	int packetSize = Udp.parsePacket();
+   if (packetSize) {
+    
+    Udp.read(mystring_power_wifi,packetSize);
+    
+    Power_wifi = strtof(mystring_power_wifi, NULL);
 
-          sprintf(mystring_power_wifi, "%g", Power_wifi); 
+    // ack 
+        Udp.beginPacket(ipServidor, 9999);
+        Udp.write(&ack,1);
+        Udp.endPacket();    
 
-          Udp.print (mystring_power_wifi) ; 
-         
-
-          Serial.print ("power_wifi");
-          Serial.println (Power_wifi);
-
- 
-      		Udp.endPacket();  // Close communication
-        
-      		// read acknowledge from client
-              int packetSize = Udp.parsePacket();
-              if (packetSize) 
-            		{
-                    int len = Udp.read(&ack, 1);
-                   
-                    time_udp_now= millis(); // reset time to leave
-            		}
+        time_udp_now= millis();
+        Serial.print ("powerwifi");
+        Serial.println (Power_wifi);
+       
+       delay(5);
+      }		
                
   //		 } // end check switches for calibration verbose and winter
 
       // TODO here insert function to read switches and set global bools calibration verbose and winter
 
-     } // end for loop wifi
+    } // end for loop wifi
     
-  }
+}
