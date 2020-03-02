@@ -602,10 +602,6 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 
           memo_temps = time_now_second;
 
-          //------------------------------------
-          send_UDP_wifi= true ; // A supprimer en vrai
-          //------------------------------------
-
 
         //   Serial.print("P= ");
         //   Serial.print(String(-rPower/1000,0));   
@@ -708,7 +704,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
       		send_UDP_wifi = false ; 
       		Udp.beginPacket(ipCliente,9999);   //Initiate transmission of data
 
-          sprintf(mystring_power_wifi, "%g", Power_wifi);
+          sprintf(mystring_power_wifi, "%g", Power_wifi); 
 
           Udp.print (mystring_power_wifi) ; 
          
