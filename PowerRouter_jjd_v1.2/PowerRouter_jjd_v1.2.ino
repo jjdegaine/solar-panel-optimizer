@@ -136,7 +136,7 @@ IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
 // Information to be displayed
 
 bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
-bool VERBOSE = true ;       // to verify dim and dimstep 
+bool VERBOSE = false ;       // to verify dim and dimstep 
 bool WINTER = false	;		 	  // winter -> no wifi summer wifi
 
 
@@ -214,7 +214,9 @@ volatile bool wait_2msec ;
 
 int readV, memo_readV, readI;   // voltage and current withn ADC (0 à 1023 bits)
 float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
-long Power_wifi ;                   // power to be sent by wifi
+float Power_wifi;
+//long Power_wifi ;                   // power to be sent by wifi
+char mystring_power_wifi [50] ;       // string to be transmitted by wifi
 byte zero_crossCount = 0;          // half period counter
     
 // other value :
@@ -494,8 +496,9 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     }
     rPower = Vcalibration * Icalibration * sumP / numberOfSamples;
     // Power_wifi = (int) rPower ; // Power wifi using INT
-    Power_wifi =  (long) rPower ; // Power wifi using long
-    //Power_wifi =  rPower ; // Power wifi using float ==> fail
+    //Power_wifi =  (long) rPower ; // Power wifi using long
+  
+    Power_wifi =  rPower ; // Power wifi using float 
   }
 	
 //____________________________________________________________________________________________
@@ -598,7 +601,12 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
   if( time_now_second >= memo_temps +2 ) {
 
           memo_temps = time_now_second;
- 
+
+          //------------------------------------
+          send_UDP_wifi= true ; // A supprimer en vrai
+          //------------------------------------
+
+
         //   Serial.print("P= ");
         //   Serial.print(String(-rPower/1000,0));   
         //   Serial.print("w");
@@ -654,7 +662,7 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 
 
 /*--------------------------------------------------*/
-/*---------------------- Tasks Wifi ------------------*/
+/*---------------------- Tasks Wifi ----------------*/
 /*--------------------------------------------------*/
 //
 
@@ -676,8 +684,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
        // logic: we want wifi if not (calibration or verbose or winter)
 //       if (!((CALIBRATION or VERBOSE) or WINTER))
-//         if (CALIBRATION== false)   //en attente verif if précédent
-//       {
+
   
       // verification time to leave UDP
       
@@ -698,17 +705,18 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               
               }
          
-      		send_UDP_wifi = true ; 
+      		send_UDP_wifi = false ; 
       		Udp.beginPacket(ipCliente,9999);   //Initiate transmission of data
-          Udp.print(Power_wifi) ;
 
-          //Serial.print ("power_wifi");
-          //Serial.println (Power_wifi);
+          sprintf(mystring_power_wifi, "%g", Power_wifi);
 
-          //msg = String(Power_wifi, 3);
-          //Udp.write((uint8_t *) msg.c_str(),12); 
-          // Udp.write("hello"); 
-      		//Udp.write(&Power_wifi,1); // 
+          Udp.print (mystring_power_wifi) ; 
+         
+
+          Serial.print ("power_wifi");
+          Serial.println (Power_wifi);
+
+ 
       		Udp.endPacket();  // Close communication
         
       		// read acknowledge from client
