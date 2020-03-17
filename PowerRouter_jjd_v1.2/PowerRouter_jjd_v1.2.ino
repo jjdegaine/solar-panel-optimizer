@@ -140,7 +140,7 @@ bool VERBOSE = false ;       // to verify dim and dimstep
 bool WINTER = false	;		 	  // winter -> no wifi summer wifi
 
 
-float Vcalibration     = 0.97;   // to obtain the mains exact value 
+float Vcalibration     = 0.66;   // to obtain the mains exact value 
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
