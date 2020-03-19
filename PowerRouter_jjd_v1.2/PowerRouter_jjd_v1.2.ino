@@ -140,12 +140,12 @@ bool VERBOSE = false ;       // to verify dim and dimstep
 bool WINTER = false	;		 	  // winter -> no wifi summer wifi
 
 
-float Vcalibration     = 0.66;   // to obtain the mains exact value 
+float Vcalibration     = 0.90;   // to obtain the mains exact value 
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
-byte ADC_V_0V = 476 ;
-byte ADC_I_0A = 476 ;
+float ADC_V_0V = 467 ;
+float ADC_I_0A = 467 ;
 
 // Threshold value for power adjustment: 
 
@@ -446,8 +446,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     readV = analogRead(voltageSensorPin) / 4;   // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
     
 	if( memo_readV == 0 && readV == 0 ) { break; } // exit the while if no powersupply
-    readI = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit ADC_I_0A 12bits ADC ==> /4 ==> max 1024
-  
+    readI = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
+
   
 // RMS Current and Voltage 
 
@@ -457,7 +457,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       sqI = (readI -ADC_I_0A) * (readI -ADC_I_0A);
 	    sumI += sqI;
     } 
-    
+ 
 // instantaneous power calculation 
     instP = ((memo_readV -ADC_V_0V) + phasecalibration * ((readV -ADC_V_0V) - (memo_readV -ADC_V_0V))) * (readI -ADC_I_0A); 
     sumP +=instP;  
