@@ -486,7 +486,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
   
   
-    rPower = Power_wifi ; // Power wifi received by Wifi
+    rPower = Power_wifi *1000 ; // Power wifi received by Wifi
   
 	
 //____________________________________________________________________________________________
@@ -550,7 +550,7 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 
          Serial.print("P= ");
           Serial.print(rPower/1000);   
-          Serial.print("w");
+          Serial.print("w ");
     
           Serial.print("dim: ");
           Serial.println(dim);
@@ -651,8 +651,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         Udp.endPacket();    
 
         time_udp_now= millis();
-        Serial.print ("powerwifi");
-        Serial.println (Power_wifi);
+        //Serial.print ("powerwifi");
+        //Serial.println (Power_wifi);
        
        delay(5);
       }		
