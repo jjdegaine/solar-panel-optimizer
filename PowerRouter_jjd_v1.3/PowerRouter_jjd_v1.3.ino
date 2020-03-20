@@ -502,7 +502,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     }
     rPower = Vcalibration * Icalibration * sumP / numberOfSamples;
  
-    Power_wifi =  rPower ; // Power wifi using float 
+    Power_wifi =  rPower/1000 ; // Power wifi using float 
   }
 	
 //____________________________________________________________________________________________
@@ -713,8 +713,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
           Udp.print (mystring_power_wifi) ; 
          
 
-          Serial.print ("power_wifi");
-          Serial.println (Power_wifi);
+         // Serial.print ("power_wifi");
+         // Serial.println (Power_wifi);
 
  
       		Udp.endPacket();  // Close communication
