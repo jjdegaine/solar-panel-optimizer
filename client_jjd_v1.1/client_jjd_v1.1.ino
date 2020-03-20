@@ -137,15 +137,15 @@ IPAddress Subnet(255, 255, 255, 0);
 
 bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
 bool VERBOSE = false ;       // to verify dim and dimstep 
-bool WINTER = false	;		 	  // winter -> no wifi summer wifi
+//bool WINTER = false	;		 	  // winter -> no wifi summer wifi
 
 
 float Vcalibration     = 0.97;   // to obtain the mains exact value 
 //float Icalibration     = 93;     // current in milliampères
 //float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
-byte ADC_V_0V = 476 ;
-//byte ADC_I_0A = 476 ;
+float ADC_V_0V = 467 ;
+//float ADC_I_0A = 467 ;
 
 // Threshold value for power adjustment: 
 
@@ -167,11 +167,14 @@ unsigned int reaction_coeff  = 90;
 
 // Input and ouput of the ESP32
 
-const byte SCR_pin         = 5;     
-const byte unballast_relay2 = 15;    
-const byte unballast_relay1 = 17;    
-const byte SCRLED          = 16;     
-const byte limiteLED         = 18;    
+const byte SCR_pin           = 5;    
+//const byte pin_winter        = 14; 
+const byte unballast_relay2  = 15;    
+const byte unballast_relay1  = 17;    
+const byte SCRLED            = 16;     
+const byte limiteLED         = 18;  
+const byte pin_verbose       = 26;
+const byte pin_calibration   = 27;  
 const byte voltageSensorPin  = 34;     
 //const byte currentSensorPin  = 35;      
 const byte zeroCrossPin      = 19;      
@@ -315,6 +318,9 @@ void setup() {                  // Begin setup
  pinMode(SCRLED,  OUTPUT);            // Set the LED pin as output
  pinMode(limiteLED, OUTPUT);            // Set the limite pin LED as output
  pinMode(zeroCrossPin, INPUT_PULLUP);   // set the zerocross pin as in with pullup for interrupt
+ //pinMode(pin_winter, INPUT); 
+ pinMode(pin_verbose, INPUT);    
+ pinMode(pin_calibration, INPUT); 
 
 unballasting_time= millis(); // set up timer unballasting
 
@@ -542,16 +548,12 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           memo_temps = time_now_second;
 
 
-        //   Serial.print("P= ");
-        //   Serial.print(String(-rPower/1000,0));   
-        //   Serial.print("w");
+         Serial.print("P= ");
+          Serial.print(rPower/1000);   
+          Serial.print("w");
     
-        //   Serial.print("T= ");
-        //   Serial.print( map(dim, 0, dimmax, 99, 0) );
-        //   Serial.print("%");
-        
-        
-        //   }
+          Serial.print("dim: ");
+          Serial.println(dim);
 
          }  // 
       
@@ -586,6 +588,14 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 
         }
         else { delay(1); }           // needed for stability
+
+// update switches winter, verbose, calibration
+
+ //       WINTER = digitalRead (pin_winter);
+        
+        VERBOSE = digitalRead (pin_verbose);
+        
+        CALIBRATION = digitalRead (pin_calibration);
 
   } 
   
@@ -647,9 +657,6 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
        delay(5);
       }		
                
-  //		 } // end check switches for calibration verbose and winter
-
-      // TODO here insert function to read switches and set global bools calibration verbose and winter
 
     } // end for loop wifi
     
