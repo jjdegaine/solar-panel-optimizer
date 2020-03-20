@@ -607,18 +607,16 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           memo_temps = time_now_second;
 
 
-        //   Serial.print("P= ");
-        //   Serial.print(String(-rPower/1000,0));   
-        //   Serial.print("w");
+          Serial.print("P= ");
+          Serial.print(rPower/1000);   
+          Serial.print("w");
     
-        //   Serial.print("T= ");
-        //   Serial.print( map(dim, 0, dimmax, 99, 0) );
-        //   Serial.print("%");
+          Serial.print("dim: ");
+          Serial.println(dim);
         
-        
-        //   }
+          }
 
-         }  // 
+          // 
       
         if( CALIBRATION == true ) {
       	  Serial.print(V);
@@ -644,8 +642,6 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           Serial.print (unballasting_counter);
           Serial.print(" ||  ");
           Serial.print (millis() - unballasting_time);
-
-       
        
           Serial.println();
 
