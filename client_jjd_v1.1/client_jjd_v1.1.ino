@@ -150,9 +150,9 @@ float ADC_V_0V = 467 ;
 // Threshold value for power adjustment: 
 
 int treshloldP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
-int Treshlold_relay1 = 25000;          // Threshold to start relay 1 MUST BE lower than treshloldP
+int Treshlold_relay1 = 75000;          // Threshold to start relay 1 MUST BE higher than treshloldP
 
-unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often 10 secondes
+unsigned long unballasting_timeout = 10000; // timeout to avoid relay command too often 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
@@ -625,6 +625,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     {
               if (long (millis() - time_udp_now > time_udp_limit))             // comparing durations
               {                    
+              Power_wifi = treshloldP +1 ; // as wifi is down Power_wifi is set up to tresholdP so dim will increased to 128 and stop SCR
               Serial.println ("time to leave UDP");
             
               WiFi.begin(ssid, password, channel);
