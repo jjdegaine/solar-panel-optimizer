@@ -55,7 +55,7 @@ version 3.2 - 17 jan 2019    - gain en performances en contournant EmonLib.h
 version 3.3 - 22 fev 2019    - abandon de treshloldPoff : arrêt en cas de chutte brusque d'injection 
 version 3.4 - 27 avr 2019    - changement du délestage par les treshlolds delestON et delestOFF
 version 3.5 - 9 july 2019    - test if no energy detected which started the WatchDog
-version XXX - 2020           - Modif JJ + test Github
+
 ____________________________________________________________________________________________
 
 
@@ -222,7 +222,7 @@ int readV, memo_readV;   // voltage and current withn ADC (0 à 1023 bits)
 float rPower, V,  sqV, sumV = 0 ;  
 float Power_wifi;  // power to be sent by wifi
                    
-char mystring_power_wifi [50] ;       // string to be transmitted by wifi
+char mystring_power_wifi [50] ;       // string transmitted by wifi
 byte zero_crossCount = 0;          // half period counter
     
 // other value :
@@ -264,8 +264,7 @@ void IRAM_ATTR zero_cross_detect() {   //
      zero_cross = true;        // Flag for SCR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
      digitalWrite(SCRLED, LOW); //reset SCR LED
-     
-    
+       
    
 }  
 
@@ -298,7 +297,7 @@ void IRAM_ATTR onTimer() {
      } 
     else {  
       i++; 
-      }           // If the dimming value has not been reached, incriment our counter
+      }           // If the dimming value has not been reached, incriment the counter
      
  }      // End zero_cross check
 
@@ -312,10 +311,10 @@ void IRAM_ATTR onTimer() {
 
 void setup() {                  // Begin setup
 
- pinMode(SCR_pin, OUTPUT);            // Set the SCR pin as output
- pinMode(unballast_relay1, OUTPUT);    // Set the Delest pin as output
- pinMode(unballast_relay2, OUTPUT);    // Set the Delest pin as output
- pinMode(SCRLED,  OUTPUT);            // Set the LED pin as output
+ pinMode(SCR_pin, OUTPUT);              // Set the SCR pin as output
+ pinMode(unballast_relay1, OUTPUT);     // Set the Delest pin as output
+ pinMode(unballast_relay2, OUTPUT);     // Set the Delest pin as output
+ pinMode(SCRLED,  OUTPUT);              // Set the LED pin as output
  pinMode(limiteLED, OUTPUT);            // Set the limite pin LED as output
  pinMode(zeroCrossPin, INPUT_PULLUP);   // set the zerocross pin as in with pullup for interrupt
  //pinMode(pin_winter, INPUT); 
@@ -372,7 +371,6 @@ unballasting_time= millis(); // set up timer unballasting
     ,  ARDUINO_RUNNING_CORE);
 
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
-   
   
  
 }                
@@ -395,8 +393,6 @@ void loop()
 /*---------------------- Tasks UI ------------------*/
 /*--------------------------------------------------*/
 //
-
-
 // 
 // Power calculation using ADC value ==> rPower
 //____________________________________________________________________________________________
@@ -408,16 +404,12 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
   for (;;) // A Task shall never return or exit.
   {
-    
   
   unsigned int numberOfSamples = 0;
   sumV = 0;
   //sumI = 0;
   //sumP = 0;
   unsigned int time_now_second = millis()/1000;      // timer in second
-
-
-
 
 
   
@@ -477,16 +469,11 @@ void TaskUI(void *pvParameters)  // This is the task UI.
         wait_2msec=false ; 
       }
 
-  
  }      // end while sur zero_crossCount
 
-
-
 // Power calculation
-
   
-  
-    rPower = Power_wifi *1000 ; // Power wifi received by Wifi
+    rPower = Power_wifi * 1000 ; // Power wifi received by Wifi
   
 	
 //____________________________________________________________________________________________
@@ -517,7 +504,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   else { digitalWrite(limiteLED, LOW); }
   
 
-dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
+dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to real phase between interruption and mains
 
 // Relay command. The relay 1 is ON as soon as possible, before regulation with SCR
 //  
@@ -548,7 +535,7 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           memo_temps = time_now_second;
 
 
-         Serial.print("P= ");
+          Serial.print("P= ");
           Serial.print(rPower/1000);   
           Serial.print("w ");
     
@@ -613,13 +600,13 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     (void) pvParameters;
 
 
-  delay(5); // delai obligatoire pour permettre au setup de finir  
+  delay(5); //  
   WiFi.begin(ssid, password, channel);
   WiFi.mode(WIFI_STA); // ESP-32 as client
   WiFi.config(ipCliente, ipServidor, Subnet);
   Udp.begin(localPort);
-  delay(5); // delai obligatoire sinon blocage
-  Serial.println("fin init UDP client");
+  delay(5); //
+  Serial.println("end init UDP client");
 
     for (;;) // A Task shall never return or exit.
     {
@@ -632,8 +619,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               WiFi.mode(WIFI_STA); // ESP-32 as client
               WiFi.config(ipCliente, ipServidor, Subnet);
               Udp.begin(localPort);
-              delay(5); // delai obligatoire sinon blocage
-              Serial.println("fin init UDP client");
+              delay(5); // 
+              Serial.println("end init UDP client");
               time_udp_now= millis();
              
               
