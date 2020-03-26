@@ -152,7 +152,7 @@ float ADC_V_0V = 467 ;
 int treshloldP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 int Treshlold_relay1 = 75000;          // Threshold to start relay 1 MUST BE higher than treshloldP
 
-unsigned long unballasting_timeout = 10000; // timeout to avoid relay command too often 10 secondes
+unsigned long unballasting_timeout = 30000; // timeout to avoid relay command too often 30 secondes
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
@@ -339,7 +339,7 @@ unballasting_time= millis(); // set up timer unballasting
  digitalWrite(unballast_relay1, LOW);    // unballast relay 1 init
  digitalWrite(unballast_relay2, LOW);    // unballast relay 2 init
 
- 
+ rPower = 0;
    
  // init timer 
   timer = timerBegin(0, 80, true);
