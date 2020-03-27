@@ -150,18 +150,12 @@ float ADC_V_0V = 467 ;
 // Threshold value for power adjustment: 
 
 int treshloldP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
-int Treshlold_relay1 = 75000;          // Threshold to start relay 1 MUST BE higher than treshloldP
+//int Treshlold_relay1 = 75000;          // Threshold to start relay 1 MUST BE higher than treshloldP
 
 unsigned long unballasting_timeout = 30000; // timeout to avoid relay command too often 30 secondes
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
-
-// reaction rate coefficient
-// reaction_coeff define the DIM value to be added or substract
-// If too small the control loop is too slow
-// if too large the control loop is unstable
-// reaction_coeff ~ (control loop resistance power )/4  Watt
 
 unsigned int reaction_coeff  = 90; 
 
@@ -187,16 +181,12 @@ byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff
 
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
-
-//byte reset_wifi = 0;			// counter for wifi reset due to time to leave
-//byte wifi_wait = 0;       // 
-        
+       
 
 // wifi UDP
 
 byte ack = 0; // byte received ack from client
-//byte send_UDP = 0 ; //
-//byte send_UDP_max = 200; // send UDP data each 200*10 msec
+
 volatile bool send_UDP_wifi = false;
 
 unsigned long time_udp_now;
@@ -269,7 +259,6 @@ void IRAM_ATTR zero_cross_detect() {   //
 }  
 
 
-
 /* _________________________________________________________________
  *
  * IT timer task
@@ -282,8 +271,7 @@ void IRAM_ATTR onTimer() {
   
    if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
-
-      
+   
      
      if(i>dimphase) {            // i is a counter which is used to SCR command delay 
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
@@ -511,12 +499,12 @@ dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to 
   if (long (millis() - unballasting_time > unballasting_timeout))
    {
     
-     if (rPower < Treshlold_relay1)  // rPower is lower than minimum Relay 1 must be ON
+     if (dim < 128)  // if dim < 128 Relay 1 must be ON
       {     
               digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
               relay_1 = true;       
         } 
-      // Rpower is more than Treshlold_relay1
+      // dim = 128
         else  
         {
           digitalWrite (unballast_relay1, LOW) ;
