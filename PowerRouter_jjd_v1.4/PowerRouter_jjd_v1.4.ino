@@ -117,6 +117,10 @@ version 1.3 march 2020
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
+//oled
+//#include <wire.h>
+#include "SSD1306.h"
+SSD1306Wire display(0x3c, SDA, SCL);   // ADDRESS, SDA, SCL
 
 // initialization wifi
 
@@ -330,15 +334,32 @@ unballasting_time= millis(); // set up timer unballasting
 
 // USB init
  Serial.begin(115200);
+
+
+ //init OLED
+display.init();
+display.flipScreenVertically();
+display.setFont(ArialMT_Plain_24);
+display.drawString(0, 0, "Ready");
+display.display();
+
+
  Serial.println ();
 
  Serial.println(); 
  Serial.println("Ready ...");
+ display.drawString(0, 0, "Ready");
+ display.display();
+
  Serial.println ();
  delay(500); 
  if( VERBOSE == true ) Serial.print("  Pu (W) || dimstep |  dim || ");
  else Serial.println("GO"); 
  Serial.println();
+
+  display.setFont(ArialMT_Plain_24);
+   display.clear();
+
 
  digitalWrite(unballast_relay1, LOW);    // unballast relay 1 init
  digitalWrite(unballast_relay2, LOW);    // unballast relay 2 init
@@ -610,10 +631,12 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           Serial.print("P= ");
           Serial.print(rPower/1000);   
           Serial.print("w");
-    
           Serial.print("dim: ");
           Serial.println(dim);
-        
+
+          display.drawString(0, 0, String(Power_wifi) + "||" + String (dim));
+          display.display();
+
           }
 
           // 
@@ -711,12 +734,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
           sprintf(mystring_power_wifi, "%g", Power_wifi); 
 
           Udp.print (mystring_power_wifi) ; 
-         
-
-         // Serial.print ("power_wifi");
-         // Serial.println (Power_wifi);
-
- 
+       
       		Udp.endPacket();  // Close communication
         
       		// read acknowledge from client
