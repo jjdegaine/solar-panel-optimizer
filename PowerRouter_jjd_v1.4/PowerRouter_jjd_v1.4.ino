@@ -358,7 +358,7 @@ display.display();
  Serial.println();
 
   display.setFont(ArialMT_Plain_24);
-   display.clear();
+  display.clear();
 
 
  digitalWrite(unballast_relay1, LOW);    // unballast relay 1 init
@@ -373,7 +373,8 @@ display.display();
   Udp.begin(localPort);
   Serial.println("init access point UDP OK");
 
-
+  display.drawString(0, 22, "UDP OK");
+  display.display();
   
  // init timer 
   timer = timerBegin(0, 80, true);
@@ -625,6 +626,7 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 
   if( time_now_second >= memo_temps +2 ) {
 
+    if ( (CALIBRATION ==false) || (VERBOSE == false)) {
           memo_temps = time_now_second;
 
 
@@ -634,10 +636,14 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           Serial.print("dim: ");
           Serial.println(dim);
 
-          display.drawString(0, 0, String(Power_wifi) + "||" + String (dim));
-          display.display();
+          display.setColor(BLACK);        // clear first line
+          display.fillRect(0, 0, 128, 21);
+          display.setColor(WHITE); 
 
-          }
+          display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
+          display.display();
+        }
+      }
 
           // 
       
@@ -648,6 +654,12 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           Serial.print("  |  ");
           Serial.print(rPower/1000);
           Serial.println();
+
+          display.clear();
+          display.drawString(0, 0, String(int(V)) + "||" + String(int(I/1000))) ;
+          display.drawString(0, 22, String(int(Power_wifi)));
+          display.display();
+
         }
         if( VERBOSE == true ) {
           Serial.print(rPower/1000);
@@ -674,11 +686,12 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 
 // update switches winter, verbose, calibration
 
-        WINTER = digitalRead (pin_winter);
-        
-        VERBOSE = digitalRead (pin_verbose);
-        
-        CALIBRATION = digitalRead (pin_calibration);
+       // WINTER = digitalRead (pin_winter);
+        WINTER= false;
+       // VERBOSE = digitalRead (pin_verbose);
+        VERBOSE = false;
+        //CALIBRATION = digitalRead (pin_calibration);
+        CALIBRATION =false;
 
   } 
   
@@ -707,7 +720,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   	   }
 
        // logic: we want wifi if not (calibration or verbose or winter)
-      if ((CALIBRATION == true) || (VERBOSE == true) || (WINTER == false))
+      if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
       
       {
  
@@ -716,13 +729,27 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               if (long (millis() - time_udp_now > time_udp_limit))             // comparing durations
               {                    
               Serial.println ("time to leave UDP");
-            
+
+              display.setColor(BLACK);        // clear second  line
+              display.fillRect(0, 22, 128, 21);
+              display.setColor(WHITE); 
+              display.drawString(0, 22, "TIME UDP");
+              display.display();
+
+
               WiFi.disconnect();
               WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
               delay(500); //  
               Udp.begin(localPort);
-              Serial.println("init access point UDP OK");
               delay(5000);
+              Serial.println("init access point UDP OK");
+
+              display.setColor(BLACK);        // clear second  line
+              display.fillRect(0, 22, 128, 21);
+              display.setColor(WHITE); 
+              display.drawString(0, 22, "UDP OK");
+              display.display();
+              
               time_udp_now= millis(); // reset time to leave
              
               
