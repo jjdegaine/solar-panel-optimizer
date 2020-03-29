@@ -140,9 +140,9 @@ IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
 
 // Information to be displayed
 
-bool CALIBRATION = true;   // to calibrate Vcalibration and Icalibration
-bool VERBOSE = false ;       // to verify dim and dimstep 
-bool WINTER = false	;		 	  // winter -> no wifi summer wifi
+bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
+bool VERBOSE = true ;       // to verify dim and dimstep 
+bool WINTER = true	;		 	  // winter -> no wifi summer wifi
 
 
 float Vcalibration     = 0.90;   // to obtain the mains exact value 
@@ -637,7 +637,7 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
           Serial.println(dim);
 
           display.setColor(BLACK);        // clear first line
-          display.fillRect(0, 0, 128, 21);
+          display.fillRect(0, 0, 128, 22);
           display.setColor(WHITE); 
 
           display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
@@ -687,11 +687,11 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 // update switches winter, verbose, calibration
 
        // WINTER = digitalRead (pin_winter);
-        WINTER= false;
+        WINTER= true;
        // VERBOSE = digitalRead (pin_verbose);
-        VERBOSE = false;
+        VERBOSE = true;
         //CALIBRATION = digitalRead (pin_calibration);
-        CALIBRATION =false;
+        CALIBRATION = false;
 
   } 
   
@@ -731,7 +731,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               Serial.println ("time to leave UDP");
 
               display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 21);
+              display.fillRect(0, 22, 128, 22);
               display.setColor(WHITE); 
               display.drawString(0, 22, "TIME UDP");
               display.display();
@@ -745,7 +745,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               Serial.println("init access point UDP OK");
 
               display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 21);
+              display.fillRect(0, 22, 128, 22);
               display.setColor(WHITE); 
               display.drawString(0, 22, "UDP OK");
               display.display();
