@@ -149,8 +149,13 @@ float ADC_V_0V = 467 ;
 
 // Threshold value for power adjustment: 
 
+<<<<<<< HEAD
+int treshloldP     = 100000;           // Threshold to start power adjustment 1 = 1mW ; 
+int Treshlold_relay1 = 110000;          // Threshold to start relay 1 MUST BE higher than treshloldP
+=======
 int treshloldP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 //int Treshlold_relay1 = 75000;          // Threshold to start relay 1 MUST BE higher than treshloldP
+>>>>>>> 8281ab2fc6a00002364bda2bf31e29b4898df0d2
 
 unsigned long unballasting_timeout = 30000; // timeout to avoid relay command too often 30 secondes
 unsigned long unballasting_time;            // timer for unballasting 
