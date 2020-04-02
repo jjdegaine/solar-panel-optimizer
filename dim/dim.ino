@@ -555,7 +555,7 @@ if ( dim >= 128) {
   dim =0;
   }
 else{
-dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
+dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
  dim++ ;
           display.setColor(BLACK);        // clear first line
           display.fillRect(0, 0, 128, 22);
