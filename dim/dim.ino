@@ -563,6 +563,8 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 
           display.drawString(0, 0, String (dim));
           display.display();
+          Serial.println (dim);
+          
  delay (10000) ; // 10 secondes
 }
 // Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
