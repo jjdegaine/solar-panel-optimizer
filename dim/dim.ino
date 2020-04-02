@@ -117,7 +117,7 @@ Test to increased dim from 1 to 128
 //oled
 //#include <wire.h>
 #include "SSD1306.h"
-SSD1306Wire display(0x3c, SDA, SCL);   // ADDRESS, SDA, SCL
+//SSD1306Wire display(0x3c, SDA, SCL);   // ADDRESS, SDA, SCL
 
 // initialization wifi
 
@@ -335,28 +335,28 @@ void setup() {                  // Begin setup
 
 
  //init OLED
-display.init();
-display.flipScreenVertically();
-display.setFont(ArialMT_Plain_24);
-display.drawString(0, 0, "Ready");
-display.display();
+// display.init();
+// display.flipScreenVertically();
+// display.setFont(ArialMT_Plain_24);
+// display.drawString(0, 0, "Ready");
+// display.display();
 
 
  Serial.println ();
 
  Serial.println(); 
  Serial.println("Ready ...");
- display.drawString(0, 0, "Ready");
- display.display();
+ //display.drawString(0, 0, "Ready");
+ //display.display();
 
- Serial.println ();
+ Serial.println (dim);
  delay(500); 
 //  if( VERBOSE == true ) Serial.print("  Pu (W) || dimstep |  dim || ");
 //  else Serial.println("GO"); 
 //  Serial.println();
 
-  display.setFont(ArialMT_Plain_24);
-  display.clear();
+ // display.setFont(ArialMT_Plain_24);
+  //display.clear();
 
 
 //  digitalWrite(unballast_relay1, LOW);    // unballast relay 1 init
@@ -557,12 +557,12 @@ if ( dim >= 128) {
 else{
 dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
  dim++ ;
-          display.setColor(BLACK);        // clear first line
-          display.fillRect(0, 0, 128, 22);
-          display.setColor(WHITE); 
+          // display.setColor(BLACK);        // clear first line
+          // display.fillRect(0, 0, 128, 22);
+          // display.setColor(WHITE); 
 
-          display.drawString(0, 0, String (dim));
-          display.display();
+          // display.drawString(0, 0, String (dim));
+          // display.display();
           Serial.println (dim);
           
  delay (10000) ; // 10 secondes
