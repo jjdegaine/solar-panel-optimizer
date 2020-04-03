@@ -298,7 +298,7 @@ dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to re
           display.display();
           Serial.println (dim);
           
- delay (5000) ; // 10 secondes
+ delay (1000) ; // 1 secondes
 }
 
   }
