@@ -530,7 +530,6 @@ dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to 
           Serial.print("P= ");
           Serial.print(rPower/1000);   
           Serial.print("w ");
-    
           Serial.print("dim: ");
           Serial.println(dim);
 
@@ -558,11 +557,8 @@ dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to 
           Serial.print (relay_2);
           Serial.print(" ||  ");
           Serial.print (unballasting_counter);
-           Serial.print(" ||  ");
-           Serial.print (millis() - unballasting_time);
-
-       
-       
+          Serial.print(" ||  ");
+          Serial.print (millis() - unballasting_time);     
           Serial.println();
 
         }
@@ -631,10 +627,11 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         Udp.endPacket();    
 
         time_udp_now= millis();
-        //Serial.print ("powerwifi");
-        //Serial.println (Power_wifi);
-       
-       delay(5);
+        while (long (time_udp_now +5 > millis () ) 
+        {
+            // do nothing
+        }      
+       //delay(5);
       }		
                
 
