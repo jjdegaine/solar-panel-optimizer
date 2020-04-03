@@ -200,7 +200,7 @@ byte wifi_wait = 0;       //
 
 byte ack = 0; // byte received ack from client
 byte send_UDP = 0 ; //
-byte send_UDP_max = 200; // send UDP data each 200*10 msec
+byte send_UDP_max = 10; // send UDP data each 200*10 msec
 volatile bool send_UDP_wifi = false;
 
 unsigned long time_udp_now;
