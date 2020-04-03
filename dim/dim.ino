@@ -71,19 +71,13 @@ byte dim = 0; // dim increased 0 to  128
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
 
-// byte reset_wifi = 0;			// counter for wifi reset due to time to leave
 byte wifi_wait = 0;       // 
         
 
-// wifi UDP
-
-// byte ack = 0; // byte received ack from client
-// byte send_UDP = 0 ; //
-// byte send_UDP_max = 200; // send UDP data each 200*10 msec
  volatile bool send_UDP_wifi = false;
 
-// unsigned long time_udp_now;
-// unsigned long time_udp_limit = 5000 ; // time to leave UDP 5 sec
+unsigned long time_now;
+unsigned long time_limit = 1000 ; // time 1 sec
 
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
@@ -97,13 +91,6 @@ volatile bool wait_2msec ;
 
 
 
-// Voltage and current measurement  :
-
-// int readV, memo_readV, readI;   // voltage and current withn ADC (0 à 1023 bits)
-// float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
-// float Power_wifi;
-//long Power_wifi ;                   // power to be sent by wifi
-// char mystring_power_wifi [50] ;       // string to be transmitted by wifi
 byte zero_crossCount = 0;          // half period counter
     
 // other value :
@@ -146,12 +133,6 @@ void IRAM_ATTR zero_cross_detect() {   //
      first_it_zero_cross = true ;  // flag to start a delay 2msec
      digitalWrite(SCRLED, LOW); //reset SCR LED
      
-    //   send_UDP ++ ;
-    //  if (send_UDP > send_UDP_max)
-    //  {
-    //    send_UDP=0; // reset counter send_UDP
-    //    send_UDP_wifi = true ; // ready to send UDP 
-    //  }
    
 }  
 
@@ -208,7 +189,7 @@ void setup() {                  // Begin setup
  pinMode(pin_verbose, INPUT);    
  pinMode(pin_calibration, INPUT); 
 
-//unballasting_time= millis(); // set up timer unballasting
+time_now= millis(); // set up timer 
 
 
 // USB init
@@ -283,22 +264,25 @@ void loop()
         wait_2msec=false ; 
       }
 
-  
-if ( dim >= 128) { 
-  dim =0;
-  }
-else{
-dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
- dim++ ;
-          display.setColor(BLACK);        // clear first line
-          display.fillRect(0, 0, 128, 22);
-          display.setColor(WHITE); 
+if (long (millis() - time_now > time_limit)) 
+{
 
-          display.drawString(0, 0, String (dim));
-          display.display();
-          Serial.println (dim);
-          
- delay (1000) ; // 1 secondes
+    if ( dim >= 128) { 
+      dim =0;
+      }
+    else{
+    dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
+    dim++ ;
+              display.setColor(BLACK);        // clear first line
+              display.fillRect(0, 0, 128, 22);
+              display.setColor(WHITE); 
+
+              display.drawString(0, 0, String (dim));
+              display.display();
+              Serial.println (dim);
+      }        
+  time_now= millis() ;
+
 }
 
   }
