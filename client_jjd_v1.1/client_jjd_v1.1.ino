@@ -161,7 +161,9 @@ unsigned long unballasting_time;            // timer for unballasting
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
 
-unsigned int reaction_coeff  = 90; 
+//unsigned int reaction_coeff  = 90; 
+unsigned int reaction_coeff  = 180;
+
 
 // Input and ouput of the ESP32
 
@@ -522,7 +524,7 @@ dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to 
   // Display each 2 seconds
 
 
-  if( time_now_second >= memo_temps +2 ) {
+  if( time_now_second >= memo_temps +1 ) {
 
           memo_temps = time_now_second;
 
@@ -531,7 +533,9 @@ dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to 
           Serial.print(rPower/1000);   
           Serial.print("w ");
           Serial.print("dim: ");
-          Serial.println(dim);
+          Serial.print(dim);
+          Serial.print("dimstep: ");
+          Serial.println(dimstep);
 
          }  // 
       
@@ -627,7 +631,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         Udp.endPacket();    
 
         time_udp_now= millis();
-        while (long (time_udp_now +5 > millis () ) )
+        while (long (time_udp_now +1 > millis () ) )
         {
         do_noting=true;    // do nothing
         }
