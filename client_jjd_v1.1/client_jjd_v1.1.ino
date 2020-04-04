@@ -205,7 +205,7 @@ volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
 volatile bool wait_2msec ;
-
+volatile bool do_noting ;
 
 
 // Voltage and current measurement  :
@@ -629,8 +629,9 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         time_udp_now= millis();
         while (long (time_udp_now +5 > millis () ) )
         {
-            // do nothing
-        }      
+        do_noting=true    // do nothing
+        }
+            
        //delay(5);
       }		
                
