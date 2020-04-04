@@ -629,7 +629,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         time_udp_now= millis();
         while (long (time_udp_now +5 > millis () ) )
         {
-        do_noting=true    // do nothing
+        do_noting=true;    // do nothing
         }
             
        //delay(5);
