@@ -631,10 +631,10 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         Udp.endPacket();    
 
         time_udp_now= millis();
-        while (long (time_udp_now +1 > millis () ) )
-        {
-        do_noting=true;    // do nothing
-        }
+       // while (long (time_udp_now +1 > millis () ) )
+        // {
+        // do_noting=true;    // do nothing
+        // }
             
        //delay(5);
       }		
