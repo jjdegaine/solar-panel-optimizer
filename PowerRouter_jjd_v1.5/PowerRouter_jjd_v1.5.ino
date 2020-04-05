@@ -216,7 +216,9 @@ volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
-volatile bool wait_2msec ;
+volatile bool wait_2msec ; // flag no IT on falling edge 
+volatile bool TTL = false ; // time to leave UDP
+volatile bool UDP_OK = false; 
 
 
 
@@ -307,7 +309,7 @@ void IRAM_ATTR onTimer() {
      } 
     else {  
       i++; 
-      }           // If the dimming value has not been reached, incriment our counter
+      }           // If the dimming value has not been reached, incriment the counter
      
  }      // End zero_cross check
 
@@ -689,11 +691,31 @@ dimphase = dim+ dimthreshold; // Value to used by the timer interrupt due to rea
 // update switches winter, verbose, calibration
 
        WINTER = digitalRead (pin_winter);
-        // WINTER= true;
+      
        VERBOSE = digitalRead (pin_verbose);
-        // VERBOSE = true;
+     
         CALIBRATION = digitalRead (pin_calibration);
-        // CALIBRATION = false;
+      
+
+        // display WIFI information
+        if (TTL == true)
+              {
+              display.setColor(BLACK);        // clear second  line
+              display.fillRect(0, 22, 128, 22);
+              display.setColor(WHITE); 
+              display.drawString(0, 22, "TIME UDP");
+              display.display();
+              TTL= false ;
+              }
+        if ( UDP_OK == true) 
+            {
+              display.setColor(BLACK);        // clear second  line
+              display.fillRect(0, 22, 128, 22);
+              display.setColor(WHITE); 
+              display.drawString(0, 22, "UDP OK");
+              display.display();
+            UDP_OK = false ;
+            }
 
   } 
   
@@ -730,28 +752,17 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
                    
               if (long (millis() - time_udp_now > time_udp_limit))             // comparing durations
               {                    
-              Serial.println ("time to leave UDP");
-
-              // display.setColor(BLACK);        // clear second  line
-              // display.fillRect(0, 22, 128, 22);
-              // display.setColor(WHITE); 
-              // display.drawString(0, 22, "TIME UDP");
-              // display.display();
-
+              TTL = true ;
 
               WiFi.disconnect();
               WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
               delay(500); //  
               Udp.begin(localPort);
               delay(5000);
-              Serial.println("init access point UDP OK");
 
-              // display.setColor(BLACK);        // clear second  line
-              // display.fillRect(0, 22, 128, 22);
-              // display.setColor(WHITE); 
-              // display.drawString(0, 22, "UDP OK");
-              // display.display();
-              
+              Serial.println("init access point UDP OK");
+              UDP_OK = true ;
+            
               time_udp_now= millis(); // reset time to leave
              
               
@@ -771,7 +782,6 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               if (packetSize) 
             		{
                     int len = Udp.read(&ack, 1);
-                   
                     time_udp_now= millis(); // reset time to leave
             		} 
        }
