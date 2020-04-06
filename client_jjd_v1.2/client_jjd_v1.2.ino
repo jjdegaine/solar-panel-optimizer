@@ -152,19 +152,17 @@ float ADC_V_0V = 467 ;
 // Threshold value for power adjustment: 
 
 
-// int treshloldP     = 100000;           // Threshold to start power adjustment 1 = 1mW ; 
-int Treshlold_relay1 = 110000;          // Threshold to start relay 1 MUST BE higher than treshloldP
+int Treshlold_relay1 = 110000;          // Threshold to stop relay
 int treshloldP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
-//int Treshlold_relay1 = 75000;          // Threshold to start relay 1 MUST BE higher than treshloldP
 
 
-unsigned long unballasting_timeout = 30000; // timeout to avoid relay command too often 30 secondes
+
+unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
 
-//unsigned int reaction_coeff  = 90; 
-unsigned int reaction_coeff  = 180;
+unsigned int reaction_coeff  = 180; 
 
 
 // Input and ouput of the ESP32
@@ -506,21 +504,22 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 
 // Relay command. The relay 1 is ON as soon as possible, before regulation with SCR
 //  
-  if (long (millis() - unballasting_time > unballasting_timeout))
-   {
-    
-     if (dim < 128)  // if dim < 128 Relay 1 must be ON
+
+if (dim < 128)  // if dim < 128 Relay 1 must be ON; immediate action
       {     
               digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
               relay_1 = true;       
         } 
-      // dim = 128
-        else  
-        {
-          digitalWrite (unballast_relay1, LOW) ;
-          relay_1 = false;
-        }
-      unballasting_time= millis();
+  else {        // dim =128  
+
+    if (long (millis() - unballasting_time > unballasting_timeout))
+
+    {         
+               digitalWrite (unballast_relay1, LOW) ;
+              relay_1 = false; 
+              unballasting_time= millis();     
+     } 
+      
   }
 
  
@@ -528,7 +527,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
   // Display each 2 seconds
 
 
-  if( time_now_second >= memo_temps +1 ) {
+  if( time_now_second - memo_temps >= 2 ) {
 
           memo_temps = time_now_second;
 
