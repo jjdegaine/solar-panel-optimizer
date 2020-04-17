@@ -230,7 +230,6 @@ volatile bool UDP_OK = false;
 int readV, memo_readV, readI;   // voltage and current withn ADC (0 à 1023 bits)
 float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
 float Power_wifi;
-//long Power_wifi ;                   // power to be sent by wifi
 char mystring_power_wifi [50] ;       // string to be transmitted by wifi
 byte zero_crossCount = 0;          // half period counter
     
@@ -340,7 +339,7 @@ unballasting_time= millis(); // set up timer unballasting
 
 
 // USB init
- Serial.begin(115200);
+// Serial.begin(115200);
 
 
  //init OLED
@@ -351,18 +350,18 @@ display.drawString(0, 0, "Ready");
 display.display();
 
 
- Serial.println ();
+//  Serial.println ();
 
- Serial.println(); 
- Serial.println("Ready ...");
+//  Serial.println(); 
+//  Serial.println("Ready ...");
  display.drawString(0, 0, "Ready");
  display.display();
 
- Serial.println ();
+//  Serial.println ();
  delay(500); 
- if( VERBOSE == true ) Serial.print("  Pu (W) || dimstep |  dim || ");
- else Serial.println("GO"); 
- Serial.println();
+//  if( VERBOSE == true ) Serial.print("  Pu (W) || dimstep |  dim || ");
+//  else Serial.println("GO"); 
+//  Serial.println();
 
   display.setFont(ArialMT_Plain_24);
   display.clear();
@@ -378,7 +377,7 @@ display.display();
   WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
   delay(500); // Delay to wait Wifi init 
   Udp.begin(localPort);
-  Serial.println("init access point UDP OK");
+  // Serial.println("init access point UDP OK");
 
   display.drawString(0, 22, "UDP OK");
   display.display();
@@ -638,13 +637,13 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           memo_temps = time_now_second;
 
 
-          Serial.print("P= ");
-          Serial.print(rPower/1000);   
-          Serial.print("w");
-          Serial.print("dim: ");
-          Serial.print(dim);
-          Serial.print ("dimphase ");
-          Serial.println (dimphase) ;
+          // Serial.print("P= ");
+          // Serial.print(rPower/1000);   
+          // Serial.print("w");
+          // Serial.print("dim: ");
+          // Serial.print(dim);
+          // Serial.print ("dimphase ");
+          // Serial.println (dimphase) ;
 
 
 
@@ -660,12 +659,12 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           // 
       
         if( CALIBRATION == true ) {
-      	  Serial.print(V);
-      	  Serial.print("  |  ");
-          Serial.print(I/1000);
-          Serial.print("  |  ");
-          Serial.print(rPower/1000);
-          Serial.println();
+      	  // Serial.print(V);
+      	  // Serial.print("  |  ");
+          // Serial.print(I/1000);
+          // Serial.print("  |  ");
+          // Serial.print(rPower/1000);
+          // Serial.println();
 
           display.clear();
           display.drawString(0, 0, String(int(V)) + "||" + String(int(I/1000))) ;
@@ -674,23 +673,23 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 
         }
         if( VERBOSE == true ) {
-          Serial.print(rPower/1000);
-          Serial.print("  ||     ");
-          Serial.print(dimstep);
-          Serial.print("  ||  ");
-          Serial.print(dim);
-          Serial.print(" ||  ");
-          Serial.print(dimphase);
-          Serial.print(" ||  ");
-          Serial.print (relay_1);
-          Serial.print(" ||  ");
-          Serial.print (relay_2);
-          Serial.print(" ||  ");
-          Serial.print (unballasting_counter);
-          Serial.print(" ||  ");
-          Serial.print (millis() - unballasting_time);
+          // Serial.print(rPower/1000);
+          // Serial.print("  ||     ");
+          // Serial.print(dimstep);
+          // Serial.print("  ||  ");
+          // Serial.print(dim);
+          // Serial.print(" ||  ");
+          // Serial.print(dimphase);
+          // Serial.print(" ||  ");
+          // Serial.print (relay_1);
+          // Serial.print(" ||  ");
+          // Serial.print (relay_2);
+          // Serial.print(" ||  ");
+          // Serial.print (unballasting_counter);
+          // Serial.print(" ||  ");
+          // Serial.print (millis() - unballasting_time);
        
-          Serial.println();
+          // Serial.println();
 
         }
   
@@ -740,7 +739,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     (void) pvParameters;
     //String msg;
     time_udp_now= millis(); 
-    Serial.println ("start task UDP");
+    // Serial.println ("start task UDP");
     
 
     for (;;) // A Task shall never return or exit.
@@ -768,7 +767,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               Udp.begin(localPort);
               delay(5000);
 
-              Serial.println("init access point UDP OK");
+              // Serial.println("init access point UDP OK");
               UDP_OK = true ;
             
               time_udp_now= millis(); // reset time to leave
