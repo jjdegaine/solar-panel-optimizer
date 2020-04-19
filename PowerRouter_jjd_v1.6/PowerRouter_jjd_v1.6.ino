@@ -100,7 +100,7 @@ PIN description
 version 1.0 january 2020
 version 1.1 february 2020 data sent by wifi using IT_sec
 version 1.2 february 2020 relay added. calibration V I OK 
-version 1.3 march 2020
+version 1.3 march 2020 imporvement....
 version 1.4 march 2020 adding oled
 version 1.5 april 2020 suppress oled message on wifi task (only one task can display)
 version 1.6 april 2020 modify linearity of dim using tab
@@ -330,7 +330,7 @@ void setup() {                  // Begin setup
  pinMode(unballast_relay2, OUTPUT);    // Set the Delest pin as output
  pinMode(SCRLED,  OUTPUT);            // Set the LED pin as output
  pinMode(limiteLED, OUTPUT);            // Set the limite pin LED as output
- pinMode(zeroCrossPin, INPUT_PULLUP);   // set the zerocross pin as in with pullup for interrupt
+ pinMode(zeroCrossPin, INPUT_PULLUP);   // set the zerocross pin with pullup for interrupt
  pinMode(pin_winter, INPUT); 
  pinMode(pin_verbose, INPUT);    
  pinMode(pin_calibration, INPUT); 
@@ -339,7 +339,7 @@ unballasting_time= millis(); // set up timer unballasting
 
 
 // USB init
-// Serial.begin(115200);
+Serial.begin(115200);
 
 
  //init OLED
@@ -350,18 +350,18 @@ display.drawString(0, 0, "Ready");
 display.display();
 
 
-//  Serial.println ();
+ Serial.println ();
 
-//  Serial.println(); 
-//  Serial.println("Ready ...");
+ Serial.println(); 
+ Serial.println("Ready ...");
  display.drawString(0, 0, "Ready");
  display.display();
 
-//  Serial.println ();
+ Serial.println ();
  delay(500); 
-//  if( VERBOSE == true ) Serial.print("  Pu (W) || dimstep |  dim || ");
-//  else Serial.println("GO"); 
-//  Serial.println();
+ if( VERBOSE == true ) Serial.print("  Pu (W) || dimstep |  dim || ");
+ else Serial.println("GO"); 
+ Serial.println();
 
   display.setFont(ArialMT_Plain_24);
   display.clear();
@@ -377,7 +377,7 @@ display.display();
   WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
   delay(500); // Delay to wait Wifi init 
   Udp.begin(localPort);
-  // Serial.println("init access point UDP OK");
+  Serial.println("init access point UDP OK");
 
   display.drawString(0, 22, "UDP OK");
   display.display();
@@ -460,9 +460,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 
 
-  
-// à chaque passage à zéro de la tension du secteur réinitialisation périodique du compteur de 
-// passage à zéro zero_crossCount lorque le nombre de cycles de mesures totalCount est atteint 
+// Count 20 zero cross to calculate U / I / P
 
 
  if( zero_crossCount >= totalCount ) { zero_crossCount = 0; }
@@ -637,13 +635,13 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           memo_temps = time_now_second;
 
 
-          // Serial.print("P= ");
-          // Serial.print(rPower/1000);   
-          // Serial.print("w");
-          // Serial.print("dim: ");
-          // Serial.print(dim);
-          // Serial.print ("dimphase ");
-          // Serial.println (dimphase) ;
+          Serial.print("P= ");
+          Serial.print(rPower/1000);   
+          Serial.print("w");
+          Serial.print("dim: ");
+          Serial.print(dim);
+          Serial.print ("dimphase ");
+          Serial.println (dimphase) ;
 
 
 
@@ -659,12 +657,12 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           // 
       
         if( CALIBRATION == true ) {
-      	  // Serial.print(V);
-      	  // Serial.print("  |  ");
-          // Serial.print(I/1000);
-          // Serial.print("  |  ");
-          // Serial.print(rPower/1000);
-          // Serial.println();
+      	  Serial.print(V);
+      	  Serial.print("  |  ");
+          Serial.print(I/1000);
+          Serial.print("  |  ");
+          Serial.print(rPower/1000);
+          Serial.println();
 
           display.clear();
           display.drawString(0, 0, String(int(V)) + "||" + String(int(I/1000))) ;
@@ -673,23 +671,23 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 
         }
         if( VERBOSE == true ) {
-          // Serial.print(rPower/1000);
-          // Serial.print("  ||     ");
-          // Serial.print(dimstep);
-          // Serial.print("  ||  ");
-          // Serial.print(dim);
-          // Serial.print(" ||  ");
-          // Serial.print(dimphase);
-          // Serial.print(" ||  ");
-          // Serial.print (relay_1);
-          // Serial.print(" ||  ");
-          // Serial.print (relay_2);
-          // Serial.print(" ||  ");
-          // Serial.print (unballasting_counter);
-          // Serial.print(" ||  ");
-          // Serial.print (millis() - unballasting_time);
+          Serial.print(rPower/1000);
+          Serial.print("  ||     ");
+          Serial.print(dimstep);
+          Serial.print("  ||  ");
+          Serial.print(dim);
+          Serial.print(" ||  ");
+          Serial.print(dimphase);
+          Serial.print(" ||  ");
+          Serial.print (relay_1);
+          Serial.print(" ||  ");
+          Serial.print (relay_2);
+          Serial.print(" ||  ");
+          Serial.print (unballasting_counter);
+          Serial.print(" ||  ");
+          Serial.print (millis() - unballasting_time);
        
-          // Serial.println();
+          Serial.println();
 
         }
   
