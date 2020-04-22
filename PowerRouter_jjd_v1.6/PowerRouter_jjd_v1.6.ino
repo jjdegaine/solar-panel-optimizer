@@ -585,7 +585,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
               {
                 digitalWrite( unballast_relay2, HIGH) ; // set relay 2 
                 relay_2 =true;
-                unballasting_counter= 10 ;
+                unballasting_counter= 0 ;
                 unballasting_time = millis() ;
               }
           }     
@@ -596,10 +596,10 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
               unballasting_counter= 0 ;
               }     
         }  
-        else
-          {
-            unballasting_counter ++ ; 
-          }  
+        // else
+        //   {
+        //     unballasting_counter ++ ; 
+        //   }  
        unballasting_counter ++ ; 
       }
       // dim is more than unballasting_dim_min
