@@ -429,8 +429,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 
   
-// à chaque passage à zéro de la tension du secteur réinitialisation périodique du compteur de 
-// passage à zéro zero_crossCount lorque le nombre de cycles de mesures totalCount est atteint 
+// Count 20 zero cross to calculate U / I / P
 
 
  if( zero_crossCount >= totalCount ) { zero_crossCount = 0; }
