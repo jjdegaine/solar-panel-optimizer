@@ -577,7 +577,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           {
             if(relay_2 == true)
               {
-                unballasting_counter = 10;      // overflow
+                unballasting_counter = 0;      // overflow
                 digitalWrite(limiteLED, HIGH) ;
                 
               }
@@ -594,35 +594,41 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
               digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
               relay_1 = true;
               unballasting_counter= 0 ;
+              unballasting_time = millis() ;
               }     
-        }  
+          
         // else
         //   {
         //     unballasting_counter ++ ; 
-        //   }  
-       unballasting_counter ++ ; 
+       }  
+       // unballasting_counter ++ ; 
       }
+      //
       // dim is more than unballasting_dim_min
-      if (unballasting_counter > 0 ) // 
-      {
-        unballasting_counter -- ;
-      }
-      else  // unballasting_counter = 0
-      {
+      //
+      if (unballasting_counter > 10 ) // 
+      // {
+      //   unballasting_counter -- ;
+      // }
+      // else  // unballasting_counter = 0
+      // {
         if (relay_2 == true)
         {
           digitalWrite (unballast_relay2, LOW) ; 
           relay_2 = false;
-          unballasting_counter = 10 ;
+          unballasting_counter = 0 ;
+          unballasting_time= millis();
         }
         else
         {
           digitalWrite (unballast_relay1, LOW) ;
           relay_1 = false;
           unballasting_time= millis();
+          unballasting_counter = 0 ;
         }
+         unballasting_counter ++ ;
       }
-  }
+  
 
  
 
