@@ -163,6 +163,7 @@ unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
+byte unballasting_dim_max = 50;             // value of dim to stop relay, to be adjusted depending on resistive charge.
 
 // reaction rate coefficient
 // reaction_coeff define the DIM value to be added or substract
@@ -563,7 +564,8 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 
 // Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
 // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
-//  
+//  a thershold is added using dim_min and dim_max
+//
   if (long (millis() - unballasting_time > unballasting_timeout))
    {
     
@@ -599,29 +601,33 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           
       
        }  
+        unballasting_counter ++ ;
+      }
+      //
+      // 
+      //
+      if (dim > unballasting_dim_max) {
+        //
+        if (unballasting_counter > 10 ) // 
+        {
+          if (relay_2 == true)
+          {
+            digitalWrite (unballast_relay2, LOW) ; 
+            relay_2 = false;
+            unballasting_counter = 0 ;
+            unballasting_time= millis();
+          }
+          else
+          {
+            digitalWrite (unballast_relay1, LOW) ;
+            relay_1 = false;
+            unballasting_time= millis();
+            unballasting_counter = 0 ;
+          }
+         }
+         unballasting_counter ++ ;
+        } 
       
-      }
-      //
-      // dim is more than unballasting_dim_min
-      //
-      if (unballasting_counter > 10 ) // 
-      {
-        if (relay_2 == true)
-        {
-          digitalWrite (unballast_relay2, LOW) ; 
-          relay_2 = false;
-          unballasting_counter = 0 ;
-          unballasting_time= millis();
-        }
-        else
-        {
-          digitalWrite (unballast_relay1, LOW) ;
-          relay_1 = false;
-          unballasting_time= millis();
-          unballasting_counter = 0 ;
-        }
-      }
-      unballasting_counter ++ ;
       }
   
 
