@@ -41,8 +41,8 @@ IPAddress Subnet(255, 255, 255, 0);
 float Power_wifi;  // power to be sent by wifi
                    
 char mystring_power_wifi [50] ;       // string transmitted by wifi
-
-
+unsigned long time_udp_now;
+unsigned long time_udp_limit = 10000 ; // time to leave UDP 10 sec
 
 
 
@@ -57,6 +57,7 @@ void setup() {                  // Begin setup
   M5.begin();
   M5.Lcd.clear(BLACK);
   M5.Lcd.setCursor(0,0);
+  M5.Lcd.setTextSize(4);
   M5.Lcd.print("ready ...");
   delay(1000);
 
@@ -64,13 +65,6 @@ void setup() {                  // Begin setup
  Serial.begin(115200);
 
  
-
-
- Serial.println ();
- Serial.println(); 
- Serial.println("Ready ...");
- Serial.println ();
- delay(500);
 
 delay(5); //  
   WiFi.begin(ssid, password, channel);
@@ -84,7 +78,7 @@ delay(5); //
 // End setup
 //____________________________________________________________________________________________
 
-
+}
                               
 
 
@@ -103,7 +97,7 @@ void loop()
               M5.Lcd.clear(BLACK);
               M5.Lcd.setCursor(0,0);
               M5.Lcd.print("time to leave UDP");
-              TTL = true ;
+              
 
               WiFi.begin(ssid, password, channel);
               WiFi.mode(WIFI_STA); // ESP-32 as client
