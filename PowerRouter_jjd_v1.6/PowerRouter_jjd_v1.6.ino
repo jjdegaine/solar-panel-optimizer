@@ -354,8 +354,8 @@ display.display();
 
  Serial.println(); 
  Serial.println("Ready ...");
- display.drawString(0, 0, "Ready");
- display.display();
+ //display.drawString(0, 0, "Ready");
+ //display.display();
 
  Serial.println ();
  delay(500); 
@@ -363,7 +363,7 @@ display.display();
  else Serial.println("GO"); 
  Serial.println();
 
-  display.setFont(ArialMT_Plain_24);
+ // display.setFont(ArialMT_Plain_24);
   display.clear();
 
 
