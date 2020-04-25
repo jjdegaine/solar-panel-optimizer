@@ -163,7 +163,7 @@ unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
-byte unballasting_dim_max = 128;             // value of dim to stop relay, to be adjusted depending on resistive charge.
+byte unballasting_dim_max = 128;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SCR
 
 // reaction rate coefficient
 // reaction_coeff define the DIM value to be added or substract
