@@ -148,6 +148,8 @@ bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
 bool VERBOSE = false ;       // to verify dim and dimstep 
 bool WINTER = false	;		 	  // winter -> no wifi summer wifi
 
+bool do_nothing = false // 
+
 
 float Vcalibration     = 0.90;   // to obtain the mains exact value 
 float Icalibration     = 93;     // current in milliampères
@@ -214,6 +216,7 @@ volatile bool send_UDP_wifi = false;
 
 unsigned long time_udp_now;
 unsigned long time_udp_limit = 5000 ; // time to leave UDP 5 sec
+unsigned long timeout_now;
 
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
@@ -803,9 +806,15 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
               WiFi.disconnect();
               WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
-              delay(500); //  
+              
+              timeout_now= millis() ;
+              while ( long(millis() - timeout_now > 500 )) { do_nothing = true} // delay 500 msec
+              //delay(500); //  
               Udp.begin(localPort);
-              delay(5000);
+
+              timeout_now= millis() ;
+              while ( long(millis() - timeout_now > 5000 )) { do_nothing = true} // delay 5000 msec
+              //delay(5000);
 
               // Serial.println("init access point UDP OK");
               UDP_OK = true ;
