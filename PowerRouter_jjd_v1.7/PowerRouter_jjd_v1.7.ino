@@ -148,7 +148,7 @@ bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
 bool VERBOSE = false ;       // to verify dim and dimstep 
 bool WINTER = false	;		 	  // winter -> no wifi summer wifi
 
-bool do_nothing = false // 
+bool do_nothing = false ; // 
 
 
 float Vcalibration     = 0.90;   // to obtain the mains exact value 
@@ -808,12 +808,12 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
               
               timeout_now= millis() ;
-              while ( long(millis() - timeout_now > 500 )) { do_nothing = true; } // delay 500 msec
+              while ( long(millis() - timeout_now > 500 )) { do_nothing = true;} // delay 500 msec
               //delay(500); //  
               Udp.begin(localPort);
 
               timeout_now= millis() ;
-              while ( long(millis() - timeout_now > 5000 )) { do_nothing = true} // delay 5000 msec
+              while ( long(millis() - timeout_now > 5000 )) { do_nothing = true;} // delay 5000 msec
               //delay(5000);
 
               // Serial.println("init access point UDP OK");
