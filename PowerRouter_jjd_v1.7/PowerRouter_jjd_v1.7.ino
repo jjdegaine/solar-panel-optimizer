@@ -780,9 +780,8 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
     (void) pvParameters;
-    //String msg;
+    
     time_udp_now= millis(); 
-    // Serial.println ("start task UDP");
     
 
     for (;;) // A Task shall never return or exit.
@@ -809,12 +808,12 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               
               timeout_now= millis() ;
               while ( long(millis() - timeout_now < 500 )) { do_nothing = true;} // delay 500 msec
-              //delay(500); //  
+              //delay(500); delay is not used to avoid RTOS freeze
               Udp.begin(localPort);
 
               timeout_now= millis() ;
               while ( long(millis() - timeout_now < 5000 )) { do_nothing = true;} // delay 5000 msec
-              //delay(5000);
+              //delay(5000); delay is not used to avoid RTOS freeze
 
               // Serial.println("init access point UDP OK");
               UDP_OK = true ;
