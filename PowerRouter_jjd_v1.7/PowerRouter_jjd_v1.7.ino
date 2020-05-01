@@ -808,7 +808,6 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
               
               timeout_now= millis() ;
-              while ( long(millis() - timeout_now > 500 )) { do_nothing = true} // delay 500 msec
               //delay(500); //  
               Udp.begin(localPort);
 
