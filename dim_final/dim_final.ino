@@ -23,28 +23,6 @@ Test to increased dim from 1 to 128
 SSD1306Wire display(0x3c, SDA, SCL);   // ADDRESS, SDA, SCL
 
 
-// float Vcalibration     = 0.90;   // to obtain the mains exact value 
-// float Icalibration     = 93;     // current in milliampères
-// float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
-// byte totalCount        = 20;     // number of half perid used for measurement
-// float ADC_V_0V = 467 ;
-// float ADC_I_0A = 467 ;
-
-// Threshold value for power adjustment: 
-
-// int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
-
-// unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often 10 secondes
-// unsigned long unballasting_time;            // timer for unballasting 
-// byte unballasting_counter = 0;             // counter mains half period
-// byte unballasting_dim_min = 5;             // value of dim to start relay
-
-// reaction rate coefficient
-// reaction_coeff define the DIM value to be added or substract
-// If too small the control loop is too slow
-// if too large the control loop is unstable
-// reaction_coeff ~ (control loop resistance power )/4  Watt
-
 unsigned int reaction_coeff  = 90; 
 
 // Input and ouput of the ESP32
@@ -65,7 +43,7 @@ const byte zeroCrossPin      = 19;
  
 byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 128;              // max value to start SCR command
-//byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
+
 byte dim = 0; // dim increased 0 to  128
 
 byte dimphase = dim + dimthreshold; 
@@ -100,8 +78,6 @@ int dimstep;                    // DIM step value
 unsigned int memo_temps = 0;   
 
 
-// bool relay_1 ; // Flag relay 1
-// bool relay_2 ; // Flag relay 2
 
 // init timer IT
 hw_timer_t * timer = NULL;
