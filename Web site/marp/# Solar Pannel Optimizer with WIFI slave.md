@@ -20,9 +20,9 @@ The Goal of this WEB site is to explain why and how I create a Solar Panel Optim
 
     In the other seasons a second small pump with a waterfall and a swimming pool heater could used this excess energy.
 
-    Many thanks to my colleague Xavier, Nabil, 
+    Many thanks to my colleague Xavier, Nabil, Regis
 
-    Please note that It was my first Hardware and Software project since my Ph.D. forty years ago...
+    Please note that it was my first Hardware and Software project since my Ph.D. forty years ago...
     
     ---
 # Optimizer description
@@ -34,9 +34,11 @@ A lot of opimizer exist, commercial one and DIY project. The commercial optimize
  The solar Panel Optimizer is based on a main board ESP32-DEVKITC-32U which is compatible with arduino. The existing DIY project are based on arduino.
 
  https://mk2pvrouter.co.uk/index.html
+
  http://ptiwatt.kyna.eu/?post/2018/07/23/Fabriquer-un-power-router
+
  http://forum-photovoltaique.fr/viewtopic.php?f=18&t=38146
- ....
+ 
 
  ESP32 module embed a dual core with a dual-core32-bit and a wi-fi link. 
  One core will be used for power calculation, the second core for wi-fi link
@@ -89,9 +91,9 @@ Wi-fi
 
     The power value is transmitted each 50msec (byte send_UDP_max); 
 
-    A Time To live is used to check the WiFi activity.
+    A Time To live is used to check the WiFi activity and restart Wifi link if needed.
 
-    a small M5STACK module can be used as an remote display.
+    a small M5STACK module can be used as a remote display.
 
     
 
