@@ -1,8 +1,11 @@
 ---
-marp: true
+marp: false
 ---
 
 # Solar Pannel Optimizer with WIFI slave SCR
+
+![nomimage](power_supply.jpg)
+
 
 The Goal of this WEB site is to explain why and how I create a Solar Panel Optimzer with a WIFI slave SCR
 
@@ -65,6 +68,14 @@ Software description
     see comments on source code :-)
 
 Calibration
+
+
+```c++
+float ADC_V_0V = 467 ;
+float ADC_I_0A = 467 ;
+
+ //measure shift IT zero cross using software "dim final"  and modify value
+```
 
     measure U and I ADC 0Volt using software "...." and modify values
 
