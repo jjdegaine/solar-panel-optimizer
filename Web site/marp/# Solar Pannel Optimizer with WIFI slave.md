@@ -4,7 +4,7 @@ marp: false
 
 # Solar Pannel Optimizer with WIFI slave SCR
 
-![nomimage](power_supply.jpg)
+
 
 
 The Goal of this WEB site is to explain why and how I create a Solar Panel Optimzer with a WIFI slave SCR
@@ -15,7 +15,7 @@ The Goal of this WEB site is to explain why and how I create a Solar Panel Optim
 
     Due to mains regulation I realized that the excess energy must not be sent to grid. 
     
-   IT will be the case in winter (no swimming pool), in spring or autum when the swimming pump is connected only 3 or 4 hours per day.
+   It will be the case in winter (no swimming pool), in spring or autum when the swimming pump is connected only 3 or 4 hours per day.
 
     May be also in summer when the pump is connected 6 or 7 hours per day.
 
@@ -52,48 +52,76 @@ Hardware description
 
  A power supply to provide +8V and regulated +5V 
 
- An optocoupler H11A1 to detect zero cross interruption, a small shift is compensated by software (dimthreshold). the falling edge is hidden by software (first_it_zero_cross)
+![nomimage](power_supply.jpg)
+
+ An optocoupler H11A1 to detect zero cross interruption, 
+
+![nomimage](Zero cross detection.jpg)
+
+a small shift is compensated by software (dimthreshold). the falling edge is hidden by software (first_it_zero_cross)
+
+![nomimage](Zero cross detectionIT.jpg)
 
  Voltage and current measurement using ADC with a shift of 3.3V/2
 
+![nomimage](U I measurement.jpg)
+
+A command for the SSR
+
+![nomimage](SSR control.jpg)
+
+The full Schematic is available on GITHUB
+
+![nomimage](schema.jpg)
+
+
  the first version of PCB was tested and needs some modifications, the updated version was not tested.
+ 
+ the two version of GERBER for manufactoring are available on GITHUB
  
  PCB supplier: https://jlcpcb.com/
 
  BOM supplier: mainly aliexpress, and friends...
+
+ 
 
 
 Software description
 
     see comments on source code :-)
 
-Calibration
+    One software for the Server and one software for the client
 
-
-```c++
-float ADC_V_0V = 467 ;
-float ADC_I_0A = 467 ;
-
- //measure shift IT zero cross using software "dim final"  and modify value
-```
+The softawre needs some calibration depending on components used.
 
     measure U and I ADC 0Volt using software "...." and modify values
 
-    float ADC_V_0V = 467 ;
-    float ADC_I_0A = 467 ;
+```c++
+//measure shift IT zero cross using software "dim final"  and modify value
+
+float ADC_V_0V = 467 ;
+float ADC_I_0A = 467 ;
+```
+
 
     measure shift IT zero cross using software "dim final"  and modify value 
 
-    ==> dimthreshold
-
-    measure mains voltage and modify value
+```c++
+byte dimthreshold=30 ;	// dimthreshold; value to added at dim to compensate phase shift
+```
+    measure mains voltage and modify value Vcalibration. Voltage and Current can be displayed on the OLED using the switch SW2
 
     ==> Vcalibration
+```c++
+float Vcalibration     = 0.90;   // to obtain the mains exact value 
+```
 
     measure mains current using and known power charge and modify value
 
     ==> Icalibration
-
+```c++
+float Icalibration     = 93;     // current in milliampères
+```
     Test the board 
  
 Wi-fi
@@ -106,6 +134,11 @@ Wi-fi
 
     a small M5STACK module can be used as a remote display.
 
+    Wifi parameter to be modified
+```c++
+const char *ssid = "BB9ESERVER";   // for example to be changed 
+const char *password = "BB9ESERVER";  // for examplet  to be changed
+```
     
 
 
