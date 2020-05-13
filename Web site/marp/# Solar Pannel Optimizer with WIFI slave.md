@@ -12,6 +12,8 @@ The Goal of this WEB site is to explain why and how I create a Solar Panel Optim
     First of all I have decided to install solar panel to compensate the energy needed for the simming tool pump.
     
     The pump is a 1.1kW so I install 4 * 250W solar panel on a firewood storage shed roof.
+https://www.oscaro-power.com/kit-solaire-autoconsommation/706-3835-kit-solaire-autoconsommation-le-petit-kit-meilleur-prix.html#/175-nombre_de_panneau_kit-4/768-type_de_fixation-fibrociment
+
 
     Due to mains regulation I realized that the excess energy must not be sent to grid. 
     
@@ -56,19 +58,19 @@ Hardware description
 
  An optocoupler H11A1 to detect zero cross interruption, 
 
-![nomimage](Zero cross detection.jpg)
+![nomimage](Zero_cross_detection.jpg)
 
 a small shift is compensated by software (dimthreshold). the falling edge is hidden by software (first_it_zero_cross)
 
-![nomimage](Zero cross detectionIT.jpg)
+![nomimage](Zero_cross_detection_IT.jpg)
 
  Voltage and current measurement using ADC with a shift of 3.3V/2
 
-![nomimage](U I measurement.jpg)
+![nomimage](UI_measurement.jpg)
 
 A command for the SSR
 
-![nomimage](SSR control.jpg)
+![nomimage](SSR_control.jpg)
 
 The full Schematic is available on GITHUB
 
