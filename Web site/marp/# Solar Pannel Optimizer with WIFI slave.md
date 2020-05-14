@@ -12,18 +12,23 @@ The Goal of this WEB site is to explain why and how I create a Solar Panel Optim
     First of all I have decided to install solar panel to compensate the energy needed for the simming tool pump.
     
     The pump is a 1.1kW so I install 4 * 250W solar panel on a firewood storage shed roof.
+
 https://www.oscaro-power.com/kit-solaire-autoconsommation/706-3835-kit-solaire-autoconsommation-le-petit-kit-meilleur-prix.html#/175-nombre_de_panneau_kit-4/768-type_de_fixation-fibrociment
 
 
     Due to mains regulation I realized that the excess energy must not be sent to grid. 
     
-   It will be the case in winter (no swimming pool), in spring or autum when the swimming pump is connected only 3 or 4 hours per day.
+    It will be the case in winter (no swimming pool), in spring or autum when the swimming pump is connected only 3 or 4 hours per day.
 
     May be also in summer when the pump is connected 6 or 7 hours per day.
 
     In winter the excess energy could be used to heat my workshop in the basement.
 
     In the other seasons a second small pump with a waterfall and a swimming pool heater could used this excess energy.
+
+    Thereafter my home_eletric_wiring
+
+![nomimage](home_eletric_wiring.jpg)
 
     Many thanks to my colleague Xavier, Nabil, Regis
 
