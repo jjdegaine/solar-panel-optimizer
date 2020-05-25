@@ -30,7 +30,7 @@ https://www.oscaro-power.com/kit-solaire-autoconsommation/706-3835-kit-solaire-a
 
 ![nomimage](home_eletric_wiring.jpg)
 
-    Many thanks to my colleague Xavier, Nabil, Regis
+    Many thanks to my colleague Xavier, Nabil, Regis, Benjamin
 
     Please note that it was my first Hardware and Software project since my Ph.D. forty years ago...
     
