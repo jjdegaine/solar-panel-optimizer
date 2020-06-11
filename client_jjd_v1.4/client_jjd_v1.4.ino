@@ -548,7 +548,7 @@ if (rPower < Treshlold_start_relay1)  // if power < 0 Relay 1 must be ON; immedi
        {
                digitalWrite (unballast_relay1, LOW) ;
               relay_1 = false; 
-              dim = 128 ; stop SCR
+              dim = 128 ;  // stop SCR
               unballasting_time= millis();   
         }  
      } 
