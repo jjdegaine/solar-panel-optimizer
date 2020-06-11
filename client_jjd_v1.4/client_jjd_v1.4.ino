@@ -237,8 +237,8 @@ int dimstep;                    // DIM step value
 unsigned int memo_temps = 0;   
 
 
-bool relay_1 ; // Flag relay 1
-bool relay_2 ; // Flag relay 2
+bool relay_1 = false ; // Flag relay 1
+bool relay_2 = false ; // Flag relay 2
 
 // init timer IT
 hw_timer_t * timer = NULL;
@@ -548,6 +548,7 @@ if (rPower < Treshlold_start_relay1)  // if power < 0 Relay 1 must be ON; immedi
        {
                digitalWrite (unballast_relay1, LOW) ;
               relay_1 = false; 
+              dim = 128 ; stop SCR
               unballasting_time= millis();   
         }  
      } 
