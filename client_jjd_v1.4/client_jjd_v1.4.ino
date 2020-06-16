@@ -158,7 +158,7 @@ float ADC_V_0V = 467 ;
 // Threshold value for power adjustment: 
 
 
-int Treshlold_relay1 = 250000;          // Threshold to stop relay
+int Treshlold_relay1 = 320000;          // Threshold to stop relay
 int Treshlold_start_relay1 = 0;        // Threshold to start relay
 int treshloldP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 
@@ -546,7 +546,7 @@ if (rPower < Treshlold_start_relay1)  // if power < 0 Relay 1 must be ON; immedi
     {     
       if (rPower > Treshlold_relay1)   
        {
-               digitalWrite (unballast_relay1, LOW) ;
+              digitalWrite (unballast_relay1, LOW) ;
               relay_1 = false; 
               dim = 128 ;  // stop SCR
               unballasting_time= millis();   
@@ -705,12 +705,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         Udp.endPacket();    
 
         time_udp_now= millis();
-       // while (long (time_udp_now +1 > millis () ) )
-        // {
-        // do_noting=true;    // do nothing
-        // }
-            
-       //delay(5);
+       
       }		
                
 
