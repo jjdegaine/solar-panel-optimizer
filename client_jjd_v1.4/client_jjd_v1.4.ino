@@ -160,7 +160,7 @@ float ADC_V_0V = 467 ;
 
 int Treshlold_relay1 = 320000;          // Threshold to stop relay
 int Treshlold_start_relay1 = 0;        // Threshold to start relay
-int treshloldP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
+int treshloldP     = 25000;           // Threshold to start power adjustment 1 = 1mW ; 
 
 
 
