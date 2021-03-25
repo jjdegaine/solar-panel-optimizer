@@ -39,7 +39,7 @@ Toute contribution en vue de l’amélioration de l’appareil est la bienvenue 
 demandé de conserver mon nom et mon email dans l’entête du programme, et bien sûr de partager 
 avec moi cette amélioration. Merci.
 
-hronologie des versions :
+chronologie des versions :
 version 0.5 - 3 mai 2018     - boucle de décrémentation dim --
 version 0.8 - 5 juil. 2018   - 1ère version fonctionnelle, pb du pic de courant du SCR 
 version 1   - 6 juil. 2018   - ajout de la bibliothèque EmonLib.h pour mesure du secteur
@@ -135,7 +135,7 @@ WiFiUDP Udp; // Creation of wifi Udp instance, UDP is used to maximized the timi
 unsigned int localPort = 9999;
 
 const char *ssid = "BB9ESERVER";   // for example to be changed 
-const char *password = "BB9ESERVER";  // for examplet  to be changed
+const char *password = "BB9ESERVER";  // for example  to be changed
 
 
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
@@ -146,7 +146,7 @@ IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
 
 bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
 bool VERBOSE = false ;       // to verify dim and dimstep 
-bool WINTER = false	;		 	  // winter -> no wifi summer wifi
+bool WINTER = false	;		 	  // winter -> no wifi summer --> wifi
 
 bool do_nothing = false ; // 
 
@@ -155,18 +155,18 @@ float Vcalibration     = 0.90;   // to obtain the mains exact value
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
-float ADC_V_0V = 467 ;
-float ADC_I_0A = 467 ;
+float ADC_V_0V = 467 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 467 ; // ADC value for 0V input 3.3V/2
 
 // Threshold value for power adjustment: 
 
 int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 
-unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often 10 secondes
+unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
-byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SCR
+byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
 // reaction rate coefficient
 // reaction_coeff define the DIM value to be added or substract
@@ -195,7 +195,7 @@ const byte zeroCrossPin      = 19;
 // zero-crossing interruption  :
  
 byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
-byte dimmax = 128;              // max value to start SCR command
+byte dimmax = 128;              // max value to start SSR command
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
 byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
 
@@ -223,7 +223,7 @@ signed long it_elapsed; // counter for delay 3 msec
 
 char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
-volatile bool zero_cross = false;                // zero cross flag for SCR
+volatile bool zero_cross = false;                // zero cross flag for SSR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
 volatile bool wait_2msec ; // flag no IT on falling edge 
@@ -276,9 +276,9 @@ void IRAM_ATTR zero_cross_detect() {   //
      portENTER_CRITICAL_ISR(&mux);
      portEXIT_CRITICAL_ISR(&mux);
      zero_cross_flag = true;   // Flag for power calculation
-     zero_cross = true;        // Flag for SCR
+     zero_cross = true;        // Flag for SSR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
-     digitalWrite(SCRLED, LOW); //reset SCR LED
+     digitalWrite(SCRLED, LOW); //reset SSR LED
      
       send_UDP ++ ;
      if (send_UDP > send_UDP_max)
@@ -306,14 +306,14 @@ void IRAM_ATTR onTimer() {
 
       
      
-     if(i>dimphase) {            // i is a counter which is used to SCR command delay 
-                                // i minimum ==> start SCR just after zero crossing half period ==> max power
-                                // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
-       digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(50);             // Pause briefly to ensure the SCR turned on
-       digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
+     if(i>dimphase) {            // i is a counter which is used to SSR command delay 
+                                // i minimum ==> start SSR just after zero crossing half period ==> max power
+                                // i maximum ==> start SSR at the end of the zero crossing half period ==> minimum power
+       digitalWrite(SCR_pin, HIGH);     // start SSR
+       delayMicroseconds(50);             // Pause briefly to ensure the SSR turned on
+       digitalWrite(SCR_pin, LOW);      // Turn off the SSR gate, 
        i = 0;                             // Reset the accumulator
-       digitalWrite(SCRLED, HIGH);      // start led SCR 
+       digitalWrite(SCRLED, HIGH);      // start led SSR 
        zero_cross = false;
      } 
     else {  
@@ -332,7 +332,7 @@ void IRAM_ATTR onTimer() {
 
 void setup() {                  // Begin setup
 
- pinMode(SCR_pin, OUTPUT);            // Set the SCR pin as output
+ pinMode(SCR_pin, OUTPUT);            // Set the SSR pin as output
  pinMode(unballast_relay1, OUTPUT);    // Set the Delest pin as output
  pinMode(unballast_relay2, OUTPUT);    // Set the Delest pin as output
  pinMode(SCRLED,  OUTPUT);            // Set the LED pin as output
@@ -607,7 +607,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
   if (long (millis() - unballasting_time > unballasting_timeout))
    {
     
-     if (dim < unballasting_dim_min)  // DIM is minimum => power in SCR is maximum
+     if (dim < unballasting_dim_min)  // DIM is minimum => power in SSR is maximum
       {
       
         if (unballasting_counter > 10) // dim is < unballasting_dim_min during 10 half period

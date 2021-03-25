@@ -1,16 +1,15 @@
 ---
 marp: false
+theme: default
+title: Solar Panel Optimizer with WIFI Slave SSR
+html: true
 ---
 
-# Solar Pannel Optimizer with WIFI slave SCR
+# Solar Pannel Optimizer with WIFI slave SSR
 
-
-
-
-The Goal of this WEB site is to explain why and how I create a Solar Panel Optimzer with a WIFI slave SCR
-
+    The Goal of this WEB site is to explain why and how I create a Solar Panel Optimzer with a WIFI slave SSR
     First of all I have decided to install solar panel to compensate the energy needed for the simming tool pump.
-    
+ 
     The pump is a 1.1kW so I install 4 * 250W solar panel on a firewood storage shed roof.
 
 https://www.oscaro-power.com/kit-solaire-autoconsommation/706-3835-kit-solaire-autoconsommation-le-petit-kit-meilleur-prix.html#/175-nombre_de_panneau_kit-4/768-type_de_fixation-fibrociment
@@ -37,11 +36,11 @@ https://www.oscaro-power.com/kit-solaire-autoconsommation/706-3835-kit-solaire-a
     ---
 # Optimizer description
 
-The issue was the existing electric wiring so I decided to create a Solar Panel Optimizer with a WIFI slave SCR. see my home electric wiring description.
+The issue was the existing electric wiring so I decided to create a Solar Panel Optimizer with a WIFI slave SSR. see my home electric wiring description.
 
 A lot of opimizer exist, commercial one and DIY project. The commercial optimizer are quite expensive and not so efficent. After several weeks reading website and DIY optimizer description I decided to create my own project, and it was quite fun !
 
- The solar Panel Optimizer is based on a main board ESP32-DEVKITC-32U which is compatible with arduino. The existing DIY project are based on arduino.
+ The solar Panel Optimizer is based on a processor ESP32-DEVKITC-32U which is compatible with arduino. The existing DIY project are based on arduino.
 
  https://mk2pvrouter.co.uk/index.html
 
@@ -93,18 +92,26 @@ The full Schematic is available on GITHUB
  
 
 
-Software description
+# Software description
+
 
     see comments on source code :-)
 
     One software for the Server and one software for the client
 
+    ESP32 processor needs a specific environmment on Arduino software
+    see link to install ESP32 environmment  https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/
+    I use a board ESP32 Dev Module
+    Some other libraries are needed. I don't remember exactly which are mandatory and which have been installed for testing
+![nomimage](libraries_1.jpg) ![nomimage](libraries_2.jpg) ![nomimage](libraries_3.jpg)
+
 The softawre needs some calibration depending on components used.
 
-    measure U and I ADC 0Volt using software "...." and modify values
+    measure U and I ADC 0Volt using software "testminmax_esp32" and modify values
+    Connect the ESP board WITHOUT the mains.
 
 ```c++
-//measure shift IT zero cross using software "dim final"  and modify value
+//
 
 float ADC_V_0V = 467 ;
 float ADC_I_0A = 467 ;
@@ -112,6 +119,7 @@ float ADC_I_0A = 467 ;
 
 
     measure shift IT zero cross using software "dim final"  and modify value 
+    Connect an incandescent lamp , a startup with DIM=0 lamp shines. DIM will slowly increase, suddenly the lamp turn off. Note the DIM value.
 
 ```c++
 byte dimthreshold=30 ;	// dimthreshold; value to added at dim to compensate phase shift
@@ -129,7 +137,7 @@ float Vcalibration     = 0.90;   // to obtain the mains exact value
 ```c++
 float Icalibration     = 93;     // current in milliampères
 ```
-    Test the board 
+   The boars is ready to be used.
  
 Wi-fi
 
