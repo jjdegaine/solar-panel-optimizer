@@ -104,7 +104,7 @@ version 1.3 march 2020 improvement....
 version 1.4 march 2020 adding oled
 version 1.5 april 2020 suppress oled message on wifi task (only one task can display)
 version 1.6 april 2020 modify linearity of dim using tab
-version 1.7 april 2019 work around power up OLED 
+version 1.7 april 2020 work around power up OLED 
 
 */
 
