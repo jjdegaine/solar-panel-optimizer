@@ -1,6 +1,7 @@
 /*
 
-Test to increased dim from 1 to 128
+Test to increased dim from 1 to 128; 
+connect a standard lamp (not a led); the brightness should increase with the dim value. if brightness is at the maximum with dim=0, increase the value dimthreshold.
 
 */
 
