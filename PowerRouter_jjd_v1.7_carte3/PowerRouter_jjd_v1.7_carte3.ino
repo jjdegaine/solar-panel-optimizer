@@ -134,8 +134,8 @@ WiFiUDP Udp; // Creation of wifi Udp instance, UDP is used to maximized the timi
 
 unsigned int localPort = 9999;
 
-const char *ssid = "BB9ESERVER";   // for example to be changed 
-const char *password = "BB9ESERVER";  // for example  to be changed
+const char *ssid = "BB9ESERVER2";   // for example to be changed 
+const char *password = "BB9ESERVER2";  // for example  to be changed
 
 
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
@@ -151,7 +151,7 @@ bool WINTER = false	;		 	  // winter -> no wifi summer --> wifi
 bool do_nothing = false ; // 
 
 
-float Vcalibration     = 0.90;   // to obtain the mains exact value 
+float Vcalibration     = 0.94;   // to obtain the mains exact value 0.92 for main board 3
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
