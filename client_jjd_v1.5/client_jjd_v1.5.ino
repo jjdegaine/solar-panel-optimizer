@@ -103,6 +103,7 @@ version 1.1 march 2020 update
 version 1.2 april 2020 modify linearity of dim using tab
 version 1.3 april 2020 adding OLED
 version 1.4 june 2020 adding threshold for relay 1
+version 1.5 may 2021 adding synchro between rpower received by wifi and regulation
 
 
 */
@@ -169,7 +170,7 @@ unsigned long unballasting_time;            // timer for unballasting
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
 
-unsigned int reaction_coeff  = 90; // due to wifi delay reaction_coeff is reduced to 90
+unsigned int reaction_coeff  = 180; 
 
 
 // Input and ouput of the ESP32
@@ -239,6 +240,8 @@ unsigned int memo_temps = 0;
 
 bool relay_1 = false ; // Flag relay 1
 bool relay_2 = false ; // Flag relay 2
+
+bool synchro = false ; // Flag for synchro with wifi and regulation
 
 // init timer IT
 hw_timer_t * timer = NULL;
@@ -500,33 +503,35 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 //____________________________________________________________________________________________
 //
 //
-// dimstep calculation.  
+// dimstep calculation.  Dimstep must be calculate when synchro is true (rpower received by wifi )
 //
-  
-  if (relay_1 = true) { // if relay is not on SCR must be OFF
+  if (synchro = true ) {
+    if (relay_1 = true) { // if relay is not on SCR must be OFF
 
-  
-  if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
-  else { dimstep = 1 - (rPower/1000)/reaction_coeff; }
-  
-  // when rPower is less than treshloldP ==> unlalanced power must increased ==> DIM must be reduced
+    
+    if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
+    else { dimstep = 1 - (rPower/1000)/reaction_coeff; }
+    
+    // when rPower is less than treshloldP ==> unlalanced power must increased ==> DIM must be reduced
 
-  if( rPower < treshloldP ) {      
-    if( dim > dimstep )  dim -= dimstep; else  dim = 0;
-  } 
+    if( rPower < treshloldP ) {      
+      if( dim > dimstep )  dim -= dimstep; else  dim = 0;
+    } 
 
-// when rPower is higher than treshloldP ==> unlalanced power must decreased ==> DIM must be increasad
+  // when rPower is higher than treshloldP ==> unlalanced power must decreased ==> DIM must be increasad
 
-  else if( rPower > treshloldP ) {                   
-    if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
-  }
+    else if( rPower > treshloldP ) {                   
+      if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
+    }
 
-  if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // if dim is at the minimum, control regulation is at the maximum 
-  else { digitalWrite(limiteLED, LOW); }
-  
+    if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // if dim is at the minimum, control regulation is at the maximum 
+    else { digitalWrite(limiteLED, LOW); }
+    }
 
-// dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to real phase between interruption and mains
-dimphase = dim_sinus [ dim ] + dimthreshold;
+    // dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to real phase between interruption and mains
+    dimphase = dim_sinus [ dim ] + dimthreshold;
+    synchro = false ;
+
   }
 
 //
@@ -698,6 +703,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     Udp.read(mystring_power_wifi,packetSize);
     
     Power_wifi = strtof(mystring_power_wifi, NULL);
+
+    synchro = true ; // dim, dimstep could be calculated with a new value of power
 
     // ack 
         Udp.beginPacket(ipServidor, 9999);
