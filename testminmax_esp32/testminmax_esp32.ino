@@ -38,7 +38,7 @@ void setup(void)
 
   Serial.println ();
 
-  Serial.println(" The Min, Max and Range ADC values for analog inputs 0 to 3:");
+  Serial.println(" The Min, Max and Range ADC values for analog inputs :");
 
 }
 
@@ -48,7 +48,7 @@ void loop(void)
 
 {
 
-  val_a0 = analogRead(voltageSensorPin) / 4; //  Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 102
+  val_a0 = analogRead(voltageSensorPin) / 4; //  Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
 
   val_a1 = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
 
@@ -90,7 +90,7 @@ void loop(void)
 
     displayVal(maxVal_a1 - minVal_a1);
 
-    Serial.print(";  ");
+    Serial.println(";  ");
 
  
 
