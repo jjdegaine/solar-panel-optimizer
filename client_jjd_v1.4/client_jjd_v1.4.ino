@@ -169,7 +169,7 @@ unsigned long unballasting_time;            // timer for unballasting
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
 
-unsigned int reaction_coeff  = 180; 
+unsigned int reaction_coeff  = 90; // due to wifi delay reaction_coeff is reduced to 90
 
 
 // Input and ouput of the ESP32
