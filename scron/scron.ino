@@ -1,7 +1,6 @@
 /*
 
-Test to increased dim from 1 to 128; 
-connect a standard lamp (not a led); the brightness should increase with the dim value. if brightness is at the maximum with dim=0, increase the value dimthreshold.
+Test to verify scr; based on previous software without modification except scr_pin is never off
 
 */
 
@@ -46,6 +45,7 @@ byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate 
 byte dimmax = 128;              // max value to start SCR command
 
 byte dim = 0; // dim increased 0 to  128
+byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
 
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
@@ -135,7 +135,7 @@ void IRAM_ATTR onTimer() {
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
        delayMicroseconds(100);             // Pause briefly to ensure the SCR turned on
-       digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
+       //digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
        digitalWrite(SCRLED, HIGH);      // start led SCR 
        zero_cross = false;
@@ -248,7 +248,8 @@ if (long (millis() - time_now > time_limit))
       dim =0;
       }
     else{
-    dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
+    //dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
+    dimphase = dim_sinus [ dim ] + dimthreshold; // linear sinus
     dim++ ;
               display.setColor(BLACK);        // clear first line
               display.fillRect(0, 0, 128, 22);
