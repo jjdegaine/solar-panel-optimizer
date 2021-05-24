@@ -46,7 +46,7 @@ byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate 
 byte dimmax = 128;              // max value to start SCR command
 
 byte dim = 0; // dim increased 0 to  128
-byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
+byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128} ;
 byte dim_sinus_display= 0 ;
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
@@ -63,7 +63,7 @@ unsigned long time_limit = 1000 ; // time 1 sec
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 75;                            // 75 * 127 = 10msec, calibration using oscilloscope
+char periodStep = 74;                            // 74 * 128 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
@@ -107,12 +107,12 @@ void Taskwifi_udp( void *pvParameters );
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
      //portEXIT_CRITICAL_ISR(&mux);
-     zero_cross_flag = true;   // Flag for power calculation
-     zero_cross = true;        // Flag for SCR
-     first_it_zero_cross = true ;  // flag to start a delay 2msec
-        portENTER_CRITICAL_ISR(&timerMux);// critical sequence led
+     portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
+        zero_cross_flag = true;   // Flag for power calculation
+        zero_cross = true;        // Flag for SCR
+        first_it_zero_cross = true ;  // flag to start a delay 2msec
         digitalWrite(SCRLED, LOW); //reset SCR LED
-        portEXIT_CRITICAL_ISR(&timerMux);// critical sequence led
+        portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
      portEXIT_CRITICAL_ISR(&mux);
    
 }  
@@ -126,10 +126,9 @@ void IRAM_ATTR zero_cross_detect() {   //
 */ 
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
+  portENTER_CRITICAL_ISR(&mux);  // critical sequence it
   
-  //portEXIT_CRITICAL_ISR(&timerMux);
-  
-   if(zero_cross == true && dimphaseit < dimphasemax )  // First check to make sure the zero-cross has 
+   if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
 
       
@@ -141,17 +140,19 @@ void IRAM_ATTR onTimer() {
        delayMicroseconds(100);             // Pause briefly to ensure the SCR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
-          portENTER_CRITICAL_ISR(&mux);  // critical sequence led
+
           digitalWrite(SCRLED, HIGH);      // start led SCR
-          portEXIT_CRITICAL_ISR(&mux);   // critical sequence led
-       zero_cross = false;
+          zero_cross = false;
+          
      } 
     else {  
       i++; 
       }           // If the dimming value has not been reached, incriment our counter
      
  }      // End zero_cross check
+portEXIT_CRITICAL_ISR(&mux);   // critical sequence it
 portEXIT_CRITICAL_ISR(&timerMux);
+
 }
 
 
