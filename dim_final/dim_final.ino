@@ -61,7 +61,7 @@ unsigned long time_limit = 1000 ; // time 1 sec
 signed long wait_it_limit = 4 ;  // delay 4msec
 signed long it_elapsed; // counter for delay 4 msec
 
-char periodStep = 73;                            // 68 * 127 = 10msec, calibration using oscilloscope
+char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
