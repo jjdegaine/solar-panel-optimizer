@@ -56,10 +56,10 @@ byte wifi_wait = 0;       //
  volatile bool send_UDP_wifi = false;
 
 unsigned long time_now;
-unsigned long time_limit = 500 ; // time 0.5 sec
+unsigned long time_limit = 1000 ; // time 1 sec
 
-signed long wait_it_limit = 3 ;  // delay 3msec
-signed long it_elapsed; // counter for delay 3 msec
+signed long wait_it_limit = 4 ;  // delay 4msec
+signed long it_elapsed; // counter for delay 4 msec
 
 char periodStep = 73;                            // 68 * 127 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
@@ -67,7 +67,7 @@ volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
 volatile bool wait_2msec ;
-
+volatile bool ittask=false ;
 
 
 byte zero_crossCount = 0;          // half period counter
@@ -107,7 +107,7 @@ void IRAM_ATTR zero_cross_detect() {   //
      portEXIT_CRITICAL_ISR(&mux);
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SCR
-     first_it_zero_cross = true ;  // flag to start a delay 2msec
+     first_it_zero_cross = true ;  // flag to start a delay 4msec
      digitalWrite(SCRLED, LOW); //reset SCR LED
      
    
@@ -145,7 +145,14 @@ void IRAM_ATTR onTimer() {
       }           // If the dimming value has not been reached, incriment our counter
      
  }      // End zero_cross check
-
+ // limiteled is used to verify it timer task
+ if (ittask== true){
+digitalWrite(limiteLED, HIGH);
+ittask=false; 
+}
+else {
+digitalWrite(limiteLED, LOW);
+ittask=true; }
 }
 
 
@@ -222,19 +229,19 @@ void loop()
  
 
 
-// function delay 2msec
+// function delay 4msec
 
     if (first_it_zero_cross == true  )            // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
       {            
        
        it_elapsed = millis () + wait_it_limit;
       
-       detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
+       detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 4msec to avoid false interrupt during falling edge
        first_it_zero_cross = false;      // flag for IT zero_cross
        wait_2msec = true ;
       }
       
-      if (wait_2msec == true && long (millis() - it_elapsed) >= 0 )        // check if delay > 3msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
+      if (wait_2msec == true && long (millis() - it_elapsed) >= 0 )        // check if delay > 4msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
       {
       
         attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
