@@ -171,7 +171,7 @@ unsigned long unballasting_time;            // timer for unballasting
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
 
-unsigned int reaction_coeff  = 180; 
+unsigned int reaction_coeff  = 15; 
 
 
 // Input and ouput of the ESP32
@@ -506,8 +506,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 //
 // dimstep calculation.  Dimstep must be calculate when synchro is true (rpower received by wifi )
 //
-  if (synchro = true ) {
-    if (relay_1 = true) { // if relay is not on SCR must be OFF
+  if (synchro == true ) {
+    //if (relay_1 == true) { // if relay is not on SCR must be OFF
 
     
     if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
@@ -527,7 +527,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
     if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // if dim is at the minimum, control regulation is at the maximum 
     else { digitalWrite(limiteLED, LOW); }
-    }
+    //}
 
     // dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to real phase between interruption and mains
     dimphase = dim_sinus [ dim ] + dimthreshold;
