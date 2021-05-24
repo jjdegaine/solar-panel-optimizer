@@ -62,7 +62,7 @@ unsigned long time_limit = 1000 ; // time 1 sec
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 73;                            // 68 * 127 = 10msec, calibration using oscilloscope
+char periodStep = 75;                            // 75 * 127 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
@@ -105,12 +105,12 @@ void Taskwifi_udp( void *pvParameters );
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
-     portEXIT_CRITICAL_ISR(&mux);
+     //portEXIT_CRITICAL_ISR(&mux);
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SCR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
      digitalWrite(SCRLED, LOW); //reset SCR LED
-     
+     portEXIT_CRITICAL_ISR(&mux);
    
 }  
 
@@ -124,7 +124,7 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   
-  portEXIT_CRITICAL_ISR(&timerMux);
+  //portEXIT_CRITICAL_ISR(&timerMux);
   
    if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
@@ -146,7 +146,7 @@ void IRAM_ATTR onTimer() {
       }           // If the dimming value has not been reached, incriment our counter
      
  }      // End zero_cross check
-
+portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 
