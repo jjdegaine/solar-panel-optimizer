@@ -106,7 +106,6 @@ void Taskwifi_udp( void *pvParameters );
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
-     //portEXIT_CRITICAL_ISR(&mux);
      portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
         zero_cross_flag = true;   // Flag for power calculation
         zero_cross = true;        // Flag for SCR
