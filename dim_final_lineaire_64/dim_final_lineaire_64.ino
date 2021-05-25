@@ -46,10 +46,11 @@ byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate 
 byte dimmax = 64;              // max value to start SCR command
 
 byte dim = 0; // dim increased 0 to  64
-byte dim_sinus [129] = {0,  27, 34, 40, 45, 48, 52, 55, 59, 62, 64, 67, 70, 73, 75, 77, 79, 81, 83, 85, 87, 88, 90, 92, 94, 95, 96, 97, 98, 99, 101, 102, 103, 104, 106, 106, 106, 106, 107, 107, 107, 108, 108, 109, 109, 110, 112, 114, 115, 116, 117, 118, 119, 121, 122, 123, 124, 125, 126, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128} ;
+byte dim_sinus [129] = {0, 27, 34, 40, 45, 48, 52, 55, 59, 62, 64, 67, 70, 73, 75, 77, 79, 81, 83, 85, 87, 88, 90, 92, 94, 95, 96, 97, 98, 99, 101, 102, 103, 104, 106, 106, 106, 106, 107, 107, 107, 108, 108, 109, 109, 110, 112, 114, 115, 116, 117, 118, 119, 121, 122, 123, 124, 125, 126, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128} ;
 byte dim_sinus_display= 0 ;
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
+byte dimphaseit = dimphase ; // dimphaseit is used during it timer
 
 byte wifi_wait = 0;       // 
         
@@ -105,11 +106,12 @@ void Taskwifi_udp( void *pvParameters );
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
-     //portEXIT_CRITICAL_ISR(&mux);
+     portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SCR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
      digitalWrite(SCRLED, LOW); //reset SCR LED
+     portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
      portEXIT_CRITICAL_ISR(&mux);
    
 }  
@@ -123,19 +125,18 @@ void IRAM_ATTR zero_cross_detect() {   //
 */ 
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
-  
-  //portEXIT_CRITICAL_ISR(&timerMux);
+  portENTER_CRITICAL_ISR(&mux);  // critical sequence it
   
    if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
 
-      digitalWrite(limiteLED, HIGH);
+      
      
-     if(i>dimphase) {            // i is a counter which is used to SCR command delay 
+     if(i>dimphaseit) {            // i is a counter which is used to SCR command delay 
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(50);             // Pause briefly to ensure the SCR turned on
+       delayMicroseconds(100);             // Pause briefly to ensure the SCR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
        digitalWrite(SCRLED, HIGH);      // start led SCR 
@@ -146,7 +147,7 @@ void IRAM_ATTR onTimer() {
       }           // If the dimming value has not been reached, incriment our counter
      
  }      // End zero_cross check
-  digitalWrite(limiteLED, LOW);
+portEXIT_CRITICAL_ISR(&mux);   // critical sequence it
 portEXIT_CRITICAL_ISR(&timerMux);
 }
 
@@ -197,7 +198,7 @@ display.display();
   display.display();
   
  // init timer 
-  timer = timerBegin(0, 80, true); // 
+  timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &onTimer, true);
   timerAlarmWrite(timer, periodStep , true);
   timerAlarmEnable(timer); 
@@ -252,8 +253,13 @@ if (long (millis() - time_now > time_limit))
     else{
     //dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
     dimphase = dim_sinus [ dim ] + dimthreshold; // linear sinus
+
+      portENTER_CRITICAL_ISR(&timerMux); // critical phase it timer
+      if (zero_cross == false ) {dimphaseit= dimphase;}
+      portEXIT_CRITICAL_ISR(&timerMux); // critical phase it timer
+
     dim_sinus_display = dim_sinus [ dim ] ;
-    dim++ ;
+     dim++ ;
               display.setColor(BLACK);        // clear first line
               display.fillRect(0, 0, 128, 22);
               display.setColor(WHITE); 
