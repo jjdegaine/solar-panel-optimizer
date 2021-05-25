@@ -127,7 +127,7 @@ void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   portENTER_CRITICAL_ISR(&mux);  // critical sequence it
   
-   if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
+   if(zero_cross == true && dimphaseit < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
 
       
