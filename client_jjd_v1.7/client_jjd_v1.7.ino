@@ -105,7 +105,6 @@ version 1.3 april 2020 adding OLED
 version 1.4 june 2020 adding threshold for relay 1
 version 1.5 may 2021 adding synchro between rpower received by wifi and regulation
 version 1.6 may 2021 linearity tic 75usec dim 0-128
-version 1.7 may 2021 adding critical phase 
 
 
 */
@@ -130,15 +129,14 @@ SSD1306Wire display(0x3c, SDA, SCL);   // ADDRESS, SDA, SCL
 
 // initialization wifi
 
-//const int channel = 4;  // define channel 4 seems to be the best for wifi....
-const int channel = 5;  // define channel 4 seems to be the best for wifi....
+const int channel = 4;  // define channel 4 seems to be the best for wifi....
 
 WiFiUDP Udp; // Creation of wifi Udp instance, UDP is used to maximized the timing transfert
 
 unsigned int localPort = 9999;
 
-const char *ssid = "BB9ESERVER2";   // for example to be changed 
-const char *password = "BB9ESERVER2";  // for examplet  to be changed
+const char *ssid = "BB9ESERVER";   // for example to be changed 
+const char *password = "BB9ESERVER";  // for examplet  to be changed
 
 
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
@@ -199,7 +197,7 @@ byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 5
 
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
-byte dimphaseit = dimphase ; // dimphaseit is used during it timer       
+byte dimphaseit = dimphase;      
 
 // wifi UDP
 
@@ -213,7 +211,7 @@ unsigned long time_udp_limit = 10000 ; // time to leave UDP 10 sec
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 74;                            // 74 * 128 = 10msec
+char periodStep = 75;                            // 75 * 128 = 10msec
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
@@ -244,9 +242,7 @@ unsigned int memo_temps = 0;
 bool relay_1 = false ; // Flag relay 1
 bool relay_2 = false ; // Flag relay 2
 
-//bool synchro = false ; // Flag for synchro with wifi and regulation
-bool synchro = true ; // Flag for synchro with wifi and regulation
-
+bool synchro = false ; // Flag for synchro with wifi and regulation
 
 // init timer IT
 hw_timer_t * timer = NULL;
@@ -271,14 +267,14 @@ void Taskwifi_udp( void *pvParameters );
 //____________________________________________________________________________________________
 
 void IRAM_ATTR zero_cross_detect() {   // 
-    portENTER_CRITICAL_ISR(&mux);
-    portENTER_CRITICAL_ISR(&timerMux);
+     portENTER_CRITICAL_ISR(&mux);
+     portENTER_CRITICAL_ISR(&timerMux);
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SCR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
      digitalWrite(SCRLED, LOW); //reset SCR LED
-    portEXIT_CRITICAL_ISR(&timerMux);
-    portEXIT_CRITICAL_ISR(&mux);   
+     portEXIT_CRITICAL_ISR(&timerMux);
+     portEXIT_CRITICAL_ISR(&mux);  
    
 }  
 
@@ -290,8 +286,7 @@ void IRAM_ATTR zero_cross_detect() {   //
 */ 
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
-  portENTER_CRITICAL_ISR(&mux);  // critical sequence it
-  
+
   
    if(zero_cross == true && dimphaseit < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
@@ -312,7 +307,6 @@ void IRAM_ATTR onTimer() {
       }           // If the dimming value has not been reached, incriment the counter
      
  }      // End zero_cross check
-portEXIT_CRITICAL_ISR(&mux);   // critical sequence it
 portEXIT_CRITICAL_ISR(&timerMux);
 }
 
@@ -500,8 +494,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 // Power calculation
   
-  //  rPower = Power_wifi * 1000 ; // Power wifi received by Wifi
-  rPower = 10 * 1000 ; // test avec 10w
+    rPower = Power_wifi * 1000 ; // Power wifi received by Wifi
+  
 	
 //____________________________________________________________________________________________
 //
@@ -537,11 +531,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
     // dimphase = dim+ dimthreshold; // Value to be used by the timer interrupt due to real phase between interruption and mains
     dimphase = dim_sinus [ dim ] + dimthreshold;
-
-      portENTER_CRITICAL_ISR(&timerMux); // critical phase it timer
-      if (zero_cross == false ) {dimphaseit= dimphase;}
-      portEXIT_CRITICAL_ISR(&timerMux); // critical phase it timer
-      
+    dimphaseit = dimphase;
     synchro = false ;
 
   }
