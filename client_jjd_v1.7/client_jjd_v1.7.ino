@@ -130,14 +130,15 @@ SSD1306Wire display(0x3c, SDA, SCL);   // ADDRESS, SDA, SCL
 
 // initialization wifi
 
-const int channel = 4;  // define channel 4 seems to be the best for wifi....
+//const int channel = 4;  // define channel 4 seems to be the best for wifi....
+const int channel = 5;  // define channel 4 seems to be the best for wifi....
 
 WiFiUDP Udp; // Creation of wifi Udp instance, UDP is used to maximized the timing transfert
 
 unsigned int localPort = 9999;
 
-const char *ssid = "BB9ESERVER";   // for example to be changed 
-const char *password = "BB9ESERVER";  // for examplet  to be changed
+const char *ssid = "BB9ESERVER2";   // for example to be changed 
+const char *password = "BB9ESERVER2";  // for examplet  to be changed
 
 
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
@@ -243,7 +244,9 @@ unsigned int memo_temps = 0;
 bool relay_1 = false ; // Flag relay 1
 bool relay_2 = false ; // Flag relay 2
 
-bool synchro = false ; // Flag for synchro with wifi and regulation
+//bool synchro = false ; // Flag for synchro with wifi and regulation
+bool synchro = true ; // Flag for synchro with wifi and regulation
+
 
 // init timer IT
 hw_timer_t * timer = NULL;
@@ -294,7 +297,7 @@ void IRAM_ATTR onTimer() {
  {                                                    // happened else do nothing
    
      
-     if(i>dimphase) {            // i is a counter which is used to SCR command delay 
+     if(i>dimphaseit) {            // i is a counter which is used to SCR command delay 
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
@@ -497,8 +500,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 // Power calculation
   
-    rPower = Power_wifi * 1000 ; // Power wifi received by Wifi
-  
+  //  rPower = Power_wifi * 1000 ; // Power wifi received by Wifi
+  rPower = 10 * 1000 ; // test avec 10w
 	
 //____________________________________________________________________________________________
 //

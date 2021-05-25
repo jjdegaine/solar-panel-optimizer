@@ -63,7 +63,7 @@ unsigned long time_limit = 1000 ; // time 1 sec
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 140;                            // 150 * 64 = 10msec, calibration using oscilloscope
+char periodStep = 130;                            // 130 * 64 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
@@ -257,11 +257,11 @@ if (long (millis() - time_now > time_limit))
     dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
     //dimphase = dim_sinus [ dim ] + dimthreshold; // linear sinus
 
-      portENTER_CRITICAL_ISR(&timerMux); // critical phase it timer
+      //portENTER_CRITICAL_ISR(&timerMux); // critical phase it timer
 
       if (zero_cross == false ) {dimphaseit= dimphase;}
 
-      portEXIT_CRITICAL_ISR(&timerMux); // critical phase it timer
+      //portEXIT_CRITICAL_ISR(&timerMux); // critical phase it timer
 
     dim_sinus_display = dim_sinus [ dim ] ;
      dim++ ;
