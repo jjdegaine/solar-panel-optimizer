@@ -46,7 +46,7 @@ byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate 
 byte dimmax = 64;              // max value to start SCR command
 
 byte dim = 0; // dim increased 0 to  64
-byte dim_sinus [65] = {0, 27, 34, 40, 45, 48, 52, 55, 59, 62, 64, 67, 70, 73, 75, 77, 79, 81, 83, 85, 87, 88, 90, 92, 94, 95, 96, 97, 98, 99, 101, 102, 103, 104, 106, 106, 106, 106, 107, 107, 107, 108, 108, 109, 109, 110, 112, 114, 115, 116, 117, 118, 119, 121, 122, 123, 124, 125, 126, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128} ;
+byte dim_sinus [65] = {0, 27, 34, 40, 45, 48, 52, 55, 59, 62, 64, 67, 70, 73, 75, 77, 79, 81, 83, 85, 87, 88, 90, 92, 94, 95, 96, 97, 98, 99, 101, 102, 103, 104, 106, 106, 106, 106, 107, 107, 107, 108, 108, 109, 109, 110, 112, 114, 115, 116, 117, 118, 119, 121, 122, 123, 124, 125, 126, 127, 127, 127, 128, 128} ;
 byte dim_sinus_display= 0 ;
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
@@ -63,7 +63,7 @@ unsigned long time_limit = 1000 ; // time 1 sec
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 150;                            // 150 * 64 = 10msec, calibration using oscilloscope
+char periodStep = 75;                            // 150 * 64 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
