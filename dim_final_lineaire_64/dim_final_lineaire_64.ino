@@ -136,10 +136,11 @@ void IRAM_ATTR onTimer() {
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(100);             // Pause briefly to ensure the SCR turned on
+       //delayMicroseconds(200); 
+              i = 0;                             // Reset the accumulator
+       digitalWrite(SCRLED, HIGH);            // Pause briefly to ensure the SCR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
-       i = 0;                             // Reset the accumulator
-       digitalWrite(SCRLED, HIGH);      // start led SCR 
+      // start led SCR 
        zero_cross = false;
      } 
     else {  
