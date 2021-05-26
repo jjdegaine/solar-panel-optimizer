@@ -105,6 +105,7 @@ version 1.3 april 2020 adding OLED
 version 1.4 june 2020 adding threshold for relay 1
 version 1.5 may 2021 adding synchro between rpower received by wifi and regulation
 version 1.6 may 2021 linearity tic 75usec dim 0-128
+version 1.7 may 2021 dimphaseit
 
 
 */
