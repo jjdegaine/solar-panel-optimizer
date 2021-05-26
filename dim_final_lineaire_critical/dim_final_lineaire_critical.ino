@@ -111,7 +111,8 @@ void IRAM_ATTR zero_cross_detect() {   //
         zero_cross = true;        // Flag for SCR
         first_it_zero_cross = true ;  // flag to start a delay 2msec
         digitalWrite(SCRLED, LOW); //reset SCR LED
-        portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
+        dimphaseit= dimphase;
+     portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
      portEXIT_CRITICAL_ISR(&mux);
    
 }  
@@ -127,9 +128,11 @@ void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   portENTER_CRITICAL_ISR(&mux);  // critical sequence it
   
-   if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
- {                                                    // happened else do nothing
+ //  if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
+ // happened else do nothing
 
+ if(zero_cross == true )
+ {                                                    
       
      
      if(i>dimphaseit) {            // i is a counter which is used to SCR command delay 
@@ -144,11 +147,13 @@ void IRAM_ATTR onTimer() {
           zero_cross = false;
           
      } 
-    else {  
-      i++; 
-      }           // If the dimming value has not been reached, incriment our counter
-     
+      else {  
+          i++; 
+          digitalWrite(SCRLED, LOW); //reset SCR LED
+          }           // If the dimming value has not been reached, incriment our counter
+   
  }      // End zero_cross check
+
 portEXIT_CRITICAL_ISR(&mux);   // critical sequence it
 portEXIT_CRITICAL_ISR(&timerMux);
 
@@ -257,9 +262,9 @@ if (long (millis() - time_now > time_limit))
     //dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
     dimphase = dim_sinus [ dim ] + dimthreshold; // linear sinus
     
-      portENTER_CRITICAL_ISR(&timerMux); // critical phase it timer
-      if (zero_cross == false ) {dimphaseit= dimphase;}
-      portEXIT_CRITICAL_ISR(&timerMux); // critical phase it timer
+      //portENTER_CRITICAL_ISR(&timerMux); // critical phase it timer
+     // if (zero_cross == false ) {dimphaseit= dimphase;}
+      //portEXIT_CRITICAL_ISR(&timerMux); // critical phase it timer
 
     dim_sinus_display = dim_sinus [ dim ] ;
     dim++ ;
