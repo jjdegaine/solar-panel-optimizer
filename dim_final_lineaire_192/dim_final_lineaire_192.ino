@@ -58,12 +58,12 @@ byte wifi_wait = 0;       //
  volatile bool send_UDP_wifi = false;
 
 unsigned long time_now;
-unsigned long time_limit = 2000 ; // time 2000 sec
+unsigned long time_limit = 250 ; // time 2000 sec
 
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 50;                            // 50 * 192 = 10msec, calibration using oscilloscope
+char periodStep = 51;                            // 50 * 192 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
