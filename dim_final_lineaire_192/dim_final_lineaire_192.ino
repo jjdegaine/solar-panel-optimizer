@@ -42,7 +42,7 @@ const byte zeroCrossPin      = 19;
 
 // zero-crossing interruption  :
  
-byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 192;              // max value to start SCR command
 
 byte dim = 0; // dim increased 0 to  192
@@ -58,7 +58,7 @@ byte wifi_wait = 0;       //
  volatile bool send_UDP_wifi = false;
 
 unsigned long time_now;
-unsigned long time_limit = 1000 ; // time 1 sec
+unsigned long time_limit = 250 ; // time 0.25 sec
 
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
@@ -137,7 +137,7 @@ void IRAM_ATTR onTimer() {
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(3);             // Pause briefly to ensure the SCR turned on
+       delayMicroseconds(4);             // Pause briefly to ensure the SCR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
 
