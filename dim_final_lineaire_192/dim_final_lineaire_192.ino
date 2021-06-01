@@ -45,7 +45,7 @@ const byte zeroCrossPin      = 19;
 byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 192;              // max value to start SCR command
 
-byte dim = 0; // dim increased 0 to  192
+byte dim = 150; // dim increased 0 to  192
 byte dim_sinus [192] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128} ;
 byte dim_sinus_display= 0 ;
 byte dimphase = dim + dimthreshold; 
@@ -110,7 +110,7 @@ void IRAM_ATTR zero_cross_detect() {   //
         zero_cross_flag = true;   // Flag for power calculation
         zero_cross = true;        // Flag for SCR
         first_it_zero_cross = true ;  // flag to start a delay 2msec
-        digitalWrite(SCRLED, LOW); //reset SCR LED
+     //   digitalWrite(SCRLED, LOW); //reset SCR LED
         dimphaseit= dimphase;
 
      portEXIT_CRITICAL_ISR(&mux);
@@ -127,6 +127,8 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
 
+  if(zero_cross == true )
+  {digitalWrite(SCRLED, LOW); }//reset SCR LED
   
   if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
                                                         // happened else do nothing
@@ -254,7 +256,7 @@ if (long (millis() - time_now > time_limit))
 {
 
     if ( dim >= 192) { 
-      dim =0;
+      dim =150;
       }
     else{
     dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
