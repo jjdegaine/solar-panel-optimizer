@@ -42,7 +42,7 @@ const byte zeroCrossPin      = 19;
 
 // zero-crossing interruption  :
  
-byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimthreshold=33 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 64;              // max value to start SCR command
 
 byte dim = 0; // dim increased 0 to  64
