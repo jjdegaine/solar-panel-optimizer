@@ -45,8 +45,8 @@ const byte zeroCrossPin      = 19;
 byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 192;              // max value to start SCR command
 
-byte dim = 150; // dim increased 0 to  192
-byte dim_sinus [192] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128} ;
+byte dim = 0; // dim increased 0 to  192
+byte dim_sinus [192] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192} ;
 byte dim_sinus_display= 0 ;
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
@@ -58,7 +58,7 @@ byte wifi_wait = 0;       //
  volatile bool send_UDP_wifi = false;
 
 unsigned long time_now;
-unsigned long time_limit = 250 ; // time 0.25 sec
+unsigned long time_limit = 2000 ; // time 2000 sec
 
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
@@ -127,9 +127,7 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
 
-  if(zero_cross == true )
-  {digitalWrite(SCRLED, LOW); }//reset SCR LED
-  
+  if (dim == dimthreshold )  {digitalWrite(SCRLED, LOW);  } //reset SCR LED
   if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
                                                         // happened else do nothing
  {                                                    
@@ -256,7 +254,7 @@ if (long (millis() - time_now > time_limit))
 {
 
     if ( dim >= 192) { 
-      dim =150;
+      dim =0;
       }
     else{
     dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains

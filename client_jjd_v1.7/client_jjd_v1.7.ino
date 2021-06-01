@@ -511,7 +511,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if (synchro == true ) {
     //if (relay_1 == true) { // if relay is not on SCR must be OFF
 
-    
+  
+
     if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
     else { dimstep = 1 - (rPower/1000)/reaction_coeff; }
     
