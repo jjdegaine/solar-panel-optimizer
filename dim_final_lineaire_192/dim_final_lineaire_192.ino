@@ -148,7 +148,7 @@ void IRAM_ATTR onTimer() {
      } 
       else {  
           i++; 
-          digitalWrite(SCRLED, LOW); //reset SCR LED
+         // digitalWrite(SCRLED, LOW); //reset SCR LED
           }           // If the dimming value has not been reached, incriment our counter
    
  }      // End zero_cross check
@@ -275,7 +275,7 @@ if (long (millis() - time_now > time_limit))
               display.display();
               Serial.print (dim);
               Serial.print (" ");
-              Serial.print (dim_sinus_display);
+              Serial.print (dimphaseit);
               Serial.print (" ");
               Serial.println (dimphase);
       }        
