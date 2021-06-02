@@ -127,7 +127,8 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
 
-  if (dim == dimthreshold )  {digitalWrite(SCRLED, LOW);  } //reset SCR LED
+  if(i == dimthreshold )  {digitalWrite(SCRLED, LOW);  } //reset SCR LED
+
   if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
                                                         // happened else do nothing
  {                                                    

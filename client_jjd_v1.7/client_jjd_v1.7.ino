@@ -273,7 +273,7 @@ void IRAM_ATTR zero_cross_detect() {   //
         zero_cross_flag = true;   // Flag for power calculation
         zero_cross = true;        // Flag for SCR
         first_it_zero_cross = true ;  // flag to start a delay 2msec
-        digitalWrite(SCRLED, LOW); //reset SCR LED
+        //digitalWrite(SCRLED, LOW); //reset SCR LED
         dimphaseit = dimphase;
 
      portEXIT_CRITICAL_ISR(&mux);  
@@ -292,7 +292,8 @@ void IRAM_ATTR onTimer() {
    if(zero_cross == true && dimphaseit < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
    
-     
+     if (i== dimthreshold) {digitalWrite(SCRLED, LOW); } //reset SCR LED
+
      if(i>dimphaseit) {            // i is a counter which is used to SCR command delay 
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
