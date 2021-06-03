@@ -105,7 +105,7 @@ version 1.3 april 2020 adding OLED
 version 1.4 june 2020 adding threshold for relay 1
 version 1.5 may 2021 adding synchro between rpower received by wifi and regulation
 version 1.6 may 2021 linearity tic 75usec dim 0-128
-version 1.7 may 2021 dimphaseit; 3usec for scr command
+version 1.7 may 2021 dimphaseit; 4usec for scr command
 version 1.8 june 2021 adding wathdog
 
 
@@ -167,7 +167,7 @@ int Treshlold_relay1 = 320000;          // Threshold to stop relay
 int Treshlold_start_relay1 = 0;        // Threshold to start relay
 int treshloldP     = 25000;           // Threshold to start power adjustment 1 = 1mW ; 
 
-#define WDT_TIMEOUT 3 // 3 secondes watchdog
+#define WDT_TIMEOUT 6 // 6 secondes watchdog
 
 unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes
 unsigned long unballasting_time;            // timer for unballasting 
@@ -335,10 +335,7 @@ void setup() {                  // Begin setup
 
 unballasting_time= millis(); // set up timer unballasting
 
-//init watchdog
 
-  esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL); //add current thread to WDT watch
 
 // USB init
  Serial.begin(115200);
@@ -402,8 +399,9 @@ display.display();
     ,  ARDUINO_RUNNING_CORE);
 
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
+  //init watchdog
+
   
- 
 }                
 
 //____________________________________________________________________________________________
@@ -433,6 +431,11 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 {
   (void) pvParameters;
 
+// init watchdog on core task UI
+
+  esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL); //add current thread to WDT watch
+ 
   for (;;) // A Task shall never return or exit.
   {
   
@@ -571,7 +574,7 @@ if (rPower < Treshlold_start_relay1)  // if power < 0 Relay 1 must be ON; immedi
      } 
       
   
-
+      
  
 
   // Display each 2 seconds
@@ -612,6 +615,7 @@ if (rPower < Treshlold_start_relay1)  // if power < 0 Relay 1 must be ON; immedi
           display.drawString(0, 22, String(int(Power_wifi)));
           display.display();
 
+          // delay (7000); // to test watchdog with switch calibration
 
         }
         if( VERBOSE == true ) {
@@ -728,6 +732,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
        
       }		
                
+    
 
     } // end for loop wifi
     
