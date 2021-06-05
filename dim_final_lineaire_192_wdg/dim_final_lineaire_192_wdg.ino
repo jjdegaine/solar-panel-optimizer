@@ -129,7 +129,7 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
 
-  if(i == dimthreshold )  {digitalWrite(SCRLED, LOW);  } //reset SCR LED
+ // if(i == dimthreshold )  {digitalWrite(SCRLED, LOW);  } //reset SCR LED
 
   if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
                                                         // happened else do nothing
@@ -144,7 +144,7 @@ void IRAM_ATTR onTimer() {
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
 
-          digitalWrite(SCRLED, HIGH);      // start led SCR
+      //    digitalWrite(SCRLED, HIGH);      // start led SCR
           zero_cross = false;
           
      } 
@@ -234,7 +234,7 @@ display.display();
 void loop()
  {
  
-
+if (zero_cross == true ){ digitalWrite(SCRLED, LOW);} else { digitalWrite(SCRLED, HIGH) ;}// SCR LED}
 
 // function delay 2msec
 
