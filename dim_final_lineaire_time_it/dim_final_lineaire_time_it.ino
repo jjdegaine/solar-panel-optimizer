@@ -70,6 +70,7 @@ volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
 volatile bool wait_2msec ;
+volatile bool it = false ; 
 
 
 #define WDT_TIMEOUT 3
@@ -109,15 +110,15 @@ void Taskwifi_udp( void *pvParameters );
 void IRAM_ATTR zero_cross_detect() {   // 
 
      portENTER_CRITICAL_ISR(&mux);
-      if (long (millis() - it_elapsed) >= 0 ) // if time > 3msec first; IT iftime < 3 msec do noting
+   if (first_it_zero_cross == true)
       {
               zero_cross_flag = true;   // Flag for power calculation
               zero_cross = true;        // Flag for SCR
-              first_it_zero_cross = true ;  // flag to start a delay 2msec
+              first_it_zero_cross = false ;  // flag to start a delay 2msec
               dimphaseit= dimphase;
-      }
-      it_elapsed = millis () 
-
+     }
+     
+    it= true ; 
      portEXIT_CRITICAL_ISR(&mux);
    
 }  
@@ -134,8 +135,9 @@ void IRAM_ATTR onTimer() {
 
   if(i == dimthreshold )  {digitalWrite(SCRLED, LOW);  } //reset SCR LED
 
-  if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
+//  if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
                                                         // happened else do nothing
+if(zero_cross == true )  // First check to make sure the zero-cross has                                                         
  {                                                    
       
      
@@ -153,7 +155,7 @@ void IRAM_ATTR onTimer() {
      } 
       else {  
           i++; 
-         // digitalWrite(SCRLED, LOW); //reset SCR LED
+         
           }           // If the dimming value has not been reached, incriment our counter
    
  }      // End zero_cross check
@@ -221,7 +223,7 @@ display.display();
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
 
-  
+  it_elapsed = millis () + wait_it_limit;
  
 }                
 
@@ -240,6 +242,18 @@ void loop()
 
 
 // function delay 2msec
+
+if (it == true) // waiting IT info
+
+{
+  if ( long (millis() - it_elapsed) >= wait_it_limit )        // check if delay > 3msec to validate interrupt zero cross
+      {
+        first_it_zero_cross = true ;
+      }
+      it_elapsed = millis () ;
+      it = false ;
+
+ }
 
     // if (first_it_zero_cross == true  )            // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
     //   {            
