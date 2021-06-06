@@ -105,9 +105,9 @@ version 1.3 april 2020 adding OLED
 version 1.4 june 2020 adding threshold for relay 1
 version 1.5 may 2021 adding synchro between rpower received by wifi and regulation
 version 1.6 may 2021 linearity tic 75usec dim 0-128
-version 1.7 may 2021 dimphaseit; 4usec for scr command
+version 1.7 may 2021 dimphaseit; 5usec for scr command
 version 1.8 june 2021 adding wathdog
-version 1.9 june 2021 SCRLED low on zerocrosspin= 0 after IT
+version 1.9 june 2021 modification led scr
 
 
 */
@@ -194,7 +194,7 @@ const byte zeroCrossPin      = 19;
 
 // zero-crossing interruption  :
  
-byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimthreshold=35 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 128;              // max value to start SCR command
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
 byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
@@ -202,6 +202,7 @@ byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 5
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
 byte dimphaseit = dimphase;      
+byte dimled = dimmax-dimthreshold ; // 
 
 // wifi UDP
 
@@ -295,7 +296,7 @@ void IRAM_ATTR onTimer() {
    if(zero_cross == true && dimphaseit < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
    
-     if (digitalRead (zeroCrossPin) == false) {digitalWrite(SCRLED, LOW); } //reset SCR LED
+     //if (i== dimthreshold) {digitalWrite(SCRLED, LOW); } //reset SCR LED
 
      if(i>dimphaseit) {            // i is a counter which is used to SCR command delay 
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
@@ -667,6 +668,10 @@ if (rPower < Treshlold_start_relay1)  // if power < 0 Relay 1 must be ON; immedi
               display.display();
             UDP_OK = false ;
             }
+
+
+      if (dim < dimled && digitalRead (zeroCrossPin) == true ){ digitalWrite(SCRLED, LOW);}// SCR LED}
+      if (dim >= dimled && digitalRead (zeroCrossPin) == false ){ digitalWrite(SCRLED, LOW);}// SCR LED}
 
 
       esp_task_wdt_reset(); // reset watchdog
