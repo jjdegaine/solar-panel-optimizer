@@ -112,7 +112,6 @@ void IRAM_ATTR zero_cross_detect() {   //
         zero_cross_flag = true;   // Flag for power calculation
         zero_cross = true;        // Flag for SCR
         first_it_zero_cross = true ;  // flag to start a delay 2msec
-     //   digitalWrite(SCRLED, LOW); //reset SCR LED
         dimphaseit= dimphase;
 
      portEXIT_CRITICAL_ISR(&mux);
@@ -129,7 +128,6 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
 
- // if(i == dimthreshold )  {digitalWrite(SCRLED, LOW);  } //reset SCR LED
 
   if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
                                                         // happened else do nothing
@@ -140,17 +138,16 @@ void IRAM_ATTR onTimer() {
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(4);             // Pause briefly to ensure the SCR turned on
+       delayMicroseconds(5);             // Pause briefly to ensure the SCR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
 
-      //    digitalWrite(SCRLED, HIGH);      // start led SCR
+       digitalWrite(SCRLED, HIGH);      // start led SCR
           zero_cross = false;
           
      } 
       else {  
           i++; 
-         // digitalWrite(SCRLED, LOW); //reset SCR LED
           }           // If the dimming value has not been reached, incriment our counter
    
  }      // End zero_cross check
@@ -234,7 +231,7 @@ display.display();
 void loop()
  {
  
-if (zero_cross == true ){ digitalWrite(SCRLED, LOW);} else { digitalWrite(SCRLED, HIGH) ;}// SCR LED}
+if (digitalRead (zeroCrossPin) == true ){ digitalWrite(SCRLED, LOW);}// SCR LED}
 
 // function delay 2msec
 
