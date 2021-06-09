@@ -43,7 +43,7 @@ const byte zeroCrossPin      = 19;
 
 // zero-crossing interruption  :
  
-byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 192;              // max value to start SCR command
 byte dimled = dimmax-dimthreshold ; // 
 
@@ -60,7 +60,7 @@ byte wifi_wait = 0;       //
  volatile bool send_UDP_wifi = false;
 
 unsigned long time_now;
-unsigned long time_limit = 250 ; // time 2000 sec
+unsigned long time_limit = 2500 ; // time 2000 sec
 
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
@@ -71,6 +71,7 @@ volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
 volatile bool wait_2msec ;
+
 
 
 #define WDT_TIMEOUT 3
@@ -108,15 +109,19 @@ void Taskwifi_udp( void *pvParameters );
 //____________________________________________________________________________________________
 
 void IRAM_ATTR zero_cross_detect() {   // 
+   
      portENTER_CRITICAL_ISR(&mux);
+
+      detachInterrupt(digitalPinToInterrupt(zeroCrossPin));
 
         zero_cross_flag = true;   // Flag for power calculation
         zero_cross = true;        // Flag for SCR
         first_it_zero_cross = true ;  // flag to start a delay 2msec
         dimphaseit= dimphase;
+      
 
      portEXIT_CRITICAL_ISR(&mux);
-   
+ 
 }  
 
 
@@ -216,7 +221,8 @@ display.display();
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
 
-  
+  dim =150 ;
+
  
 }                
 
@@ -239,37 +245,38 @@ if (dim >= dimled && digitalRead (zeroCrossPin) == false ){ digitalWrite(SCRLED,
 
     if (first_it_zero_cross == true  )            // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
       {            
-       
-       it_elapsed = millis () + wait_it_limit;
-      
-       detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
+       //detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
        first_it_zero_cross = false;      // flag for IT zero_cross
+       it_elapsed = millis () + wait_it_limit;
+                   
        wait_2msec = true ;
+
+      //dimphaseit= dimphase;
+
+
       }
       
       if (wait_2msec == true && long (millis() - it_elapsed) >= 0 )        // check if delay > 3msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
       {
-      
+        wait_2msec=false;
+
         attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
-        wait_2msec=false ; 
+        
       }
 
 if (long (millis() - time_now > time_limit)) 
 {
 
-    if ( dim >= 192) { 
-      dim =0;
+    if ( dim >= 160) { 
+      dim =150;
       }
     else{
     dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
-    //dimphase = dim_sinus [ dim ] + dimthreshold; // linear sinus
-    
-      //portENTER_CRITICAL_ISR(&timerMux); // critical phase it timer
-     // if (zero_cross == false ) {dimphaseit= dimphase;}
-      //portEXIT_CRITICAL_ISR(&timerMux); // critical phase it timer
 
     dim_sinus_display = dim_sinus [ dim ] ;
+
     dim++ ;
+
               display.setColor(BLACK);        // clear first line
               display.fillRect(0, 0, 128, 22);
               display.setColor(WHITE); 
