@@ -217,6 +217,7 @@ display.display();
 
  // init interrupt on PIN  zero_crossing
  attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);  
+ 
 
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
@@ -261,6 +262,7 @@ if (dim >= dimled && digitalRead (zeroCrossPin) == false ){ digitalWrite(SCRLED,
         wait_2msec=false;
 
         attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
+        
         
       }
 
