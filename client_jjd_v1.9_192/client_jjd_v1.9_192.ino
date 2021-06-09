@@ -195,7 +195,7 @@ const byte zeroCrossPin      = 19;
 
 // zero-crossing interruption  :
  
-byte dimthreshold=35 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimthreshold=41 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 192;
 
 
