@@ -107,7 +107,7 @@ version 1.5 may 2021 adding synchro between rpower received by wifi and regulati
 version 1.6 may 2021 linearity tic 75usec dim 0-128
 version 1.7 may 2021 dimphaseit; 5usec for scr command
 version 1.8 june 2021 adding wathdog
-version 1.9 june 2021 modification led scr avec 192 pas
+version 1.9 june 2021 modification led scr avecwith 192 step
 
 
 
