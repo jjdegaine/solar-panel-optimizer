@@ -188,8 +188,10 @@ signed long it_elapsed; // counter for delay 3 msec
 char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
 //char periodStep = 51;                            // 51 * 192 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
+volatile int i_zero_cross = 0;                   // Variable to use as a counter to start power calculation and reset led 2022_01
 volatile bool zero_cross = false;                // zero cross flag for SSR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
+volatile bool zero_cross_flag_switch = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
 volatile bool wait_2msec ; // flag no IT on falling edge 
 volatile bool TTL = false ; // time to leave UDP
@@ -243,8 +245,9 @@ void IRAM_ATTR zero_cross_detect() {   //
      //zero_cross_flag = true;   // Flag for power calculation modif 2022_01
      zero_cross = true;        // Flag for SSR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
+     zero_cross_flag_switch = true ; // 
      // digitalWrite(SCRLED, LOW); //reset SSR LED modif 2022_01
-     
+     i_zero_cross = 0 ; // start counting to compensate phase shift
       send_UDP ++ ;
      if (send_UDP > send_UDP_max)
      {
@@ -265,11 +268,20 @@ void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   
   // portEXIT_CRITICAL_ISR(&timerMux);
-  
-   if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
- {                                                    // happened else do nothing
+  if ( zero_cross_flag_switch == true) // waiting real zero cross to start power calculation and reset scr led 
+   { 
+     i_zero_cross++ ;
+    }
+  if (i_zero_cross > dimthreshold )
+  {
+    zero_cross_flag_switch == false; 
     digitalWrite(SCRLED, LOW); //reset SSR LED modif 2022_01
     zero_cross_flag = true;   // Flag for power calculation modif 2022_01
+  }
+
+   if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
+ {                                                    // happened else do nothing
+    
      
      if(i>dimphase) {            // i is a counter which is used to SSR command delay 
                                 // i minimum ==> start SSR just after zero crossing half period ==> max power
