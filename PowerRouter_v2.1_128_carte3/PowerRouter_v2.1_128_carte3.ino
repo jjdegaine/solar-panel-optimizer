@@ -274,7 +274,7 @@ void IRAM_ATTR onTimer() {
     }
   if (i_zero_cross > dimthreshold )
   {
-    zero_cross_flag_switch == false; 
+    zero_cross_flag_switch = false; 
     digitalWrite(SCRLED, LOW); //reset SSR LED modif 2022_01
     zero_cross_flag = true;   // Flag for power calculation modif 2022_01
   }
