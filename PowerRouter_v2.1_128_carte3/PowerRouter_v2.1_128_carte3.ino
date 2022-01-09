@@ -240,9 +240,9 @@ void Taskwifi_udp( void *pvParameters );
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
      //portEXIT_CRITICAL_ISR(&mux);
-     zero_cross_flag = true;   // Flag for power calculation
+     //zero_cross_flag = true;   // Flag for power calculation modif 2022_01
      zero_cross = true;        // Flag for SSR
-     // first_it_zero_cross = true ;  // flag to start a delay 2msec modif 2022_01
+     first_it_zero_cross = true ;  // flag to start a delay 2msec
      // digitalWrite(SCRLED, LOW); //reset SSR LED modif 2022_01
      
       send_UDP ++ ;
