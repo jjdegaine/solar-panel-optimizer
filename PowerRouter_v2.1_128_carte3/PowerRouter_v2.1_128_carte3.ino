@@ -108,12 +108,12 @@ bool WINTER = false	;		 	  // winter -> no wifi summer --> wifi
 bool do_nothing = false ; // 
 
 
-float Vcalibration     = 0.90;   // to obtain the mains exact value 
+float Vcalibration     = 0.94;   // to obtain the mains exact value 
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
-float ADC_V_0V = 467 ; // ADC value for 0V input 3.3V/2
-float ADC_I_0A = 467 ; // ADC value for 0V input 3.3V/2
+float ADC_V_0V = 452 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 452 ; // ADC value for 0V input 3.3V/2
 
 // Threshold value for power adjustment: 
 
