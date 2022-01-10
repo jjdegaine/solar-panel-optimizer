@@ -61,7 +61,6 @@ PIN description
 
 
 version 2.0 first release version
-version 2.1 192 step instead of 128. 25W regulation instead of 50W. modification of portEXIT_CRITICAL_ISR. 
 
 */
 
@@ -108,18 +107,16 @@ bool WINTER = false	;		 	  // winter -> no wifi summer --> wifi
 bool do_nothing = false ; // 
 
 
-float Vcalibration     = 0.94;   // to obtain the mains exact value 
+float Vcalibration     = 0.90;   // to obtain the mains exact value 
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
-float ADC_V_0V = 452 ; // ADC value for 0V input 3.3V/2
-float ADC_I_0A = 452 ; // ADC value for 0V input 3.3V/2
+float ADC_V_0V = 467 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 467 ; // ADC value for 0V input 3.3V/2
 
 // Threshold value for power adjustment: 
 
-//int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 50W
-int tresholdP     = 25000;           // Threshold to start power adjustment 1 = 1mW ; 25W
-
+int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
@@ -154,13 +151,9 @@ const byte zeroCrossPin      = 19;
 // zero-crossing interruption  :
  
 byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
-//byte dimmax = 128;              // max value to start SSR command
-byte dimmax = 192;              // max value to start SSR command
-
-//byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
-byte dim = dimmax;              // Dimming level (0-192)  0 = on, 192 = 0ff 
-// byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
-byte dim_sinus [193] = {0, 5, 20, 30, 47, 50, 54, 57, 60, 61, 63, 68, 70, 71, 73, 74, 76, 78, 79, 80, 81, 83, 85, 86, 87, 90, 91, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 104, 105, 106, 107, 108, 110, 111, 113, 114, 114, 115, 116, 117, 119, 120, 120, 121, 122, 123, 123, 124, 124, 125, 126, 127, 129, 130, 130, 130, 131, 131, 132, 132, 133, 133, 134, 135, 136, 137, 138, 138, 139, 140, 141, 141, 142, 142, 143, 143, 144, 145, 145, 146, 147, 148, 148, 149, 149, 150, 151, 152, 153, 153, 154, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 156, 156, 156, 156, 156, 156, 156, 156, 156, 157, 157, 158, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 168, 169, 169, 170, 171, 172, 173, 174, 175, 176, 176, 177, 178, 179, 179, 180, 180, 181, 181, 182, 182, 183, 183, 184, 184, 185, 185, 186, 186, 187, 187, 188, 188, 189, 189, 189, 190, 190, 190, 190, 190, 190, 191, 191, 191, 191, 191, 192, 192, 192, 192, 192, 192, 192, 192, 192, 192, 192} ;
+byte dimmax = 128;              // max value to start SSR command
+byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
+byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
 
 
 byte dimphase = dim + dimthreshold; 
@@ -184,8 +177,7 @@ unsigned long timeout_now;
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-//char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
-char periodStep = 51;                            // 51 * 192 = 10msec, calibration using oscilloscope
+char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SSR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
@@ -238,7 +230,7 @@ void Taskwifi_udp( void *pvParameters );
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
-     //portEXIT_CRITICAL_ISR(&mux);
+     portEXIT_CRITICAL_ISR(&mux);
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SSR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
@@ -250,7 +242,7 @@ void IRAM_ATTR zero_cross_detect() {   //
        send_UDP=0; // reset counter send_UDP
        send_UDP_wifi = true ; // ready to send UDP 
      }
-    portEXIT_CRITICAL_ISR(&mux);
+   
 }  
 
 
@@ -263,7 +255,7 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   
-  // portEXIT_CRITICAL_ISR(&timerMux);
+  portEXIT_CRITICAL_ISR(&timerMux);
   
    if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
@@ -285,7 +277,7 @@ void IRAM_ATTR onTimer() {
       }           // If the dimming value has not been reached, incriment the counter
      
  }      // End zero_cross check
-  portEXIT_CRITICAL_ISR(&timerMux); 
+
 }
 
 
