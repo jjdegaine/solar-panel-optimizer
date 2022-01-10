@@ -1,35 +1,6 @@
 /*
 
-Power_Router est un système qui permet d'utiliser l'excédent d'énergie autoproduit par 
-l'allumage d'un appareil résistif (facteur de puissance proche de 1) ce qui évite l'injection 
-au réseau public de distribution d'électricité.
-
-Le principe de fonctionnement est le suivant :
-- détection de phase entre courant et tension permet de savoir si on consomme ou bien on injecte
-- en cas d'injection il se produit la mise en route progressive d'un dispositif d'absorption 
-d'excédent de puissance 
-- la mesure du courant permet d'ajuster au mieux le niveau d'absorption de cet excédent.
-- Par ailleurs il est prévu une sortie temporisée de 30 secondes (paramétrable) lorsque le treshold 
-d'injection est proche de 3W (paramétrable) permettant par exemple de couper l'injection d'une 
-éolienne au profit de la charge de batteries. 
-
-le programme prévoit :
-- une sonde de tension : simple transfo 230V/5V Crête à Crête sur mi-tension (2.5V)
-- une sonde de courant : 20A/25mA sur mi-tension (2.5V)
-- un module de commande par SCR
-- un dispositif de détection de passage à zéro de la sinusoïde de tension secteur (par exemple 
-l'optocoupleur H11AA1)
-- la bibliothèque TimeOne.h à installer et disponible là : 
-http://www.arduino.cc/playground/Code/Timer
-- en option un afficheur LCD 1602 avec extension I2C
-
-La gamme de puissances testée est va de 300 à 1000W
-
-merci à Ryan McLaughlin <ryanjmclaughlin@gmail.com> pour avoir étudié et mis au point la partie 
-commande du SCR il y a quelques années et que j'ai repris dans ce programme :)
-source : https://web.archive.org/web/20091212193047/http://www.arduino.cc:80/cgi-bin/yabb2/YaBB.pl?num=1230333861/15
-
-_________________________________________________________________
+________________________________________________________________
 |                                                               |
 |       auteur : Philippe de Craene <dcphilippe@yahoo.fr        |
 |           pour l' Association P'TITWATT                       |
@@ -39,21 +10,12 @@ Toute contribution en vue de l’amélioration de l’appareil est la bienvenue 
 demandé de conserver mon nom et mon email dans l’entête du programme, et bien sûr de partager 
 avec moi cette amélioration. Merci.
 
+merci à Ryan McLaughlin <ryanjmclaughlin@gmail.com> pour avoir étudié et mis au point la partie 
+commande du SCR il y a quelques années et que j'ai repris dans ce programme :)
+source : https://web.archive.org/web/20091212193047/http://www.arduino.cc:80/cgi-bin/yabb2/YaBB.pl?num=1230333861/15
+
 chronologie des versions :
-version 0.5 - 3 mai 2018     - boucle de décrémentation dim --
-version 0.8 - 5 juil. 2018   - 1ère version fonctionnelle, pb du pic de courant du SCR 
-version 1   - 6 juil. 2018   - ajout de la bibliothèque EmonLib.h pour mesure du secteur
-version 1.4 - 7 juil. 2018   - simplification des tests sur sPower et dim.
-version 1.6 - 8 juil. 2018   - ajout LED d'overflow + optimisation des paramètres + tresholdPoff
-version 1.8 - 24 sept 2018   - ajout du pas variable sur dim avec dimstep
-version 1.9 - 12 oct. 2018   - ajout d'une sortie temporisée de 5min à tresholdPoff (25W) du treshold d'injection  
-version 2.0 - 4 nov. 2018    - ajout d'un watchdog avec comptage de reset en EEPROM
-version 2.2 - 7 nov. 2018    - tresholdPtempo variable à part entière pour le délestage + correction coquille
-version 2.3 - 16 dec 2018    - réaménagemet des messages console pour gagner du temps
-version 2.4 - 12 jan 2019    - ajout d'un afficheur LCD 1602 avec extension I2C
-version 3.2 - 17 jan 2019    - gain en performances en contournant EmonLib.h
-version 3.3 - 22 fev 2019    - abandon de tresholdPoff : arrêt en cas de chutte brusque d'injection 
-version 3.4 - 27 avr 2019    - changement du délestage par les tresholds delestON et delestOFF
+
 version 3.5 - 9 july 2019    - test if no energy detected which started the WatchDog
 
 ____________________________________________________________________________________________
@@ -61,7 +23,7 @@ ________________________________________________________________________________
 
 _____________________________________________________________________
 |																                                  	|
-|              modification by J.J.Delorme 2020					          	|
+|              modification by J.J 2021					          	|
 |																                                  	|
 _____________________________________________________________________
 
@@ -97,14 +59,9 @@ PIN description
 
  - PIN35 analog for intensity measurement
 
-version 1.0 january 2020
-version 1.1 february 2020 data sent by wifi using IT_sec
-version 1.2 february 2020 relay added. calibration V I OK 
-version 1.3 march 2020 improvement....
-version 1.4 march 2020 adding oled
-version 1.5 april 2020 suppress oled message on wifi task (only one task can display)
-version 1.6 april 2020 modify linearity of dim using tab
-version 1.7 april 2020 work around power up OLED 
+
+version 2.0 first release version
+version 2.1 192 step instead of 128. 25W regulation instead of 50W. modification of portEXIT_CRITICAL_ISR. 
 
 */
 
@@ -134,8 +91,8 @@ WiFiUDP Udp; // Creation of wifi Udp instance, UDP is used to maximized the timi
 
 unsigned int localPort = 9999;
 
-const char *ssid = "BB9ESERVER2";   // for example to be changed 
-const char *password = "BB9ESERVER2";  // for example  to be changed
+const char *ssid = "BB9ESERVER";   // for example to be changed 
+const char *password = "BB9ESERVER";  // for example  to be changed
 
 
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
@@ -151,16 +108,18 @@ bool WINTER = false	;		 	  // winter -> no wifi summer --> wifi
 bool do_nothing = false ; // 
 
 
-float Vcalibration     = 0.94;   // to obtain the mains exact value 0.92 for main board 3
+float Vcalibration     = 0.94;   // to obtain the mains exact value 
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
-float ADC_V_0V = 452 ; // ADC value for 0V input 3.3V/2 main board 3
-float ADC_I_0A = 452 ; // ADC value for 0V input 3.3V/2 main board 3
+float ADC_V_0V = 452 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 452 ; // ADC value for 0V input 3.3V/2
 
 // Threshold value for power adjustment: 
 
-int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
+//int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 50W
+int tresholdP     = 25000;           // Threshold to start power adjustment 1 = 1mW ; 25W
+
 
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
@@ -195,9 +154,13 @@ const byte zeroCrossPin      = 19;
 // zero-crossing interruption  :
  
 byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
-byte dimmax = 128;              // max value to start SSR command
-byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
-byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
+//byte dimmax = 128;              // max value to start SSR command
+byte dimmax = 192;              // max value to start SSR command
+
+//byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
+byte dim = dimmax;              // Dimming level (0-192)  0 = on, 192 = 0ff 
+// byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
+byte dim_sinus [193] = {0, 5, 20, 30, 47, 50, 54, 57, 60, 61, 63, 68, 70, 71, 73, 74, 76, 78, 79, 80, 81, 83, 85, 86, 87, 90, 91, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 104, 105, 106, 107, 108, 110, 111, 113, 114, 114, 115, 116, 117, 119, 120, 120, 121, 122, 123, 123, 124, 124, 125, 126, 127, 129, 130, 130, 130, 131, 131, 132, 132, 133, 133, 134, 135, 136, 137, 138, 138, 139, 140, 141, 141, 142, 142, 143, 143, 144, 145, 145, 146, 147, 148, 148, 149, 149, 150, 151, 152, 153, 153, 154, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 155, 156, 156, 156, 156, 156, 156, 156, 156, 156, 157, 157, 158, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 168, 169, 169, 170, 171, 172, 173, 174, 175, 176, 176, 177, 178, 179, 179, 180, 180, 181, 181, 182, 182, 183, 183, 184, 184, 185, 185, 186, 186, 187, 187, 188, 188, 189, 189, 189, 190, 190, 190, 190, 190, 190, 191, 191, 191, 191, 191, 192, 192, 192, 192, 192, 192, 192, 192, 192, 192, 192} ;
 
 
 byte dimphase = dim + dimthreshold; 
@@ -221,7 +184,8 @@ unsigned long timeout_now;
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
+//char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
+char periodStep = 51;                            // 51 * 192 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SSR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
@@ -274,8 +238,8 @@ void Taskwifi_udp( void *pvParameters );
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
-     
-     //zero_cross_flag = true;   // Flag for power calculation modif 2022_01
+     //portEXIT_CRITICAL_ISR(&mux);
+     zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SSR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
      digitalWrite(SCRLED, LOW); //reset SSR LED
@@ -286,7 +250,7 @@ void IRAM_ATTR zero_cross_detect() {   //
        send_UDP=0; // reset counter send_UDP
        send_UDP_wifi = true ; // ready to send UDP 
      }
-   portEXIT_CRITICAL_ISR(&mux);
+    portEXIT_CRITICAL_ISR(&mux);
 }  
 
 
@@ -299,22 +263,18 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   
-  
+  // portEXIT_CRITICAL_ISR(&timerMux);
   
    if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
 
-      if (i == dimthreshold )
-        {
-        zero_cross_flag = true;   // Flag for power calculation modif 2022_01
-        }
       
      
      if(i>dimphase) {            // i is a counter which is used to SSR command delay 
                                 // i minimum ==> start SSR just after zero crossing half period ==> max power
                                 // i maximum ==> start SSR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SSR
-       delayMicroseconds(50);             // Pause briefly to ensure the SSR turned on
+       delayMicroseconds(5);             // Pause briefly to ensure the SSR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SSR gate, 
        i = 0;                             // Reset the accumulator
        digitalWrite(SCRLED, HIGH);      // start led SSR 
@@ -325,7 +285,7 @@ void IRAM_ATTR onTimer() {
       }           // If the dimming value has not been reached, incriment the counter
      
  }      // End zero_cross check
-  portEXIT_CRITICAL_ISR(&timerMux);
+  portEXIT_CRITICAL_ISR(&timerMux); 
 }
 
 
