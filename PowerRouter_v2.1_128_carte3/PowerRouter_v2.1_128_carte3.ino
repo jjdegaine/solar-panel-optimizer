@@ -61,6 +61,7 @@ PIN description
 
 
 version 2.0 first release version
+version 2.1 for test
 
 */
 
@@ -107,16 +108,16 @@ bool WINTER = false	;		 	  // winter -> no wifi summer --> wifi
 bool do_nothing = false ; // 
 
 
-float Vcalibration     = 0.90;   // to obtain the mains exact value 
+float Vcalibration     = 0.94;   // to obtain the mains exact value 
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
-float ADC_V_0V = 467 ; // ADC value for 0V input 3.3V/2
-float ADC_I_0A = 467 ; // ADC value for 0V input 3.3V/2
+float ADC_V_0V = 452 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 452 ; // ADC value for 0V input 3.3V/2
 
 // Threshold value for power adjustment: 
 
-int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
+int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 
 
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
@@ -230,7 +231,7 @@ void Taskwifi_udp( void *pvParameters );
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
-     portEXIT_CRITICAL_ISR(&mux);
+     
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SSR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
@@ -242,7 +243,7 @@ void IRAM_ATTR zero_cross_detect() {   //
        send_UDP=0; // reset counter send_UDP
        send_UDP_wifi = true ; // ready to send UDP 
      }
-   
+   portEXIT_CRITICAL_ISR(&mux);
 }  
 
 
@@ -255,7 +256,7 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   
-  portEXIT_CRITICAL_ISR(&timerMux);
+  
   
    if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
@@ -277,7 +278,7 @@ void IRAM_ATTR onTimer() {
       }           // If the dimming value has not been reached, incriment the counter
      
  }      // End zero_cross check
-
+  portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 
