@@ -1,67 +1,6 @@
 /*
 
-________________________________________________________________
-|                                                               |
-|       auteur : Philippe de Craene <dcphilippe@yahoo.fr        |
-|           pour l' Association P'TITWATT                       |
-_________________________________________________________________
-
-Toute contribution en vue de l’amélioration de l’appareil est la bienvenue ! Il vous est juste
-demandé de conserver mon nom et mon email dans l’entête du programme, et bien sûr de partager 
-avec moi cette amélioration. Merci.
-
-merci à Ryan McLaughlin <ryanjmclaughlin@gmail.com> pour avoir étudié et mis au point la partie 
-commande du SCR il y a quelques années et que j'ai repris dans ce programme :)
-source : https://web.archive.org/web/20091212193047/http://www.arduino.cc:80/cgi-bin/yabb2/YaBB.pl?num=1230333861/15
-
-chronologie des versions :
-
-version 3.5 - 9 july 2019    - test if no energy detected which started the WatchDog
-
-____________________________________________________________________________________________
-
-
-_____________________________________________________________________
-|																                                  	|
-|              modification by J.J 2021					          	|
-|																                                  	|
-_____________________________________________________________________
-
-an ESP32 is used instead of an classic arduino Atmel AVR. The goal is to use the wifi link to transmit to an another ESP32 module the energy to be used to optimize the solar panel energy
-
-PIN description
-
- IN description
-
- - PIN 5 static relay command
- 
- - PIN 14 input WINTER 
-
- - PIN 15 relay command 2
-
- - PIN 16 LED power static relay
-
- - PIN 17 relay command 1
-
- - PIN 18 overflow LED
-
- - PIN 19 zero cross voltage
-
- - PIN 21 SDA for OLED SSD1306
-
- - PIN 22 SCL for OLED SSD1306
-
- - PIN26 input VERBOSE
-
- - PIN27 input CALIBRATION
-
- - PIN34 analog for voltage measuement
-
- - PIN35 analog for intensity measurement
-
-
-version 2.0 first release version
-version 2.1 phasecalibration = -10 to compensate U / I phase shift + adding watch dog on task UI
+adding watch dog on task UI
 
 */
 
@@ -188,7 +127,7 @@ volatile bool wait_2msec ; // flag no IT on falling edge
 volatile bool TTL = false ; // time to leave UDP
 volatile bool UDP_OK = false; 
 
-#define WDT_TIMEOUT 15 // watch dog time
+#define WDT_TIMEOUT 3 // watch dog time
 
 // Voltage and current measurement  :
 
@@ -373,7 +312,7 @@ display.display();
 
   WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
   delay(500); // Delay to wait Wifi init 
-  Udp.begin(localPort);
+  udp.begin(localPort);
   Serial.println("init access point UDP OK");
 
   display.drawString(0, 22, "UDP OK");
@@ -428,8 +367,6 @@ void loop()
 {
   // Empty. Things are done in Tasks.
   
-
-
 }
 
 /*--------------------------------------------------*/
@@ -451,285 +388,23 @@ void TaskUI(void *pvParameters)  // This is the task UI.
  esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
  esp_task_wdt_add(NULL); //add current thread to WDT watch
 
+ dim=0 ;
+
   for (;;) // A Task shall never return or exit.
   {
     
   
-  unsigned int numberOfSamples = 0;
-  sumV = 0;
-  sumI = 0;
-  sumP = 0;
-  unsigned int time_now_second = millis()/1000;      // timer in second
-
-// Count 20 zero cross to calculate U / I / P
-
-
- if( zero_crossCount >= totalCount ) { zero_crossCount = 0; }
-
-
-// Value are measure during totalcount half period  
-  while( zero_crossCount < totalCount ) {
-    if( zero_cross_flag == true ) {        // Half period counter
-      zero_cross_flag = false;
-      zero_crossCount++; 
-    } 
-    
-    numberOfSamples++;                         // counter of samples U and I
-    
-    memo_readV = readV;                  // 
-    readV = analogRead(voltageSensorPin) / 4;   // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
-    
-	if( memo_readV == 0 && readV == 0 ) { esp_task_wdt_reset(); break; } // exit the while if no powersupply
-    readI = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
-
-  
-// RMS Current and Voltage 
-
-    if( CALIBRATION == true ) {                         // 
-      sqV= (readV -ADC_V_0V) * (readV -ADC_V_0V);             // ADC_V_0V ==> 0volt 
-      sumV += sqV;               
-      sqI = (readI -ADC_I_0A) * (readI -ADC_I_0A);
-	    sumI += sqI;
-    } 
- 
-// instantaneous power calculation 
-    instP = ((memo_readV -ADC_V_0V) + phasecalibration * ((readV -ADC_V_0V) - (memo_readV -ADC_V_0V))) * (readI -ADC_I_0A); 
-    sumP +=instP;  
-
-
-// function delay 2msec
-
-    if (first_it_zero_cross == true  )            // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
-      {            
-       
-       it_elapsed = millis () + wait_it_limit;
-      
-       detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
-       first_it_zero_cross = false;      // flag for IT zero_cross
-       wait_2msec = true ;
-      }
-      
-      if (wait_2msec == true && long (millis() - it_elapsed) >= 0 )        // check if delay > 3msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
-      {
-      
-        attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
-        wait_2msec=false ; 
-      }
-
-  
- }      // end while sur zero_crossCount
-
-
-// Power calculation
-
-  if( numberOfSamples > 0 ) {
-    if( CALIBRATION == true ) { 
-      V = Vcalibration * sqrt(sumV / numberOfSamples);
-      I = Icalibration * sqrt(sumI / numberOfSamples);
-    }
-    rPower = Vcalibration * Icalibration * sumP / numberOfSamples;
- 
-    Power_wifi =  rPower/1000 ; // Power wifi using float 
-  }
-	
-//____________________________________________________________________________________________
-//
-// Power to be unbalanced to avoid injection of electricity to the grid
-//
-//____________________________________________________________________________________________
-//
-// dimstep calculation.  
-//
-  if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
-  else { dimstep = 1 - (rPower/1000)/reaction_coeff; }
-  
-  // when rPower is less than tresholdP ==> unlalanced power must increased ==> DIM must be reduced
-
-  if( rPower < tresholdP ) {      
-    if( dim > dimstep )  dim -= dimstep; else  dim = 0;
-  } 
-
-// when rPower is higher than tresholdP ==> unlalanced power must decreased ==> DIM must be increasad
-
-  else if( rPower > tresholdP ) {                   
-    if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
-  }
-
-  if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // if dim is at the minimum, control regulation is at the maximum 
-  else { digitalWrite(limiteLED, LOW); }
-  
-
-// Value to used by the timer interrupt due to real phase between interruption and mains
-dimphase = dim_sinus [ dim ] + dimthreshold;
-
-// Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
-// to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
-//  a thershold is added using dim_min and dim_max
-//
-  if (long (millis() - unballasting_time > unballasting_timeout))
-   {
-    
-     if (dim < unballasting_dim_min)  // DIM is minimum => power in SSR is maximum
-      {
-      
-        if (unballasting_counter > 10) // dim is < unballasting_dim_min during 10 half period
-        {
-          
-          if (relay_1 == true) 
-          {
-            if(relay_2 == true)
-              {
-                unballasting_counter = 0;      // overflow
-                digitalWrite(limiteLED, HIGH) ;
-                
-              }
-            else 
-              {
-                digitalWrite( unballast_relay2, HIGH) ; // set relay 2 
-                relay_2 =true;
-                unballasting_counter= 0 ;
-                unballasting_time = millis() ;
-              }
-          }     
-          else
-              {
-              digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
-              relay_1 = true;
-              unballasting_counter= 0 ;
-              unballasting_time = millis() ;
-              }     
-          
-      
-       }  
-        unballasting_counter ++ ;
-      }
-      //
-      // 
-      //
-      if (dim > unballasting_dim_max) {
-        //
-        if (unballasting_counter > 10 ) // 
-        {
-          if (relay_2 == true)
-          {
-            digitalWrite (unballast_relay2, LOW) ; 
-            relay_2 = false;
-            unballasting_counter = 0 ;
-            unballasting_time= millis();
-          }
-          else
-          {
-            digitalWrite (unballast_relay1, LOW) ;
-            relay_1 = false;
-            unballasting_time= millis();
-            unballasting_counter = 0 ;
-          }
-         }
-         unballasting_counter ++ ;
-        } 
-      
-      }
-  
-
- 
-
-  // Display each 2 seconds
-
-
-  if( time_now_second >= memo_temps +2 ) {
-
-    if ( (CALIBRATION ==false) || (VERBOSE == false)) {
-          memo_temps = time_now_second;
-
-
-          Serial.print("P= ");
-          Serial.print(rPower/1000);   
-          Serial.print("w");
-          Serial.print("dim: ");
-          Serial.print(dim);
-          Serial.print ("dimphase ");
-          Serial.println (dimphase) ;
-
-
-
-          display.setColor(BLACK);        // clear first line
-          display.fillRect(0, 0, 128, 22);
-          display.setColor(WHITE); 
-
-          display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
-          display.display();
-        }
-      }
-
-          // 
-      
-        if( CALIBRATION == true ) {
-      	  Serial.print(V);
-      	  Serial.print("  |  ");
-          Serial.print(I/1000);
-          Serial.print("  |  ");
-          Serial.print(rPower/1000);
-          Serial.println();
-
           display.clear();
-          display.drawString(0, 0, String(int(V)) + "||" + String(int(I/1000))) ;
-          display.drawString(0, 22, String(int(Power_wifi)));
+          display.drawString(0, 0,  "UI " + String (dim) ) ;
+          display.drawString(0, 22,  "wifi " + String (dimmax) ) ;
           display.display();
 
-        }
-        if( VERBOSE == true ) {
-          Serial.print(rPower/1000);
-          Serial.print("  ||     ");
-          Serial.print(dimstep);
-          Serial.print("  ||  ");
-          Serial.print(dim);
-          Serial.print(" ||  ");
-          Serial.print(dimphase);
-          Serial.print(" ||  ");
-          Serial.print (relay_1);
-          Serial.print(" ||  ");
-          Serial.print (relay_2);
-          Serial.print(" ||  ");
-          Serial.print (unballasting_counter);
-          Serial.print(" ||  ");
-          Serial.print (millis() - unballasting_time);
-       
-          Serial.println();
-
-        }
-  
-        else { delay(1); }           // needed for stability
-
-// update switches winter, verbose, calibration
-
-        WINTER = digitalRead (pin_winter);
-      
-       VERBOSE = digitalRead (pin_verbose);
-     
-      CALIBRATION = digitalRead (pin_calibration);
-
-        // display WIFI information
-        if (TTL == true)
-              {
-              display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
-              display.setColor(WHITE); 
-              display.drawString(0, 22, "TIME UDP");
-              display.display();
-              TTL= false ;
-              }
-        if ( UDP_OK == true) 
-            {
-              display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
-              display.setColor(WHITE); 
-              display.drawString(0, 22, "UDP OK");
-              display.display();
-            UDP_OK = false ;
-            }
-
-     esp_task_wdt_reset(); // reset watch dog
-
+          delay (1000) ;
+        dim ++ ;
+    if ( dim > 10 ){  
+        delay (10000) ;
+    }
+   esp_task_wdt_reset(); // reset watch dog
   } 
 
   
@@ -745,13 +420,14 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
     (void) pvParameters;
-    
-    time_udp_now= millis(); 
-    
+
+      time_udp_now= millis(); 
+      dimmax = 0 ; 
 
     for (;;) // A Task shall never return or exit.
     {
-  	   while(send_UDP_wifi == false )
+
+while(send_UDP_wifi == false )
   	   {
   		wifi_wait=0; // loop to wait update DIM
   	    		
@@ -803,6 +479,11 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
                     time_udp_now= millis(); // reset time to leave
             		} 
        }
+
+
+
+          delay (2000) ;
+        dimmax ++ ;
 
      } // end for loop wifi
     
