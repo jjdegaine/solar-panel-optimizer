@@ -179,7 +179,7 @@ unsigned long timeout_now;
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 71;                            // 68 * 127 = 10msec, calibration using oscilloscope
+char periodStep = 73;                            // 68 * 127 = 10msec, calibration using oscilloscope
 //char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
 
 volatile int i_counter = 0;                              // Variable to use as a counter
