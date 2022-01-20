@@ -179,7 +179,7 @@ unsigned long timeout_now;
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
+char periodStep = 73;                            // 68 * 127 = 10msec, calibration using oscilloscope
 volatile int i = 0;                              // Variable to use as a counter
 volatile bool zero_cross = false;                // zero cross flag for SSR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
@@ -189,6 +189,10 @@ volatile bool TTL = false ; // time to leave UDP
 volatile bool UDP_OK = false; 
 
 #define WDT_TIMEOUT 15 // watch dog time
+
+/*unsigned long time_wdt = 30000 ; // time before stop to verify watchdog 30 sec
+unsigned long time_wdt_now = millis() ;
+*/
 
 // Voltage and current measurement  :
 
@@ -232,11 +236,13 @@ void Taskwifi_udp( void *pvParameters );
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
-     
+          digitalWrite(limiteLED, HIGH) ;
+    detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
+    
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SSR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
-     digitalWrite(SCRLED, LOW); //reset SSR LED
+     //digitalWrite(SCRLED, LOW); //reset SSR LED
      
       send_UDP ++ ;
      if (send_UDP > send_UDP_max)
@@ -244,6 +250,7 @@ void IRAM_ATTR zero_cross_detect() {   //
        send_UDP=0; // reset counter send_UDP
        send_UDP_wifi = true ; // ready to send UDP 
      }
+     digitalWrite(limiteLED, LOW) ;
    portEXIT_CRITICAL_ISR(&mux);
 }  
 
@@ -257,7 +264,10 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   
-  
+  if (zero_cross == true && i >= dimthreshold)
+  {
+    digitalWrite(SCRLED, LOW); //reset SSR LED
+  }
   
    if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
@@ -279,6 +289,7 @@ void IRAM_ATTR onTimer() {
       }           // If the dimming value has not been reached, incriment the counter
      
  }      // End zero_cross check
+ 
   portEXIT_CRITICAL_ISR(&timerMux);
 }
 
@@ -504,7 +515,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
        
        it_elapsed = millis () + wait_it_limit;
       
-       detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
+       // detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
        first_it_zero_cross = false;      // flag for IT zero_cross
        wait_2msec = true ;
       }
@@ -727,6 +738,12 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
               display.display();
             UDP_OK = false ;
             }
+
+   /*   if (long (millis() - time_wdt_now > time_wdt))             // comparing durations to test watchdog
+      {
+          delay (20000) ; // program stop duting 20sec to check watchdog
+      }
+    */
 
      esp_task_wdt_reset(); // reset watch dog
 
