@@ -184,12 +184,14 @@ char periodStep = 71;                            // 68 * 127 = 10msec, calibrati
 
 volatile int i_counter = 0;                              // Variable to use as a counter
 volatile int i = 0;
+volatile int I_led = 0;
 volatile bool zero_cross = false;                // zero cross flag for SSR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
 volatile bool wait_2msec ; // flag no IT on falling edge 
 volatile bool TTL = false ; // time to leave UDP
 volatile bool UDP_OK = false; 
+volatile bool led_zero = false;
 
 #define WDT_TIMEOUT 15 // watch dog time
 
@@ -246,6 +248,7 @@ void IRAM_ATTR zero_cross_detect() {   //
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SSR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
+     led_zero = true ;
      //digitalWrite(SCRLED, LOW); //reset SSR LED
    
 
@@ -270,15 +273,24 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   
-  if ( i_counter = dimthreshold)
+    if (led_zero==true )
+  {
+    I_led=0 ;
+    led_zero=false;
+  } 
+  if (led_zero==false && I_led == dimthreshold)
   {
     digitalWrite(SCRLED, LOW); //reset SSR LED
   }
-  
-   //if( dimphase <= dimphasemax )  // First check to make sure the zero-cross has 
- //{                                                    // happened else do nothing
+  else
+  {
+    I_led ++ ;
+  }
 
-      
+    if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
+ {                                                    // happened else do nothing                                                   // happened else do nothing
+
+   
      
      if(i_counter>dimphase) {            // i is a counter which is used to SSR command delay 
                                 // i minimum ==> start SSR just after zero crossing half period ==> max power
@@ -294,7 +306,7 @@ void IRAM_ATTR onTimer() {
       i_counter++; 
       }           // If the dimming value has not been reached, incriment the counter
      
- //}      // End zero_cross check
+ }      // End zero_cross check
  
   portEXIT_CRITICAL_ISR(&timerMux);
 }
