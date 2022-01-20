@@ -62,8 +62,6 @@ PIN description
 
 version 2.0 first release version
 version 2.1 phasecalibration = -10 to compensate U / I phase shift + adding watch dog on task UI
-version 2.2 reset led
-version 2.3 synchro using i
 
 */
 
@@ -181,8 +179,11 @@ unsigned long timeout_now;
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
-volatile int i = 0;                              // Variable to use as a counter
+char periodStep = 71;                            // 68 * 127 = 10msec, calibration using oscilloscope
+//char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
+
+volatile int i_counter = 0;                              // Variable to use as a counter
+volatile int i = 0;
 volatile bool zero_cross = false;                // zero cross flag for SSR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
@@ -238,15 +239,15 @@ void Taskwifi_udp( void *pvParameters );
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
+          digitalWrite(limiteLED, HIGH) ;
 
     detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
     
-     
-     //zero_cross = true;        // Flag for SSR
+     zero_cross_flag = true;   // Flag for power calculation
+     zero_cross = true;        // Flag for SSR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
      //digitalWrite(SCRLED, LOW); //reset SSR LED
-
-     i=0 ; // Reset the accumulator
+   
 
       send_UDP ++ ;
      if (send_UDP > send_UDP_max)
@@ -254,6 +255,8 @@ void IRAM_ATTR zero_cross_detect() {   //
        send_UDP=0; // reset counter send_UDP
        send_UDP_wifi = true ; // ready to send UDP 
      }
+
+     digitalWrite(limiteLED, LOW) ;
    portEXIT_CRITICAL_ISR(&mux);
 }  
 
@@ -267,31 +270,32 @@ void IRAM_ATTR zero_cross_detect() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
   
-  if (i = dimthreshold)
+  if ( i_counter = dimthreshold)
   {
     digitalWrite(SCRLED, LOW); //reset SSR LED
-    zero_cross_flag = true;   // Flag for power calculation
   }
   
-                                      // happened else do nothing
+   //if( dimphase <= dimphasemax )  // First check to make sure the zero-cross has 
+ //{                                                    // happened else do nothing
 
       
      
-     if(i>dimphase) {            // i is a counter which is used to SSR command delay 
+     if(i_counter>dimphase) {            // i is a counter which is used to SSR command delay 
                                 // i minimum ==> start SSR just after zero crossing half period ==> max power
                                 // i maximum ==> start SSR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SSR
        delayMicroseconds(5);             // Pause briefly to ensure the SSR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SSR gate, 
-                               
+       i_counter = 0;                             // Reset the accumulator
        digitalWrite(SCRLED, HIGH);      // start led SSR 
-     
+       zero_cross = false;
      } 
     else {  
-      i++; 
+      i_counter++; 
       }           // If the dimming value has not been reached, incriment the counter
      
-       // End zero_cross check
+ //}      // End zero_cross check
+ 
   portEXIT_CRITICAL_ISR(&timerMux);
 }
 
@@ -662,6 +666,8 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           Serial.print(dim);
           Serial.print ("dimphase ");
           Serial.println (dimphase) ;
+          Serial.print ("i_counter ");
+          Serial.println (i_counter) ;
 
 
 
