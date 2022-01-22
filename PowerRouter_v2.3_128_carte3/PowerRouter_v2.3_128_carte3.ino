@@ -62,6 +62,7 @@ PIN description
 
 version 2.0 first release version
 version 2.1 phasecalibration = -10 to compensate U / I phase shift + adding watch dog on task UI
+version 2.3 SSR LED improvement
 
 */
 
@@ -179,12 +180,12 @@ unsigned long timeout_now;
 signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
-char periodStep = 71;                            // 68 * 127 = 10msec, calibration using oscilloscope
-//char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
+char periodStep = 71;                            // 71 * 127 = 10msec, calibration using oscilloscope
+//char periodStep = 68;                            // old value
 
-volatile int i_counter = 0;                              // Variable to use as a counter
-volatile int i = 0;
-volatile int I_led = 0;
+volatile int i_counter = 0;                       // Variable to use as a counter for SSR
+volatile int i = 0;                               // Variable to use as a counter for LCD
+volatile int I_led = 0;                           // Variable to use as a counter for LED
 volatile bool zero_cross = false;                // zero cross flag for SSR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
