@@ -741,26 +741,28 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
      
       CALIBRATION = digitalRead (pin_calibration);
 
-        // display WIFI information
-        if (TTL == true)
+        // display WIFI information only if winter
+        if (WINTER == true)
+        {
+          if (TTL == true)
+                {
+                display.setColor(BLACK);        // clear second  line
+                display.fillRect(0, 22, 128, 22);
+                display.setColor(WHITE); 
+                display.drawString(0, 22, "TIME UDP");
+                display.display();
+                TTL= false ;
+                }
+          if ( UDP_OK == true) 
               {
-              display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
-              display.setColor(WHITE); 
-              display.drawString(0, 22, "TIME UDP");
-              display.display();
-              TTL= false ;
+                display.setColor(BLACK);        // clear second  line
+                display.fillRect(0, 22, 128, 22);
+                display.setColor(WHITE); 
+                display.drawString(0, 22, "UDP OK");
+                display.display();
+              UDP_OK = false ;
               }
-        if ( UDP_OK == true) 
-            {
-              display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
-              display.setColor(WHITE); 
-              display.drawString(0, 22, "UDP OK");
-              display.display();
-            UDP_OK = false ;
-            }
-
+          }
    /*   if (long (millis() - time_wdt_now > time_wdt))             // comparing durations to test watchdog
       {
           delay (20000) ; // program stop duting 20sec to check watchdog
