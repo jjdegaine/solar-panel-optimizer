@@ -110,8 +110,8 @@ bool WINTER = false	;		 	  // winter -> no wifi summer --> wifi
 bool do_nothing = false ; // 
 
 
-float Vcalibration     = 0.94;   // to obtain the mains exact value 
-float Icalibration     = 93;     // current in milliampères
+float Vcalibration     = 0.955;   // to obtain the mains exact value 
+float Icalibration     = 83;     // current in milliampères
 float phasecalibration = -10;    // value to compensate  the phase shift linked to the sensors. 
 byte totalCount        = 20;     // number of half perid used for measurement
 float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
@@ -119,7 +119,7 @@ float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
 
 // Threshold value for power adjustment: 
 
-int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 
+int tresholdP     = 20000;           // Threshold to start power adjustment 1 = 1mW ; 
 
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
@@ -133,7 +133,7 @@ byte unballasting_dim_max = 64;             // The resistive charge connected on
 // if too large the control loop is unstable
 // reaction_coeff ~ (control loop resistance power )/4  Watt
 
-unsigned int reaction_coeff  = 90; 
+unsigned int reaction_coeff  = 100; // 450/4 ==112
 
 // Input and ouput of the ESP32
 
@@ -699,13 +699,13 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         if( CALIBRATION == true ) {
       	  Serial.print(V);
       	  Serial.print("  |  ");
-          Serial.print(I/1000);
+          Serial.print(I); // mA
           Serial.print("  |  ");
           Serial.print(rPower/1000);
           Serial.println();
 
           display.clear();
-          display.drawString(0, 0, String(int(V)) + "||" + String(int(I/1000))) ;
+          display.drawString(0, 0, String(int(V)) + "||" + String(int(I))) ; // I mA
           display.drawString(0, 22, String(int(Power_wifi)));
           display.display();
 
