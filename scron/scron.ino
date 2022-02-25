@@ -220,7 +220,7 @@ display.display();
 void loop()
  {
  
-
+digitalWrite(limiteLED, HIGH) ; 
 
 // function delay 2msec
 
@@ -261,7 +261,7 @@ if (long (millis() - time_now > time_limit))
       }        
   time_now= millis() ;
 
-}
+ }
 
-  }
+}
   
