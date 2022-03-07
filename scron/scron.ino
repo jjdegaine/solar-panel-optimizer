@@ -2,6 +2,10 @@
 
 Test to verify scr; based on previous software without modification except scr_pin is never off
 limite led (red) is set ON
+SCRLED ON
+relay 1 on
+relay 2 ON
+
 */
 
 
@@ -108,7 +112,7 @@ void IRAM_ATTR zero_cross_detect() {   //
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SCR
      first_it_zero_cross = true ;  // flag to start a delay 2msec
-     digitalWrite(SCRLED, LOW); //reset SCR LED
+     //digitalWrite(SCRLED, LOW); //reset SCR LED
      
    
 }  
@@ -221,6 +225,10 @@ void loop()
  {
  
 digitalWrite(limiteLED, HIGH) ; 
+digitalWrite(SCRLED, HIGH);
+digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
+digitalWrite (unballast_relay2, HIGH)  ; //set relay 1
+
 
 // function delay 2msec
 
