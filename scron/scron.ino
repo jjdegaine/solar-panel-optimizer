@@ -1,7 +1,7 @@
 /*
 
 Test to verify scr; based on previous software without modification except scr_pin is never off
-
+limite led (red) is set ON
 */
 
 
