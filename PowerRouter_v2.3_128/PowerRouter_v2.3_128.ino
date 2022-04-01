@@ -109,14 +109,40 @@ bool WINTER = false	;		 	  // winter -> no wifi summer --> wifi
 
 bool do_nothing = false ; // 
 
-
+/*carte 1
 float Vcalibration     = 0.90;   // to obtain the mains exact value main
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = -10;    // value to compensate  the phase shift linked to the sensors. 
-byte totalCount        = 20;     // number of half perid used for measurement
 float ADC_V_0V = 467 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 467 ; // ADC value for 0V input 3.3V/2
+*/
 
+/*carte 3
+float Vcalibration     = 0.955;   // to obtain the mains exact value 
+float Icalibration     = 85;     // current in milliampères
+float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
+float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
+*/
+
+/*carte 4
+float Vcalibration     = 0.955;   // to obtain the mains exact value 
+float Icalibration     = 85;     // current in milliampères
+float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
+float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
+*/
+
+
+//carte 5
+float Vcalibration     = 0.955;   // to obtain the mains exact value 
+float Icalibration     = 85;     // current in milliampères
+float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
+float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
+
+
+byte totalCount        = 20;     // number of half perid used for measurement
 // Threshold value for power adjustment: 
 
 int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 
