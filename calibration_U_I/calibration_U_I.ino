@@ -109,7 +109,7 @@ bool do_nothing = false ; //
 
 
 //
-float Vcalibration     = 0.955;   // to obtain the mains exact value 
+float Vcalibration     = 0.95;   // to obtain the mains exact value 
 float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
@@ -666,7 +666,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 
   // Display each 2 seconds
 
-
+/*
   if( time_now_second >= memo_temps +2 ) {
 
     if ( (CALIBRATION ==false) || (VERBOSE == false)) {
@@ -693,19 +693,19 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           display.display();
         }
       }
-
+*/
           // 
       
         if( CALIBRATION == true ) {
       	  Serial.print(V);
       	  Serial.print("  |  ");
-          Serial.print(I/1000);
+          Serial.print(I);
           Serial.print("  |  ");
-          Serial.print(rPower/1000);
+          Serial.print(Power_wifi);
           Serial.println();
 
           display.clear();
-          display.drawString(0, 0, String(int(V)) + "||" + String(int(I/1000))) ;
+          display.drawString(0, 0, String(int(V)) + "||" + String(int(I))) ;
           display.drawString(0, 22, String(int(Power_wifi)));
           display.display();
 
@@ -741,7 +741,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
      
       CALIBRATION = true;
 
-        // display WIFI information
+        /* display WIFI information
         if (TTL == true)
               {
               display.setColor(BLACK);        // clear second  line
@@ -760,7 +760,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
               display.display();
             UDP_OK = false ;
             }
-
+*/
    /*   if (long (millis() - time_wdt_now > time_wdt))             // comparing durations to test watchdog
       {
           delay (20000) ; // program stop duting 20sec to check watchdog
