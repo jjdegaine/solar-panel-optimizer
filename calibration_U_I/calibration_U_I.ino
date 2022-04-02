@@ -60,7 +60,7 @@ PIN description
  - PIN35 analog for intensity measurement
 
 
-Software to calibrate U and I
+Software to calibrate U and I, SSR is always on
 based on version 2.3 
 */
 
@@ -110,7 +110,7 @@ bool do_nothing = false ; //
 
 //
 float Vcalibration     = 0.95;   // to obtain the mains exact value 
-float Icalibration     = 85;     // current in milliampères
+float Icalibration     = 90;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
@@ -150,6 +150,8 @@ const byte pin_calibration   = 27;
 const byte voltageSensorPin  = 34;     
 const byte currentSensorPin  = 35;      
 const byte zeroCrossPin      = 19;      
+
+
 
 // zero-crossing interruption  :
  
@@ -204,7 +206,7 @@ unsigned long time_wdt_now = millis() ;
 // Voltage and current measurement  :
 
 int readV, memo_readV, readI;   // voltage and current withn ADC (0 à 1023 bits)
-float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
+float rPower =0 , V =0 , I =0 , sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
 float Power_wifi;
 char mystring_power_wifi [50] ;       // string to be transmitted by wifi
 byte zero_crossCount = 0;          // half period counter
@@ -299,7 +301,7 @@ void IRAM_ATTR onTimer() {
                                 // i maximum ==> start SSR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SSR
        delayMicroseconds(5);             // Pause briefly to ensure the SSR turned on
-       digitalWrite(SCR_pin, LOW);      // Turn off the SSR gate, 
+       //digitalWrite(SCR_pin, LOW);      // Turn off the SSR gate, 
        i_counter = 0;                             // Reset the accumulator
        digitalWrite(SCRLED, HIGH);      // start led SSR 
        zero_cross = false;
@@ -333,6 +335,7 @@ void setup() {                  // Begin setup
 
 unballasting_time= millis(); // set up timer unballasting
 
+digitalWrite(SCR_pin, HIGH); // SCR always on
 
 // USB init
 Serial.begin(115200);

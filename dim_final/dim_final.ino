@@ -103,14 +103,14 @@ void Taskwifi_udp( void *pvParameters );
 //____________________________________________________________________________________________
 
 void IRAM_ATTR zero_cross_detect() {   // 
-     portENTER_CRITICAL_ISR(&mux);
-
+    // portENTER_CRITICAL_ISR(&mux);
+    
      zero_cross_flag = true;   // Flag for power calculation
      zero_cross = true;        // Flag for SCR
      first_it_zero_cross = true ;  // flag to start a delay 4msec
      digitalWrite(SCRLED, LOW); //reset SCR LED
      
-    portEXIT_CRITICAL_ISR(&mux);
+    // portEXIT_CRITICAL_ISR(&mux);
 }  
 
 
@@ -121,9 +121,9 @@ void IRAM_ATTR zero_cross_detect() {   //
  * _________________________________________________________________
 */ 
 void IRAM_ATTR onTimer() {
-  portENTER_CRITICAL_ISR(&timerMux);
+ //portENTER_CRITICAL_ISR(&timerMux);
   
-
+  
   
    if(zero_cross == true && dimphase < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
@@ -134,7 +134,7 @@ void IRAM_ATTR onTimer() {
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(3);             // Pause briefly to ensure the SCR turned on
+       delayMicroseconds(20);             // Pause briefly to ensure the SCR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
        digitalWrite(SCRLED, HIGH);      // start led SCR 
@@ -146,7 +146,7 @@ void IRAM_ATTR onTimer() {
      
  }      // End zero_cross check
 
-      portEXIT_CRITICAL_ISR(&timerMux);
+     // portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 
