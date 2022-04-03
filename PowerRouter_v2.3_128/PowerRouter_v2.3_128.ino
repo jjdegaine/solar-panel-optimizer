@@ -109,7 +109,7 @@ bool WINTER = false	;		 	  // winter -> no wifi summer --> wifi
 
 bool do_nothing = false ; // 
 
-/*carte 1
+/*main board 1
 float Vcalibration     = 0.90;   // to obtain the mains exact value main
 float Icalibration     = 93;     // current in milliampères
 float phasecalibration = -10;    // value to compensate  the phase shift linked to the sensors. 
@@ -117,7 +117,7 @@ float ADC_V_0V = 467 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 467 ; // ADC value for 0V input 3.3V/2
 */
 
-/*carte 3
+/*main board 3
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
 float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
@@ -125,7 +125,7 @@ float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
 */
 
-/*carte 4
+/*main board 4
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
 float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
@@ -134,7 +134,7 @@ float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
 */
 
 
-//carte 5
+//main board 5
 float Vcalibration     = 0.95;   // to obtain the mains exact value 
 float Icalibration     = 90;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
