@@ -142,7 +142,7 @@ WiFiUDP Udp; // Creation of wifi Udp instance, UDP is used to maximized the timi
 unsigned int localPort = 9999;
 
 const char *ssid = "BB9ESERVER";   // for example to be changed 
-const char *password = "BB9ESERVER";  // for examplet  to be changed
+const char *password = "BB9ESERVER";  // for example to be changed
 
 
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
@@ -155,7 +155,7 @@ bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
 bool VERBOSE = false ;       // to verify dim and dimstep 
 //bool WINTER = false	;		 	  // winter -> no wifi summer wifi
 
-
+// main board 2
 float Vcalibration     = 0.97;   // to obtain the mains exact value 
 //float Icalibration     = 93;     // current in milliampères
 //float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
@@ -163,7 +163,6 @@ byte totalCount        = 20;     // number of half perid used for measurement
 float ADC_V_0V = 467 ;
 //float ADC_I_0A = 467 ;
 
-// Threshold value for power adjustment: 
 // Threshold value for power adjustment: 
 
 int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 
@@ -199,7 +198,8 @@ const byte zeroCrossPin      = 19;
 byte dimthreshold=35 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 128;              // max value to start SCR command
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
-byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
+//byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
+byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
 
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
@@ -234,7 +234,7 @@ volatile bool UDP_OK = false;
 int readV, memo_readV;   // voltage and current withn ADC (0 à 1023 bits)
 //float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
 float rPower, V,  sqV, sumV = 0 ;  
-float Power_wifi;  // power to be sent by wifi
+float Power_wifi;  // power to be received by wifi
                    
 char mystring_power_wifi [50] ;       // string transmitted by wifi
 byte zero_crossCount = 0;          // half period counter
@@ -612,8 +612,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
       
       }
   
-
-      
+     
  
 
   // Display each 2 seconds
