@@ -597,13 +597,13 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
             digitalWrite (unballast_relay2, LOW) ; 
             relay_2 = false;
             unballasting_counter = 0 ;
-            unballasting_time= millis();
+            unballasting_time = millis();
           }
           else
           {
             digitalWrite (unballast_relay1, LOW) ;
             relay_1 = false;
-            unballasting_time= millis();
+            unballasting_time = millis();
             unballasting_counter = 0 ;
           }
          }
