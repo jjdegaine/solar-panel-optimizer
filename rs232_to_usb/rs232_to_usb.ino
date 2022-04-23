@@ -142,6 +142,7 @@ if (long (millis() - time_now > time_limit))
               display.drawString(0, 0, String (dim));
               display.display();
               Serial.println (dim);
+              Serial2.println(String (dim));
       }        
   time_now= millis() ;
 
