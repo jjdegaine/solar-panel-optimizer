@@ -1,9 +1,8 @@
 /*
 
-Test to increased dim from 1 to 128 and send a command to a serial port
+Test to increased dim from 0 to 3 and send a command to a serial port
 
-DIM > 64 command plus
-DIM <= 64 command minus
+
 */
 
 
@@ -36,29 +35,20 @@ const byte zeroCrossPin      = 19;
 #define TXD0 1 
 #define RXD0 3
 byte dimmax = 128;              // max value to start SCR command
-byte dimthreshold=0 ;
 
-byte dim = 0; // dim increased 0 to  128
 
-byte dimphase = dim + dimthreshold; 
-byte dimphasemax = dimmax + dimthreshold;
+byte dim = 0; // dim increased 0 to  3
+
+
 
       
 
 unsigned long time_now;
-unsigned long time_limit = 1000 ; // time 1 sec
+unsigned long time_limit = 5000 ; // time 1 sec
 
 
-byte zero_crossCount = 0;          // half period counter
+
     
-// other value :
-
-int dimstep;                    // DIM step value 
-
-unsigned int memo_temps = 0;   
-
-
-
 
 //_____________________________________________________________________________________________
 //
@@ -80,9 +70,9 @@ void setup() {                  // Begin setup
 time_now= millis(); // set up timer 
 
 //RS232 init
-Serial2.begin(9600, SERIAL_8N1, RXD0, TXD0);
+//Serial2.begin(9600, SERIAL_8N1, RXD0, TXD0);
 
- Serial2.println("serial2test");
+ //Serial2.println("serial2test");
  
 // USB init
  Serial.begin(115200);
@@ -130,12 +120,11 @@ void loop()
 if (long (millis() - time_now > time_limit)) 
 {
 
-    if ( dim >= 128) { 
+    if ( dim >= 4) { 
       dim =0;
       }
     else{
-    dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
-    dim++ ;
+   
               display.setColor(BLACK);        // clear first line
               display.fillRect(0, 0, 128, 22);
               display.setColor(WHITE); 
@@ -144,7 +133,7 @@ if (long (millis() - time_now > time_limit))
               display.display();
               Serial.println (dim);
             
-               //Serial2.println(String (dim));
+          dim++ ;
       }        
   time_now= millis() ;
 
