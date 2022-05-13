@@ -35,16 +35,16 @@ const byte zeroCrossPin      = 19;
 #define TXD0 1 
 #define RXD0 3
 byte dimmax = 128;              // max value to start SCR command
-
-
+float Power_wifi;
+byte datahex = 48 ;
 byte dim = 0; // dim increased 0 to  3
 
-
+char mystring_power_wifi [50] ;
 
       
 
 unsigned long time_now;
-unsigned long time_limit = 5000 ; // time 1 sec
+unsigned long time_limit = 2000 ; // time 2 sec
 
 
 
@@ -99,7 +99,7 @@ display.display();
   display.drawString(0, 22, "GO");
   display.display();
   
- 
+ Power_wifi = 40;
   
  
 }                
@@ -131,8 +131,16 @@ if (long (millis() - time_now > time_limit))
 
               display.drawString(0, 0, String (dim));
               display.display();
-              Serial.println (dim);
-            
+              Serial.println (dim); // OK avec série OTG
+
+               //sprintf(mystring_power_wifi, "%g", Power_wifi);
+              // Serial.write (Power_wifi) ; 
+
+              //Serial.println (String(dim));
+              //Serial.println (Power_wifi) ;
+              
+              //delay (200);
+              
           dim++ ;
       }        
   time_now= millis() ;
