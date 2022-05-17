@@ -110,7 +110,7 @@ version 1.8 june 2021 adding wathdog
 version 1.9 june 2021 modification led scr
 version 2.1 ==> final version available on web site  https://solar-panel-optimizer.com/
 version 2.2 april 2022 priority SCR before relay1
-version 2.3 amy 2022 update unballasting_timeout (5 minutes)
+version 2.3 amy 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
 
 
 */
@@ -586,6 +586,13 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
        }  
         unballasting_counter ++ ;
       }
+
+      else {
+
+          unballasting_counter = 0 ; // dim is > unballasting_dim_min
+
+      }
+      
       //
       // 
       //
@@ -611,6 +618,11 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
          unballasting_counter ++ ;
         } 
       
+      else {
+        
+          unballasting_counter = 0 ; // rpower is <  Treshold_relay1 
+      }
+
       }
   
      
