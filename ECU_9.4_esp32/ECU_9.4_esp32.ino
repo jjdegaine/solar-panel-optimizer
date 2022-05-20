@@ -5,6 +5,8 @@
 #include <time.h>
 #include <sunMoon.h>
 
+//#include <LittleFS_esp32.h>
+
 #include <LittleFS.h>
 #include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
 //#include <ESP8266WebServer.h>
