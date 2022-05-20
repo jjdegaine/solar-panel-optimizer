@@ -583,8 +583,11 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
               }     
           
       
-       }  
-        unballasting_counter ++ ;
+          } 
+          else {
+                unballasting_counter ++ ;
+          } 
+        
       }
 
       else {
@@ -615,7 +618,10 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
             unballasting_counter = 0 ;
           }
          }
-         unballasting_counter ++ ;
+          else {
+            unballasting_counter ++ ;
+          }
+         
         } 
       
       else {
