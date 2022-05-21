@@ -169,7 +169,7 @@ int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
-unsigned long unballasting_timeout = 600000; // timeout to avoid relay command too often 600 secondes 10 minutes
+unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
