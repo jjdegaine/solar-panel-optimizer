@@ -173,7 +173,7 @@ unsigned long unballasting_timeout = 300000; // timeout to avoid relay command t
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 5;             // value of dim to start relay
-int Treshold_relay1 = 35000;          // Threshold to stop relay 35W
+int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
 //byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
 unsigned int reaction_coeff  = 25; // small coeff due to wifi timing
