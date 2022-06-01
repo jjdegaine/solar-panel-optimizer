@@ -37,11 +37,11 @@ const byte zeroCrossPin      = 19;
 byte dimmax = 128;              // max value to start SCR command
 
 
-byte dim = 0; // dim increased 0 to  3
+//byte dim = 0; // dim increased 0 to  3
 
+// int dim = 0;
 
-
-      
+ float dim = -10.43;     
 
 unsigned long time_now;
 unsigned long time_limit = 5000 ; // time 1 sec
@@ -74,8 +74,8 @@ time_now= millis(); // set up timer
 
  //Serial2.println("serial2test");
  
-// USB init
- Serial.begin(115200);
+// RX/TX bluettooth init 
+ Serial.begin(9600);
 
 
  // init OLED
@@ -120,8 +120,8 @@ void loop()
 if (long (millis() - time_now > time_limit)) 
 {
 
-    if ( dim >= 4) { 
-      dim =0;
+    if ( dim >= 4.52) { 
+      dim =-10.43;
       }
     else{
    
