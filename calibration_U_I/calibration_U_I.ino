@@ -109,11 +109,11 @@ bool do_nothing = false ; //
 
 
 //
-float Vcalibration     = 0.95;   // to obtain the mains exact value 
+float Vcalibration     = 0.91;   // to obtain the mains exact value 
 float Icalibration     = 90;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
-float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
-float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
+float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
 
 
 byte totalCount        = 20;     // number of half perid used for measurement

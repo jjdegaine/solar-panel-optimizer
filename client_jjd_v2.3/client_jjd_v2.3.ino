@@ -110,7 +110,7 @@ version 1.8 june 2021 adding wathdog
 version 1.9 june 2021 modification led scr
 version 2.1 ==> final version available on web site  https://solar-panel-optimizer.com/
 version 2.2 april 2022 priority SCR before relay1
-version 2.3 amy 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
+version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
 
 
 */
@@ -173,7 +173,7 @@ int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 
 unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
-byte unballasting_dim_min = 5;             // value of dim to start relay
+byte unballasting_dim_min = 10;             // value of dim to start relay
 int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
 //byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
@@ -624,11 +624,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
          
         } 
       
-      else {
-        
-          unballasting_counter = 0 ; // rpower is <  Treshold_relay1 
-      }
-
+      
       }
   
      
@@ -642,13 +638,16 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           memo_temps = time_now_second;
 
 
-          Serial.print("P= ");
+          /*Serial.print("P= ");
           Serial.print(rPower/1000);   
           Serial.print("w ");
           Serial.print("dim: ");
           Serial.print(dim);
           Serial.print("dimstep: ");
           Serial.println(dimstep);
+          */
+          Serial.print("unballasting_counter ");
+          Serial.print(unballasting_counter); 
 
           display.setColor(BLACK);        // clear first line
           display.fillRect(0, 0, 128, 22);
