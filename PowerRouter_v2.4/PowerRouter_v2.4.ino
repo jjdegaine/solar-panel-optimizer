@@ -141,6 +141,8 @@ float Icalibration     = 95;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
+!!!!!! wrover module !!!!!
+
 */
 
 //main board 6
