@@ -157,13 +157,51 @@ bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
 bool VERBOSE = false ;       // to verify dim and dimstep 
 //bool WINTER = false	;		 	  // winter -> no wifi summer wifi
 
+byte totalCount        = 20;     // number of half perid used for measurement
+
 // main board 2
-float Vcalibration     = 0.97;   // to obtain the mains exact value 
+//float Vcalibration     = 0.97;   // to obtain the mains exact value 
 //float Icalibration     = 93;     // current in milliampères
 //float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
-byte totalCount        = 20;     // number of half perid used for measurement
-float ADC_V_0V = 467 ;
+//float ADC_V_0V = 467 ;
 //float ADC_I_0A = 467 ;
+
+
+/*main board 3
+float Vcalibration     = 0.955;   // to obtain the mains exact value 
+float Icalibration     = 85;     // current in milliampères
+float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
+float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
+*/
+
+/*main board 4
+float Vcalibration     = 0.955;   // to obtain the mains exact value 
+float Icalibration     = 85;     // current in milliampères
+float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
+float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
+*/
+
+
+/*main board 5
+float Vcalibration     = 0.95;   // to obtain the mains exact value 
+float Icalibration     = 95;     // current in milliampères
+float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
+float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
+!!!!!! wrover module !!!!!
+
+*/
+
+//main board 6
+float Vcalibration     = 0.91;   // to obtain the mains exact value 
+//float Icalibration     = 90;     // current in milliampères
+//float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
+float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
+//float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
+
+
 
 // Threshold value for power adjustment: 
 
