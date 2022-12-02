@@ -167,7 +167,7 @@ byte totalCount        = 20;     // number of half perid used for measurement
 //float ADC_I_0A = 467 ;
 
 
-main board 3
+//main board 3
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
 float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
