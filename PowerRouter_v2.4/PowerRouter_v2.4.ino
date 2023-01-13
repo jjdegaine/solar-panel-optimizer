@@ -127,8 +127,8 @@ float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
 */
 
 //main board 4
-float Vcalibration     = 0.955;   // to obtain the mains exact value 
-float Icalibration     = 85;     // current in milliampères
+float Vcalibration     = 0.975;   // to obtain the mains exact value 
+float Icalibration     = 60;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
@@ -156,7 +156,7 @@ float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
 byte totalCount        = 20;     // number of half perid used for measurement
 // Threshold value for power adjustment: 
 
-int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 
+int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
