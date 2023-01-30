@@ -113,7 +113,7 @@ version 2.2 april 2022 priority SCR before relay1
 version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
 version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected) if relay 1 ON
 version 2.4 january 2023. SCR regulation with on/off (if power > tresholdP SCR on if power < tresholdP  SCR off)
-                          to connect a heater 400W. the output relay will commut to often. 
+                          to connect a 400W heater. the output relay will commut too often. 
 
 
 */
@@ -574,7 +574,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 //
 // dimstep calculation.  Dimstep must be calculate when synchro is true (rpower received by wifi )
 //
- if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
+ /*if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
   else { dimstep = 1 - (rPower/1000)/reaction_coeff; }
   
   // when rPower is less than tresholdP ==> unlalanced power must increased ==> DIM must be reduced
@@ -582,9 +582,9 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if( rPower < tresholdP ) {      
     if( dim > dimstep )  dim -= dimstep; else  dim = 0;
   } 
-
+*/
 // when rPower is higher than tresholdP ==> unlalanced power must decreased ==> DIM must be increasad
-
+/*
   else if( rPower > tresholdP ) {                   
     if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
   }
@@ -592,9 +592,11 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // if dim is at the minimum, control regulation is at the maximum 
   else { digitalWrite(limiteLED, LOW); }
   
-
+*/
 // Value to used by the timer interrupt due to real phase between interruption and mains
-dimphase = dim_sinus [ dim ] + dimthreshold;
+//dimphase = dim_sinus [ dim ] + dimthreshold;
+dimphase = dimthreshold; //==> dim=0 power max
+
 
 // Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
 // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
