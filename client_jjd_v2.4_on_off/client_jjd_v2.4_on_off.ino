@@ -112,6 +112,8 @@ version 2.1 ==> final version available on web site  https://solar-panel-optimiz
 version 2.2 april 2022 priority SCR before relay1
 version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
 version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected) if relay 1 ON
+version 2.4 january 2023. SCR regulation with on/off (if power > tresholdP SCR on if power < tresholdP  SCR off)
+                          to connect a heater 400W. the output relay will commut to often. 
 
 
 */
@@ -214,6 +216,7 @@ unsigned long unballasting_time;            // timer for unballasting
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
 int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
+int Treshold_heater = 400000;             // Threshold to stop SCR Heater 400W
 //byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
 unsigned int reaction_coeff  = 25; // small coeff due to wifi timing
