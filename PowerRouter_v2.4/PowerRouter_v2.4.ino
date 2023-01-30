@@ -128,7 +128,7 @@ float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
 
 //main board 4
 float Vcalibration     = 0.975;   // to obtain the mains exact value 
-float Icalibration     = 97;     // current in milliampères
+float Icalibration     = 100;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
