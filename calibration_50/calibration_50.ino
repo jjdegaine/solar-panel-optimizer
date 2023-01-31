@@ -156,7 +156,8 @@ const byte zeroCrossPin      = 19;
 byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 128;              // max value to start SSR command
 // byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
-byte dim =64 ;// power at 50%
+//byte dim =64 ;// power at 50%
+byte dim =50 ;// power at xx%
 //byte dim = 0 ; // power at 100%
 byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
 
