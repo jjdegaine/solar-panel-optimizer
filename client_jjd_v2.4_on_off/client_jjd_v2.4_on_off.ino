@@ -207,7 +207,7 @@ float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 
 // Threshold value for power adjustment: 
 
-int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 
+int tresholdP     = -150000;           // Threshold to start power adjustment 1 = 1mW ; -150 Watt
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
@@ -215,7 +215,7 @@ unsigned long unballasting_timeout = 300000; // timeout to avoid relay command t
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
-int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
+int Treshold_relay1 = 50000;               // Threshold to stop relay 50W
 int Treshold_heater = 400000;             // Threshold to stop SCR Heater 400W
 //byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
@@ -595,7 +595,13 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 */
 // Value to used by the timer interrupt due to real phase between interruption and mains
 //dimphase = dim_sinus [ dim ] + dimthreshold;
-dimphase = dimthreshold; //==> dim=0 power max
+if (rPower < tresholdP ){
+  dimphase == dimthreshold; //==> dim=0 power max
+}
+
+if (rPower > (tresholdP + Treshold_heater) ){
+  dimphase == dimphasemax; //==> dim=12 power 0
+}
 
 
 // Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
