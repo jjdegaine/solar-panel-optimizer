@@ -596,11 +596,11 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 // Value to used by the timer interrupt due to real phase between interruption and mains
 //dimphase = dim_sinus [ dim ] + dimthreshold;
 if (rPower < tresholdP ){
-  dimphase == dimthreshold; //==> dim=0 power max
+  dimphase = dimthreshold; //==> dim=0 power max
 }
 
 if (rPower > (tresholdP + Treshold_heater) ){
-  dimphase == dimphasemax; //==> dim=12 power 0
+  dimphase = dimphasemax; //==> dim=128 power 0
 }
 
 
@@ -728,7 +728,8 @@ if (rPower > (tresholdP + Treshold_heater) ){
           display.fillRect(0, 0, 128, 22);
           display.setColor(WHITE); 
 
-          display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
+          //display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
+          display.drawString(0, 0, String(int(rPower)) + "||" + String (dimphase));
           display.display();
 
          }  // 
