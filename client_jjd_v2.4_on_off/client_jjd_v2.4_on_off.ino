@@ -729,7 +729,7 @@ if (rPower > (tresholdP + Treshold_heater) ){
           display.setColor(WHITE); 
 
           //display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
-          display.drawString(0, 0, String(int(rPower-wifi)) + "||" + String (dimphase));
+          display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dimphase));
           display.display();
 
          }  // 
