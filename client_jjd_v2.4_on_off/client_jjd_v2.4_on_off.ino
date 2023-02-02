@@ -175,7 +175,7 @@ float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
-byte dimthreshold=54 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 
 /*main board 4
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
@@ -219,7 +219,7 @@ unsigned long unballasting_time;            // timer for unballasting
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
 int Treshold_relay1 = 50000;               // Threshold to stop relay 50W
-int Treshold_heater = 460000;             // Threshold to stop SCR Heater 400W
+int Treshold_heater = 450000;             // Threshold to stop SCR Heater 400W
 //byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
 unsigned int reaction_coeff  = 25; // small coeff due to wifi timing
@@ -357,7 +357,7 @@ void IRAM_ATTR onTimer() {
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(5);             // Pause briefly to ensure the SCR turned on
+       delayMicroseconds(6);             // Pause briefly to ensure the SCR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
        digitalWrite(SCRLED, HIGH);      // start led SCR 
