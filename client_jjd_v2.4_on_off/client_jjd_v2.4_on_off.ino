@@ -167,7 +167,7 @@ byte totalCount        = 20;     // number of half perid used for measurement
 //float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 //float ADC_V_0V = 467 ;
 //float ADC_I_0A = 467 ;
-
+//byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
 
 //main board 3
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
@@ -175,7 +175,7 @@ float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
-
+byte dimthreshold=52 ;					// dimthreshold; value to added at dim to compensate phase shift
 
 /*main board 4
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
@@ -183,6 +183,7 @@ float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
+byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
 */
 
 
@@ -192,6 +193,7 @@ float Icalibration     = 95;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
+byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
 !!!!!! wrover module !!!!!
 
 */
@@ -202,6 +204,7 @@ float Vcalibration     = 0.91;   // to obtain the mains exact value
 //float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 //float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
+byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
 */
 
 
@@ -238,7 +241,7 @@ const byte zeroCrossPin      = 19;
 
 // zero-crossing interruption  :
  
-byte dimthreshold=35 ;					// dimthreshold; value to added at dim to compensate phase shift
+//byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 128;              // max value to start SCR command
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
 //byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
