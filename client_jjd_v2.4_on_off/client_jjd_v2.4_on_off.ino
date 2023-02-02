@@ -207,8 +207,8 @@ float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 
 // Threshold value for power adjustment: 
 
-int tresholdP     = -150000;           // Threshold to start power adjustment 1 = 1mW ; -150 Watt
-
+//int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 10 Watt
+int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ; -150 Watt for 400W heater 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
 unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
@@ -783,18 +783,18 @@ if (rPower > (tresholdP + Treshold_heater) ){
         if (TTL == true)
               {
               display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
+              display.fillRect(0, 23, 128, 23);
               display.setColor(WHITE); 
-              display.drawString(0, 22, "TIME UDP");
+              display.drawString(0, 23, "TIME UDP");
               display.display();
               TTL= false ;
               }
         if ( UDP_OK == true) 
             {
               display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
+              display.fillRect(0, 23, 128, 23);
               display.setColor(WHITE); 
-              display.drawString(0, 22, "UDP OK");
+              display.drawString(0, 23, "UDP OK");
               display.display();
             UDP_OK = false ;
             }
