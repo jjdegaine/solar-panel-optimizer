@@ -211,7 +211,7 @@ byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate 
 // Threshold value for power adjustment: 
 
 //int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 10 Watt
-int tresholdP     = -150000;           // Threshold to start power adjustment 1 = 1mW ; -150 Watt for 400W heater 
+int tresholdP     = -200000;           // Threshold to start power adjustment 1 = 1mW ; -200 Watt for 400W heater 
 byte confirm_heater = 10;  // counter to confirm tresholddP
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
