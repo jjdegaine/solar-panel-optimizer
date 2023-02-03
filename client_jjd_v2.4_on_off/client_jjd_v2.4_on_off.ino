@@ -167,7 +167,7 @@ byte totalCount        = 20;     // number of half perid used for measurement
 //float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 //float ADC_V_0V = 467 ;
 //float ADC_I_0A = 467 ;
-//byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
+//byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 
 //main board 3
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
@@ -183,7 +183,7 @@ float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
-byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 */
 
 
@@ -193,7 +193,7 @@ float Icalibration     = 95;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
-byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 !!!!!! wrover module !!!!!
 
 */
@@ -204,7 +204,7 @@ float Vcalibration     = 0.91;   // to obtain the mains exact value
 //float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 //float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
-byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 */
 
 
@@ -212,6 +212,8 @@ byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate 
 
 //int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 10 Watt
 int tresholdP     = -150000;           // Threshold to start power adjustment 1 = 1mW ; -150 Watt for 400W heater 
+byte confirm_heater = 10;  // counter to confirm tresholddP
+
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
 unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
@@ -599,11 +601,17 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 // Value to used by the timer interrupt due to real phase between interruption and mains
 //dimphase = dim_sinus [ dim ] + dimthreshold;
 if (rPower < tresholdP ){
-  dimphase = dimthreshold; //==> dim=0 power max
+    if (confirm_heater <=0){
+        dimphase = dimthreshold; //==> dim=0 power max
+    }
+  else {
+    confirm_heater -- ; //
+  }
 }
 
 if (rPower > (tresholdP + Treshold_heater) ){
   dimphase = dimphasemax; //==> dim=128 power 0
+  confirm_heater = 10 ; // reset counter confirm_heater
 }
 
 
