@@ -116,6 +116,7 @@ float Icalibration     = 93;     // current in milliampères
 float phasecalibration = -10;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 467 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 467 ; // ADC value for 0V input 3.3V/2
+int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 */
 
 /*main board 3
@@ -124,6 +125,7 @@ float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
+int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 */
 
 //main board 4
@@ -132,6 +134,7 @@ float Icalibration     = 100;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
+int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 
 
 
@@ -141,6 +144,7 @@ float Icalibration     = 95;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
+int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 !!!!!! wrover module !!!!!
 
 */
@@ -151,12 +155,13 @@ float Icalibration     = 90;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
+int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
 */
 
 byte totalCount        = 20;     // number of half perid used for measurement
 // Threshold value for power adjustment: 
 
-int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ; 
+
 
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
@@ -726,7 +731,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           display.fillRect(0, 0, 128, 22);
           display.setColor(WHITE); 
 
-          display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
+          display.drawString(0, 0, String(int(Power_wifi)) + " || " + String (dim));
           display.display();
         }
       }
