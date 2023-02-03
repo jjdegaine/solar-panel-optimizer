@@ -736,7 +736,7 @@ if (rPower > (tresholdP + Treshold_heater) ){
           //Serial.print(mean_power); 
 
           display.setColor(BLACK);        // clear first line
-          display.fillRect(0, 0, 128, 22);
+          display.fillRect(0, 0, 128, 23);
           display.setColor(WHITE); 
 
           //display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
@@ -755,7 +755,7 @@ if (rPower > (tresholdP + Treshold_heater) ){
 
           display.clear();
           display.drawString(0, 0, String(int(V)) ) ;
-          display.drawString(0, 22, String(int(Power_wifi)));
+          display.drawString(0, 23, String(int(Power_wifi)));
           display.display();
 
           // delay (7000); // to test watchdog with switch calibration
