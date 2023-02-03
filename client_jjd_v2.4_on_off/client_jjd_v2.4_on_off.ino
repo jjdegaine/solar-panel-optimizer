@@ -112,8 +112,9 @@ version 2.1 ==> final version available on web site  https://solar-panel-optimiz
 version 2.2 april 2022 priority SCR before relay1
 version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
 version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected) if relay 1 ON
-version 2.4 january 2023. SCR regulation with on/off (if power > tresholdP SCR on if power < tresholdP  SCR off)
-                          to connect a 400W heater. the output relay will commut too often. 
+version 2.4 january 2023. SCR regulation with on/off (if if power < tresholdP  SCR on ; power > tresholdP+Treshold_heater SCR off )
+                          to connect a 400W heater. the output relay will commut too often.
+                          Relay 1 is always ON
 
 
 */
