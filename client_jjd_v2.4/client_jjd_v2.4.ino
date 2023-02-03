@@ -159,13 +159,15 @@ bool VERBOSE = false ;       // to verify dim and dimstep
 
 byte totalCount        = 20;     // number of half perid used for measurement
 
-// main board 2
+/* main board 2
 //float Vcalibration     = 0.97;   // to obtain the mains exact value 
 //float Icalibration     = 93;     // current in milliampères
 //float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 //float ADC_V_0V = 467 ;
 //float ADC_I_0A = 467 ;
-
+int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
+int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
+*/
 
 //main board 3
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
@@ -173,7 +175,8 @@ float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
-
+int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
+int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
 
 /*main board 4
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
@@ -181,6 +184,8 @@ float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
+int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
+int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
 */
 
 
@@ -190,6 +195,8 @@ float Icalibration     = 95;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
+int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
+int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
 !!!!!! wrover module !!!!!
 
 */
@@ -200,12 +207,11 @@ float Vcalibration     = 0.91;   // to obtain the mains exact value
 //float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 //float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
+int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
+int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
 */
 
 
-// Threshold value for power adjustment: 
-
-int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
@@ -213,7 +219,7 @@ unsigned long unballasting_timeout = 300000; // timeout to avoid relay command t
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
-int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
+
 //byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
 unsigned int reaction_coeff  = 25; // small coeff due to wifi timing
