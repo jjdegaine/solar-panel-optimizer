@@ -212,7 +212,8 @@ byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate 
 
 //int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 10 Watt
 int tresholdP     = -200000;           // Threshold to start power adjustment 1 = 1mW ; -200 Watt for 400W heater 
-byte confirm_heater = 10;  // counter to confirm tresholddP
+byte confirm_heater = 10;  // counter to confirm tresholdP
+byte confirm_heater_stop = 10;  // counter to confirm tresholdp+Treshold_heater
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
@@ -359,7 +360,7 @@ void IRAM_ATTR onTimer() {
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(6);             // Pause briefly to ensure the SCR turned on
+       delayMicroseconds(7);             // Pause briefly to ensure the SCR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
        digitalWrite(SCRLED, HIGH);      // start led SCR 
@@ -603,6 +604,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 if (rPower < tresholdP ){
     if (confirm_heater <=0){
         dimphase = dimthreshold; //==> dim=0 power max
+        confirm_heater_stop = 10 ; 
     }
   else {
     confirm_heater -- ; //
@@ -610,15 +612,24 @@ if (rPower < tresholdP ){
 }
 
 if (rPower > (tresholdP + Treshold_heater) ){
-  dimphase = dimphasemax; //==> dim=128 power 0
-  confirm_heater = 10 ; // reset counter confirm_heater
-}
+   
+    if (confirm_heater_stop <=0){
+      dimphase = dimphasemax; //==> dim=128 power 0
+      confirm_heater = 10 ; // reset counter confirm_heater
+    }
+    else {
+      confirm_heater_stop -- ; //
+    }
+  }
 
 
 // Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
 // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
 //  a thershold is added using dim_min and dim_max
 //
+ //  relay 1 is always ON
+  digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
+  /*
   if (long (millis() - unballasting_time > unballasting_timeout))
    {
     
@@ -696,7 +707,7 @@ if (rPower > (tresholdP + Treshold_heater) ){
       
       
       }
-  
+  */
   // meam_power calculation
      if (long (millis() - mean_power_time > mean_power_timing)) 
       {
