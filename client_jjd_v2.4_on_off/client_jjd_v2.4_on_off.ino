@@ -114,7 +114,7 @@ version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballast
 version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected) if relay 1 ON
 version 2.4 january 2023. SCR regulation with on/off (if if power < tresholdP  SCR on ; power > tresholdP+Treshold_heater SCR off )
                           to connect a 400W heater. the output relay will commut too often.
-                          Relay 1 is always ON
+                          
 
 
 */
@@ -639,9 +639,8 @@ if (rPower < limit_injection)
 // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
 //  a thershold is added using dim_min and dim_max
 //
- //  relay 1 is always ON
-  digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
-  /*
+
+  
   if (long (millis() - unballasting_time > unballasting_timeout))
    {
     
@@ -719,7 +718,7 @@ if (rPower < limit_injection)
       
       
       }
-  */
+
   // meam_power calculation for bluetooth module connected on TX
      if (long (millis() - mean_power_time > mean_power_timing)) 
       {
