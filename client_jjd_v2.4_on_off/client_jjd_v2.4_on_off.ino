@@ -224,6 +224,7 @@ byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
 int Treshold_relay1 = 50000;               // Threshold to stop relay 50W
 int Treshold_heater = 450000;             // Threshold to stop SCR Heater 400W
+int limit_injection = 3000000;                // in case of wifi problem rpower overflow 
 //byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
 unsigned int reaction_coeff  = 25; // small coeff due to wifi timing
@@ -602,26 +603,36 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 */
 // Value to used by the timer interrupt due to real phase between interruption and mains
 //dimphase = dim_sinus [ dim ] + dimthreshold;
-if (rPower < tresholdP ){
-    if (confirm_heater <=0){
-        dimphase = dimthreshold; //==> dim=0 power max
-        confirm_heater_stop = 10 ; 
-    }
-  else {
-    confirm_heater -- ; //
-  }
-}
 
-if (rPower > (tresholdP + Treshold_heater) ){
-   
-    if (confirm_heater_stop <=0){
-      dimphase = dimphasemax; //==> dim=128 power 0
-      confirm_heater = 10 ; // reset counter confirm_heater
+if (rPower < limit_injection)
+  { 
+    if (rPower < tresholdP ){
+        if (confirm_heater <=0){
+            dimphase = dimthreshold; //==> dim=0 power max
+            confirm_heater_stop = 10 ; 
+        }
+      else {
+        confirm_heater -- ; //
+      }
     }
-    else {
-      confirm_heater_stop -- ; //
-    }
+
+    if (rPower > (tresholdP + Treshold_heater) ){
+      
+        if (confirm_heater_stop <=0){
+          dimphase = dimphasemax; //==> dim=128 power 0
+          confirm_heater = 10 ; // reset counter confirm_heater
+        }
+        else {
+          confirm_heater_stop -- ; //
+        }
+      }
+
   }
+
+  else {                          // rpower too high
+          dimphase = dimphasemax; //==> dim=128 power 0
+          confirm_heater = 10 ;   // reset counter confirm_heater
+       }
 
 
 // Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
@@ -709,7 +720,7 @@ if (rPower > (tresholdP + Treshold_heater) ){
       
       }
   */
-  // meam_power calculation
+  // meam_power calculation for bluetooth module connected on TX
      if (long (millis() - mean_power_time > mean_power_timing)) 
       {
         mean_power_bluetooth = (mean_power / mean_power_counter);
