@@ -604,7 +604,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 // Value to used by the timer interrupt due to real phase between interruption and mains
 //dimphase = dim_sinus [ dim ] + dimthreshold;
 
-if (rPower < limit_injection)
+if (rPower < limit_injection || rPower > -limit_injection)  // in case off wifi off-line
   { 
     if (rPower < tresholdP ){
         if (confirm_heater <=0){
@@ -633,7 +633,12 @@ if (rPower < limit_injection)
           dimphase = dimphasemax; //==> dim=128 power 0
           confirm_heater = 10 ;   // reset counter confirm_heater
        }
-
+if (rPower > limit_injection || rPower < -limit_injection) // in case off wifi off-line
+{
+dimphase = dimphasemax; // stop SCR 
+digitalWrite (unballast_relay1, LOW) ; 
+digitalWrite (unballast_relay2, LOW) ; 
+}
 
 // Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
 // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
