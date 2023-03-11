@@ -150,12 +150,13 @@ const char *ssid = "BB9ESERVER";   // for example to be changed
 const char *password = "BB9ESERVER";  // for example to be changed
 
 // Wifi MQTT
-const char* ssid_mqtt = "freebox_ZPRLHQ_2GEXT";
+const char* ssid_mqtt = "freebox_ZPRLHQ";
 const char* password_mqtt = "Cairojude58";
 const char* mqtt_server = "192.168.0.146";
 WiFiClient espClient;
 PubSubClient client(espClient);
 volatile bool mqtt = false ; // flag to send data to maqtt
+volatile bool mqtt_option = true; // flag for maqtt option
 char powerString[8];
 char relayString[8];
 
@@ -884,7 +885,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
       }		
 
 
-    if ( mqtt= true) // send data to mqtt
+    if ( mqtt == true || mqtt_option == true)  // send data to mqtt
     {
         WiFi.disconnect(true) ;
 
