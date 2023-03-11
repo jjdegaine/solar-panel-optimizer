@@ -111,7 +111,7 @@ version 1.9 june 2021 modification led scr
 version 2.1 ==> final version available on web site  https://solar-panel-optimizer.com/
 version 2.2 april 2022 priority SCR before relay1
 version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
-version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected) if relay 1 ON
+version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected)
 
 
 */
