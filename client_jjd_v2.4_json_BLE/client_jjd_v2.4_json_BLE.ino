@@ -112,7 +112,7 @@ version 2.1 ==> final version available on web site  https://solar-panel-optimiz
 version 2.2 april 2022 priority SCR before relay1
 version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
 version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected) if relay 1 ON
-
+version 2.4 march 2023 adding json document on bluetooth. Not working due to memory full!!
 
 */
 
@@ -129,6 +129,15 @@ version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module 
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <esp_task_wdt.h>
+#include <ArduinoJson.h>  //JSON
+
+/*ble esp
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+*/
 
 //oled
 
@@ -154,7 +163,7 @@ IPAddress Subnet(255, 255, 255, 0);
 // Information to be displayed
 
 bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
-bool VERBOSE = false ;       // to verify dim and dimstep 
+//bool VERBOSE = false ;       // to verify dim and dimstep 
 //bool WINTER = false	;		 	  // winter -> no wifi summer wifi
 
 byte totalCount        = 20;     // number of half perid used for measurement
@@ -170,11 +179,11 @@ int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 
 */
 
 //main board 3
-float Vcalibration     = 0.955;   // to obtain the mains exact value 
-float Icalibration     = 85;     // current in milliampères
-float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
+//float Vcalibration     = 0.955;   // to obtain the mains exact value 
+//float Icalibration     = 85;     // current in milliampères
+//float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
-float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
+//float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
 int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
 int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
 
@@ -245,7 +254,7 @@ byte dimthreshold=35 ;					// dimthreshold; value to added at dim to compensate 
 byte dimmax = 128;              // max value to start SCR command
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
 //byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
-byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
+//byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
 
 byte dimphase = dim + dimthreshold; 
 byte dimphasemax = dimmax + dimthreshold;
@@ -297,7 +306,8 @@ bool relay_2 = false ; // Flag relay 2
 
 bool synchro = false ; // Flag for synchro with wifi and regulation
 
-unsigned long mean_power_timing = 300000; // timer 5 minutes to calculate mean power
+//unsigned long mean_power_timing = 300000; // timer 5 minutes to calculate mean power
+unsigned long mean_power_timing = 60000; // timer 1 minute to calculate mean power
 unsigned long mean_power_time;            // timer for unballasting
 
 float mean_power =0;
@@ -414,8 +424,9 @@ display.display();
  delay(500);
 
 
- if( VERBOSE == true ) Serial.print("  Pu (W) || dimstep |  dim || ");
- else Serial.println("GO"); 
+ //if( VERBOSE == true ) Serial.print("  Pu (W) || dimstep |  dim || ");
+ //else Serial.println("GO"); 
+ Serial.print("GO");
  Serial.println();
 
 
@@ -427,7 +438,33 @@ display.display();
  digitalWrite(unballast_relay2, LOW);    // unballast relay 2 init
 
  rPower = 0;
-   
+
+
+/* BLE ESP =================================
+
+  BLEDevice::init("Long name works now");
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+                                         CHARACTERISTIC_UUID,
+                                         BLECharacteristic::PROPERTY_READ |
+                                         BLECharacteristic::PROPERTY_WRITE
+                                       );
+
+  pCharacteristic->setValue("Hello World says Neil");
+  pService->start();
+  // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+  pAdvertising->setMinPreferred(0x12);
+  BLEDevice::startAdvertising();
+  Serial.println("Characteristic defined! Now you can read it in your phone!");
+
+    ble esp=============================
+*/
+
  // init timer 
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &onTimer, true);
@@ -492,9 +529,11 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 // init watchdog on core task UI
 
-  esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL); //add current thread to WDT watch
- 
+ // esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
+ // esp_task_wdt_add(NULL); //add current thread to WDT watch
+
+  StaticJsonDocument<192> doc; //Json
+
   for (;;) // A Task shall never return or exit.
   {
   
@@ -524,7 +563,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     memo_readV = readV;                  // 
     readV = analogRead(voltageSensorPin) / 4;   // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
     
-	if( memo_readV == 0 && readV == 0 ) { break; } // exit the while if no powersupply
+//	if( memo_readV == 0 && readV == 0 ) { break; } // exit the while if no powersupply
   //  readI = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit ADC_I_0A 12bits ADC ==> /4 ==> max 1024
   
   
@@ -597,7 +636,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   
 
 // Value to used by the timer interrupt due to real phase between interruption and mains
-dimphase = dim_sinus [ dim ] + dimthreshold;
+//dimphase = dim_sinus [ dim ] + dimthreshold;
+dimphase = dim + dimthreshold;
 
 // Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
 // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
@@ -689,7 +729,15 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         mean_power_counter=0;
         mean_power_time= millis();
         
-        Serial.println(mean_power_bluetooth); 
+        doc["sensor"] = "routeur";
+        doc["mean_power"][0] = 44.93;
+        doc["mean_power_5mn"][0] = 4.9;
+        doc["relay1"] = true;
+        doc["relay2"] = false;
+        Serial.println();
+        serializeJsonPretty(doc, Serial);
+
+        // Serial.println(mean_power_bluetooth); 
 
 
       }
@@ -701,24 +749,24 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 
   // Display each 2 seconds
 
+ 
+ // if( time_now_second - memo_temps >= 2 ) {
 
-  if( time_now_second - memo_temps >= 2 ) {
+ //         memo_temps = time_now_second;
 
-          memo_temps = time_now_second;
-
-
-          /*Serial.print("P= ");
+/*
+          Serial.print("P= ");
           Serial.print(rPower/1000);   
           Serial.print("w ");
           Serial.print("dim: ");
           Serial.print(dim);
           Serial.print("dimstep: ");
           Serial.println(dimstep);
-          */
+*/          
           
           //Serial.print("mean_power ");
           //Serial.print(mean_power); 
-
+/*
           display.setColor(BLACK);        // clear first line
           display.fillRect(0, 0, 128, 22);
           display.setColor(WHITE); 
@@ -761,17 +809,17 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           Serial.print(" ||  ");
           Serial.print (millis() - unballasting_time);     
           Serial.println();
-
-        }
-        else { delay(1); }           // needed for stability
+*/
+ //       }
+ //       else { delay(1); }           // needed for stability
 
 // update switches winter, verbose, calibration
 
  //       WINTER = digitalRead (pin_winter);
         
-        VERBOSE = digitalRead (pin_verbose);
+ //       VERBOSE = digitalRead (pin_verbose);
         
-        CALIBRATION = digitalRead (pin_calibration);
+ //       CALIBRATION = digitalRead (pin_calibration);
 
 // display WIFI information
         if (TTL == true)
@@ -794,11 +842,11 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
             }
 
 
-      if (dim < dimled && digitalRead (zeroCrossPin) == true ){ digitalWrite(SCRLED, LOW);}// SCR LED}
-      if (dim >= dimled && digitalRead (zeroCrossPin) == false ){ digitalWrite(SCRLED, LOW);}// SCR LED}
+      if (dim < dimled && digitalRead (zeroCrossPin) == true ){ digitalWrite(SCRLED, LOW);} // SCR LED}
+      if (dim >= dimled && digitalRead (zeroCrossPin) == false ){ digitalWrite(SCRLED, LOW);} // SCR LED}
 
 
-      esp_task_wdt_reset(); // reset watchdog
+     // esp_task_wdt_reset(); // reset watchdog
   } 
   
 

@@ -112,6 +112,8 @@ version 2.1 ==> final version available on web site  https://solar-panel-optimiz
 version 2.2 april 2022 priority SCR before relay1
 version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
 version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected) if relay 1 ON
+version 2.5 march 2023 adding MQTT serveur, rpower and relay information are sent to MQTT every 5 minutes (same bluetooth) caution: during mqtt connection regulation is OFF! 
+            not an issue in summer as power is changing slowly (no heater)
 
 
 */
@@ -129,6 +131,7 @@ version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module 
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <esp_task_wdt.h>
+#include <PubSubClient.h> //MQTT
 
 //oled
 
@@ -146,6 +149,15 @@ unsigned int localPort = 9999;
 const char *ssid = "BB9ESERVER";   // for example to be changed 
 const char *password = "BB9ESERVER";  // for example to be changed
 
+// Wifi MQTT
+const char* ssid_mqtt = "freebox_ZPRLHQ_2GEXT";
+const char* password_mqtt = "Cairojude58";
+const char* mqtt_server = "192.168.0.146";
+WiFiClient espClient;
+PubSubClient client(espClient);
+volatile bool mqtt = false ; // flag to send data to maqtt
+char powerString[8];
+char relayString[8];
 
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
 IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
@@ -428,6 +440,9 @@ display.display();
 
  rPower = 0;
    
+
+
+
  // init timer 
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &onTimer, true);
@@ -492,8 +507,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 // init watchdog on core task UI
 
-  esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL); //add current thread to WDT watch
+  //esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
+  // esp_task_wdt_add(NULL); //add current thread to WDT watch
  
   for (;;) // A Task shall never return or exit.
   {
@@ -688,7 +703,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         mean_power=0;
         mean_power_counter=0;
         mean_power_time= millis();
-        
+        mqtt = true ; //send data to mqtt
         Serial.println(mean_power_bluetooth); 
 
 
@@ -728,7 +743,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 
          }  // 
       
-        if( CALIBRATION == true ) {
+        /*if( CALIBRATION == true ) {
       	  Serial.print(V);
       	  Serial.print("  |  ");
          // Serial.print(I/1000);
@@ -763,17 +778,19 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           Serial.println();
 
         }
+      */
         else { delay(1); }           // needed for stability
 
 // update switches winter, verbose, calibration
 
  //       WINTER = digitalRead (pin_winter);
         
-        VERBOSE = digitalRead (pin_verbose);
+ //       VERBOSE = digitalRead (pin_verbose);
         
-        CALIBRATION = digitalRead (pin_calibration);
+ //       CALIBRATION = digitalRead (pin_calibration);
 
 // display WIFI information
+
         if (TTL == true)
               {
               display.setColor(BLACK);        // clear second  line
@@ -798,7 +815,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
       if (dim >= dimled && digitalRead (zeroCrossPin) == false ){ digitalWrite(SCRLED, LOW);}// SCR LED}
 
 
-      esp_task_wdt_reset(); // reset watchdog
+      // esp_task_wdt_reset(); // reset watchdog
   } 
   
 
@@ -810,6 +827,10 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 /*--------------------------------------------------*/
 //
 
+
+
+
+
 void Taskwifi_udp(void *pvParameters)  // This is a task.
 
 {
@@ -817,6 +838,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
 
   delay(5); //  
+  WiFi.disconnect(true) ;
   WiFi.begin(ssid, password, channel);
   WiFi.mode(WIFI_STA); // ESP-32 as client
   WiFi.config(ipCliente, ipServidor, Subnet);
@@ -827,18 +849,17 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
     for (;;) // A Task shall never return or exit.
     {
+    
               if (long (millis() - time_udp_now > time_udp_limit))             // comparing durations
               {                    
               Power_wifi = tresholdP +1 ; // as wifi is down Power_wifi is set up to tresholdP so dim will increased to 128 and stop SCR
-              //Serial.println ("time to leave UDP");
               TTL = true ;
-
+              WiFi.disconnect(true) ;
               WiFi.begin(ssid, password, channel);
               WiFi.mode(WIFI_STA); // ESP-32 as client
               WiFi.config(ipCliente, ipServidor, Subnet);
               Udp.begin(localPort);
               delay(5); // 
-              //Serial.println("end init UDP client");
               time_udp_now= millis();
               UDP_OK = true ;
               
@@ -861,9 +882,100 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         time_udp_now= millis();
        
       }		
-               
-    
 
-    } // end for loop wifi
+
+    if ( mqtt= true) // send data to mqtt
+    {
+        WiFi.disconnect(true) ;
+
+        setup_wifi();
+        client.setServer(mqtt_server, 1883);
+        client.setCallback(callback);
+        if (!client.connected()) {
+        reconnect();
+        }
+        // Convert the value to a char array
+        
+        dtostrf(mean_power_bluetooth, 1, 2, powerString);
+        Serial.print("Power: ");
+        Serial.println(powerString);
+        client.publish("esp32/power", powerString);
+        dtostrf(relay_1, 1, 2, relayString);
+        Serial.print("Relay1: ");
+        Serial.println(relayString);
+        client.publish("esp32/Realy1", relayString);
+        WiFi.disconnect(true) ;
+
+    mqtt= false; 
+    }
+
+ } // end for loop wifi
     
+}
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Attempt to connect
+    if (client.connect("ESP8266Client")) {
+      Serial.println("connected");
+      // Subscribe
+      client.subscribe("esp32/output");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+void setup_wifi() {
+  delay(10);
+  // We start by connecting to a WiFi network
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid_mqtt);
+
+  WiFi.begin(ssid_mqtt, password_mqtt);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+
+void callback(char* topic, byte* message, unsigned int length) {
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  String messageTemp;
+  
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
+  Serial.println();
+
+  // Feel free to add more if statements to control more GPIOs with MQTT
+
+  // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
+  // Changes the output state according to the message
+  if (String(topic) == "esp32/output") {
+    Serial.print("Changing output to ");
+    if(messageTemp == "on"){
+      Serial.println("on");
+     // digitalWrite(ledPin, HIGH);
+    }
+    else if(messageTemp == "off"){
+      Serial.println("off");
+      //digitalWrite(ledPin, LOW);
+    }
+  }
 }
