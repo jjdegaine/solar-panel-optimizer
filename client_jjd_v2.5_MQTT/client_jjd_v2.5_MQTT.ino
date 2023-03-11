@@ -160,6 +160,8 @@ volatile bool mqtt_option = true; // flag for maqtt option
 char powerString[8];
 char relayString[8];
 
+
+
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
 IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
 IPAddress Subnet(255, 255, 255, 0);
@@ -228,7 +230,8 @@ int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
-unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
+//unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
+unsigned long unballasting_timeout = 60000;
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
@@ -440,8 +443,8 @@ display.display();
  digitalWrite(unballast_relay2, LOW);    // unballast relay 2 init
 
  rPower = 0;
-   
 
+ 
 
 
  // init timer 
@@ -519,7 +522,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   //sumI = 0;
   //sumP = 0;
   unsigned int time_now_second = millis()/1000;      // timer in second
-
+  mean_power_time = millis() ; 
 
   
 // Count 20 zero cross to calculate U / I / P
@@ -889,12 +892,15 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     {
         WiFi.disconnect(true) ;
 
-        setup_wifi();
-        client.setServer(mqtt_server, 1883);
-        client.setCallback(callback);
+       setup_wifi();
+
+       client.setServer(mqtt_server, 1883);
+       client.setCallback(callback);
+
         if (!client.connected()) {
         reconnect();
         }
+
         // Convert the value to a char array
         
         dtostrf(mean_power_bluetooth, 1, 2, powerString);
@@ -905,7 +911,9 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         Serial.print("Relay1: ");
         Serial.println(relayString);
         client.publish("esp32/Realy1", relayString);
+        client.loop();
         WiFi.disconnect(true) ;
+       
 
     mqtt= false; 
     }
