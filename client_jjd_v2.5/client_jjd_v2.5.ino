@@ -111,10 +111,8 @@ version 1.9 june 2021 modification led scr
 version 2.1 ==> final version available on web site  https://solar-panel-optimizer.com/
 version 2.2 april 2022 priority SCR before relay1
 version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
-version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected) if relay 1 ON
-version 2.5 march 2023 adding MQTT serveur, rpower and relay information are sent to MQTT every 5 minutes (same bluetooth) caution: during mqtt connection regulation is OFF! 
-            not an issue in summer as power is changing slowly (no heater)
-
+version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected)
+version 2.5 march 2023 adding relay status on serial 1; supress calibration and verbose.
 
 */
 
@@ -131,7 +129,6 @@ version 2.5 march 2023 adding MQTT serveur, rpower and relay information are sen
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <esp_task_wdt.h>
-#include <PubSubClient.h> //MQTT
 
 //oled
 
@@ -149,18 +146,6 @@ unsigned int localPort = 9999;
 const char *ssid = "BB9ESERVER";   // for example to be changed 
 const char *password = "BB9ESERVER";  // for example to be changed
 
-// Wifi MQTT
-const char* ssid_mqtt = "freebox_ZPRLHQ";
-const char* password_mqtt = "Cairojude58";
-const char* mqtt_server = "192.168.0.146";
-WiFiClient espClient;
-PubSubClient client(espClient);
-volatile bool mqtt = false ; // flag to send data to maqtt
-volatile bool mqtt_option = true; // flag for maqtt option
-char powerString[8];
-char relayString[8];
-
-
 
 IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
 IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
@@ -168,9 +153,9 @@ IPAddress Subnet(255, 255, 255, 0);
 
 // Information to be displayed
 
-bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
-bool VERBOSE = false ;       // to verify dim and dimstep 
-//bool WINTER = false	;		 	  // winter -> no wifi summer wifi
+//bool CALIBRATION = false;   // to calibrate Vcalibration and Icalibration
+//bool VERBOSE = false ;       // to verify dim and dimstep 
+//bool WINTER = false	;		 	  // winter 
 
 byte totalCount        = 20;     // number of half perid used for measurement
 
@@ -230,8 +215,7 @@ int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
-//unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
-unsigned long unballasting_timeout = 60000;
+unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
@@ -249,8 +233,8 @@ const byte unballast_relay2  = 15;
 const byte unballast_relay1  = 17;    
 const byte SCRLED            = 16;     
 const byte limiteLED         = 18;  
-const byte pin_verbose       = 26;
-const byte pin_calibration   = 27;  
+//const byte pin_verbose       = 26;
+//const byte pin_calibration   = 27;  
 const byte voltageSensorPin  = 34;     
 //const byte currentSensorPin  = 35;      
 const byte zeroCrossPin      = 19;      
@@ -260,7 +244,7 @@ const byte zeroCrossPin      = 19;
 byte dimthreshold=35 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 128;              // max value to start SCR command
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
-//byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
+
 byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
 
 byte dimphase = dim + dimthreshold; 
@@ -292,9 +276,9 @@ volatile bool UDP_OK = false;
 
 // Voltage and current measurement  :
 
-//int readV, memo_readV, readI;   // voltage and current withn ADC (0 à 1023 bits)
+
 int readV, memo_readV;   // voltage and current withn ADC (0 à 1023 bits)
-//float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
+
 float rPower, V,  sqV, sumV = 0 ;  
 float Power_wifi;  // power to be received by wifi
                    
@@ -348,7 +332,7 @@ void IRAM_ATTR zero_cross_detect() {   //
         zero_cross_flag = true;   // Flag for power calculation
         zero_cross = true;        // Flag for SCR
         first_it_zero_cross = true ;  // flag to start a delay 2msec
-        //digitalWrite(SCRLED, LOW); //reset SCR LED
+        
         dimphaseit = dimphase;
 
      portEXIT_CRITICAL_ISR(&mux);  
@@ -367,7 +351,7 @@ void IRAM_ATTR onTimer() {
    if(zero_cross == true && dimphaseit < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
    
-     //if (i== dimthreshold) {digitalWrite(SCRLED, LOW); } //reset SCR LED
+    
 
      if(i>dimphaseit) {            // i is a counter which is used to SCR command delay 
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
@@ -380,8 +364,8 @@ void IRAM_ATTR onTimer() {
        zero_cross = false;
      } 
     else {  
-      i++; 
-      }           // If the dimming value has not been reached, incriment the counter
+      i++; // If the dimming value has not been reached, incriment the counter
+      }           
      
  }      // End zero_cross check
  
@@ -403,16 +387,15 @@ void setup() {                  // Begin setup
  pinMode(limiteLED, OUTPUT);            // Set the limite pin LED as output
  pinMode(zeroCrossPin, INPUT_PULLUP);   // set the zerocross pin as in with pullup for interrupt
  //pinMode(pin_winter, INPUT); 
- pinMode(pin_verbose, INPUT);    
- pinMode(pin_calibration, INPUT); 
+ //pinMode(pin_verbose, INPUT);    
+ //pinMode(pin_calibration, INPUT); 
 
 unballasting_time= millis(); // set up timer unballasting
 
 
 
 // USB init
-// Serial.begin(115200);
- // RX/TX bluettooth init 
+
  Serial.begin(9600);
 
  //init OLED
@@ -430,11 +413,7 @@ display.display();
  delay(500);
 
 
- if( VERBOSE == true ) Serial.print("  Pu (W) || dimstep |  dim || ");
- else Serial.println("GO"); 
- Serial.println();
-
-
+ 
   display.setFont(ArialMT_Plain_24);
   display.clear();
 
@@ -443,10 +422,7 @@ display.display();
  digitalWrite(unballast_relay2, LOW);    // unballast relay 2 init
 
  rPower = 0;
-
- 
-
-
+   
  // init timer 
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &onTimer, true);
@@ -477,8 +453,7 @@ display.display();
     ,  ARDUINO_RUNNING_CORE);
 
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
-  //init watchdog
-
+ 
   
 }                
 
@@ -511,21 +486,19 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
 // init watchdog on core task UI
 
-  //esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
-  // esp_task_wdt_add(NULL); //add current thread to WDT watch
+  esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL); //add current thread to WDT watch
  
   for (;;) // A Task shall never return or exit.
   {
   
   unsigned int numberOfSamples = 0;
   sumV = 0;
-  //sumI = 0;
-  //sumP = 0;
-  unsigned int time_now_second = millis()/1000;      // timer in second
-  mean_power_time = millis() ; 
+   unsigned int time_now_second = millis()/1000;      // timer in second
+
 
   
-// Count 20 zero cross to calculate U / I / P
+// Count 20 zero cross to calculate U 
 
 
  if( zero_crossCount >= totalCount ) { zero_crossCount = 0; }
@@ -544,22 +517,10 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     readV = analogRead(voltageSensorPin) / 4;   // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
     
 	if( memo_readV == 0 && readV == 0 ) { break; } // exit the while if no powersupply
-  //  readI = analogRead(currentSensorPin) /4 ;   // Current value - 0A = bit ADC_I_0A 12bits ADC ==> /4 ==> max 1024
   
   
-// RMS Current and Voltage 
-
-    if( CALIBRATION == true ) {                         // 
-      sqV= (readV -ADC_V_0V) * (readV -ADC_V_0V);             // ADC_V_0V ==> 0volt 
-      sumV += sqV;               
-    //  sqI = (readI -ADC_I_0A) * (readI -ADC_I_0A);
-	  //  sumI += sqI;
-    } 
-    
-// instantaneous power calculation 
- //   instP = ((memo_readV -ADC_V_0V) + phasecalibration * ((readV -ADC_V_0V) - (memo_readV -ADC_V_0V))) * (readI -ADC_I_0A); 
- //   sumP +=instP;  
-
+  
+   
 
 // function delay 2msec
 
@@ -707,7 +668,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         mean_power=0;
         mean_power_counter=0;
         mean_power_time= millis();
-        mqtt = true ; //send data to mqtt
+        
         Serial.println(mean_power_bluetooth); 
 
 
@@ -747,43 +708,12 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 
          }  // 
       
-        /*if( CALIBRATION == true ) {
-      	  Serial.print(V);
-      	  Serial.print("  |  ");
-         // Serial.print(I/1000);
-         // Serial.print("  |  ");
-          Serial.print(rPower/1000);
-          Serial.println();
-
-          display.clear();
-          display.drawString(0, 0, String(int(V)) ) ;
-          display.drawString(0, 22, String(int(Power_wifi)));
-          display.display();
-
+        
           // delay (7000); // to test watchdog with switch calibration
 
-        }
-        if( VERBOSE == true ) {
-          Serial.print(rPower/1000);
-          Serial.print("  ||     ");
-          Serial.print(dimstep);
-          Serial.print("  ||  ");
-          Serial.print(dim);
-          Serial.print(" ||  ");
-          Serial.print(dimphase);
-          Serial.print(" ||  ");
-          Serial.print (relay_1);
-          Serial.print(" ||  ");
-          Serial.print (relay_2);
-          Serial.print(" ||  ");
-          Serial.print (unballasting_counter);
-          Serial.print(" ||  ");
-          Serial.print (millis() - unballasting_time);     
-          Serial.println();
-
-        }
-      */
-        else { delay(1); }           // needed for stability
+        
+        
+         delay(1);            // needed for stability 
 
 // update switches winter, verbose, calibration
 
@@ -794,7 +724,6 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
  //       CALIBRATION = digitalRead (pin_calibration);
 
 // display WIFI information
-
         if (TTL == true)
               {
               display.setColor(BLACK);        // clear second  line
@@ -819,7 +748,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
       if (dim >= dimled && digitalRead (zeroCrossPin) == false ){ digitalWrite(SCRLED, LOW);}// SCR LED}
 
 
-      // esp_task_wdt_reset(); // reset watchdog
+      esp_task_wdt_reset(); // reset watchdog
   } 
   
 
@@ -831,10 +760,6 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 /*--------------------------------------------------*/
 //
 
-
-
-
-
 void Taskwifi_udp(void *pvParameters)  // This is a task.
 
 {
@@ -842,28 +767,28 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
 
   delay(5); //  
-  WiFi.disconnect(true) ;
   WiFi.begin(ssid, password, channel);
   WiFi.mode(WIFI_STA); // ESP-32 as client
   WiFi.config(ipCliente, ipServidor, Subnet);
   Udp.begin(localPort);
   delay(5); //
-  //Serial.println("end init UDP client");
+
   UDP_OK = true ;
 
     for (;;) // A Task shall never return or exit.
     {
-    
               if (long (millis() - time_udp_now > time_udp_limit))             // comparing durations
               {                    
               Power_wifi = tresholdP +1 ; // as wifi is down Power_wifi is set up to tresholdP so dim will increased to 128 and stop SCR
+              
               TTL = true ;
-              WiFi.disconnect(true) ;
+
               WiFi.begin(ssid, password, channel);
               WiFi.mode(WIFI_STA); // ESP-32 as client
               WiFi.config(ipCliente, ipServidor, Subnet);
               Udp.begin(localPort);
               delay(5); // 
+              
               time_udp_now= millis();
               UDP_OK = true ;
               
@@ -886,105 +811,9 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         time_udp_now= millis();
        
       }		
-
-
-    if ( mqtt == true || mqtt_option == true)  // send data to mqtt
-    {
-        WiFi.disconnect(true) ;
-
-       setup_wifi();
-
-       client.setServer(mqtt_server, 1883);
-       client.setCallback(callback);
-
-        if (!client.connected()) {
-        reconnect();
-        }
-
-        // Convert the value to a char array
-        
-        dtostrf(mean_power_bluetooth, 1, 2, powerString);
-        Serial.print("Power: ");
-        Serial.println(powerString);
-        client.publish("esp32/power", powerString);
-        dtostrf(relay_1, 1, 2, relayString);
-        Serial.print("Relay1: ");
-        Serial.println(relayString);
-        client.publish("esp32/Realy1", relayString);
-        client.loop();
-        WiFi.disconnect(true) ;
-       
-
-    mqtt= false; 
-    }
-
- } // end for loop wifi
+               
     
-}
-void reconnect() {
-  // Loop until we're reconnected
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    if (client.connect("ESP8266Client")) {
-      Serial.println("connected");
-      // Subscribe
-      client.subscribe("esp32/output");
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
-  }
-}
-void setup_wifi() {
-  delay(10);
-  // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid_mqtt);
 
-  WiFi.begin(ssid_mqtt, password_mqtt);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-}
-
-
-void callback(char* topic, byte* message, unsigned int length) {
-  Serial.print("Message arrived on topic: ");
-  Serial.print(topic);
-  Serial.print(". Message: ");
-  String messageTemp;
-  
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)message[i]);
-    messageTemp += (char)message[i];
-  }
-  Serial.println();
-
-  // Feel free to add more if statements to control more GPIOs with MQTT
-
-  // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
-  // Changes the output state according to the message
-  if (String(topic) == "esp32/output") {
-    Serial.print("Changing output to ");
-    if(messageTemp == "on"){
-      Serial.println("on");
-     // digitalWrite(ledPin, HIGH);
-    }
-    else if(messageTemp == "off"){
-      Serial.println("off");
-      //digitalWrite(ledPin, LOW);
-    }
-  }
+    } // end for loop wifi
+    
 }
