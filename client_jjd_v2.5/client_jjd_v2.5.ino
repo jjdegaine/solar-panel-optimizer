@@ -597,41 +597,43 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           
           if (relay_1 == true) 
           {
-            if(relay_2 == true)
-              {
-                unballasting_counter = 0;      // overflow
-                digitalWrite(limiteLED, HIGH) ;
-                
-              }
-            else 
-              {
-                digitalWrite( unballast_relay2, HIGH) ; // set relay 2 
-                relay_2 =true;
-                unballasting_counter= 0 ;
-                unballasting_time = millis() ;
-              }
+                  if(relay_2 == true)
+                    {
+                      unballasting_counter = 0;      // overflow
+                      digitalWrite(limiteLED, HIGH) ;
+                      
+                    }
+                  else 
+                    {
+                      digitalWrite( unballast_relay2, HIGH) ; // set relay 2 
+                      relay_2 =true;
+                      unballasting_counter= 0 ;
+                      unballasting_time = millis() ;
+                    }
           }     
-          else
-              {
-              digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
-              relay_1 = true;
-              unballasting_counter= 0 ;
-              unballasting_time = millis() ;
-              }     
-          
+              else
+                  {
+                  digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
+                  relay_1 = true;
+                  unballasting_counter= 0 ;
+                  unballasting_time = millis() ;
+                  }     
+              
       
           } 
-          else {
+
+          else 
+          {
                 unballasting_counter ++ ;
           } 
         
       }
 
-      else {
+      //else {
 
-          unballasting_counter = 0 ; // dim is > unballasting_dim_min
+      //    unballasting_counter = 0 ; // dim is > unballasting_dim_min
 
-      }
+      //}
       
       //
       // 
@@ -660,10 +662,15 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           }
          
         } 
-      
+
+      if (dim > unballasting_dim_min && rPower < Treshold_relay1)
+
+      {
+        unballasting_counter = 0 ; //
       
       }
-  
+   }
+   
   // meam_power calculation
      if (long (millis() - mean_power_time > mean_power_timing)) 
       {
@@ -673,14 +680,15 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         mean_power_time= millis();
              
         Serial.print(mean_power_bluetooth); // Bluetooth data
-      Serial.print (",");
-      Serial.print (relay_1);
-      Serial.print (",");
-      Serial.println(dim);
+        Serial.print (",");
+        Serial.print (relay_1);
+        Serial.print (",");
+        Serial.println(dim);
 
 
 
       }
+
     else{
       mean_power=mean_power+Power_wifi;
       mean_power_counter ++ ;
