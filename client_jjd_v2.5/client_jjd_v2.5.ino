@@ -112,7 +112,7 @@ version 2.1 ==> final version available on web site  https://solar-panel-optimiz
 version 2.2 april 2022 priority SCR before relay1
 version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
 version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected)
-version 2.5 march 2023 adding relay status on serial 1; supress calibration and verbose.
+version 2.5 march 2023 adding relay status on serial 1; supress calibration and verbose (not needed anymore ).
 
 */
 
@@ -215,7 +215,8 @@ int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
-unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
+//unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
+unsigned long unballasting_timeout = 60000; // for test
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
@@ -297,12 +298,14 @@ bool relay_2 = false ; // Flag relay 2
 
 bool synchro = false ; // Flag for synchro with wifi and regulation
 
-unsigned long mean_power_timing = 300000; // timer 5 minutes to calculate mean power
+// unsigned long mean_power_timing = 300000; // timer 5 minutes to calculate mean power
+unsigned long mean_power_timing = 60000; // for test 
 unsigned long mean_power_time;            // timer for unballasting
 
 float mean_power =0;
 float mean_power_bluetooth =0;
 int mean_power_counter =0;
+char buffer_bluetooth [40]; 
 
 // init timer IT
 hw_timer_t * timer = NULL;
@@ -668,8 +671,13 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         mean_power=0;
         mean_power_counter=0;
         mean_power_time= millis();
-        
-        Serial.println(mean_power_bluetooth); 
+             
+        Serial.print(mean_power_bluetooth); // Bluetooth data
+      Serial.print (",");
+      Serial.print (relay_1);
+      Serial.print (",");
+      Serial.println(dim);
+
 
 
       }
