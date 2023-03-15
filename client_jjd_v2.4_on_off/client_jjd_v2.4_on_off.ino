@@ -687,11 +687,11 @@ digitalWrite (unballast_relay2, LOW) ;
         
       }
 
-      else {
+      //else {
 
-          unballasting_counter = 0 ; // dim is > unballasting_dim_min
+      //    unballasting_counter = 0 ; // dim is > unballasting_dim_min
 
-      }
+      //}
       
       //
       // 
@@ -720,7 +720,12 @@ digitalWrite (unballast_relay2, LOW) ;
           }
          
         } 
+       if (dim > unballasting_dim_min && rPower < Treshold_relay1)
+
+      {
+        unballasting_counter = 0 ; //
       
+      }
       
       }
 
@@ -732,7 +737,13 @@ digitalWrite (unballast_relay2, LOW) ;
         mean_power_counter=0;
         mean_power_time= millis();
         
-        Serial.println(mean_power_bluetooth); 
+        Serial.print(mean_power_bluetooth); 
+        Serial.print (",");
+        Serial.print (relay_1);
+        Serial.print (",");
+        Serial.print (relay_2);
+        Serial.print (",");
+        Serial.println(dim);
 
 
       }
