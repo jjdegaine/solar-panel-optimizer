@@ -683,6 +683,8 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         Serial.print (",");
         Serial.print (relay_1);
         Serial.print (",");
+        Serial.print (relay_2);
+        Serial.print (",");
         Serial.println(dim);
 
 
