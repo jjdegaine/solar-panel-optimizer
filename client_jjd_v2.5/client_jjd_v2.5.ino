@@ -169,7 +169,7 @@ int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
 int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
 */
 
-//main board 3
+/*main board 3
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
 float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
@@ -177,6 +177,7 @@ float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
 int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
 int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
+*/
 
 /*main board 4
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
@@ -198,18 +199,19 @@ float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
 int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
 int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
 !!!!!! wrover module !!!!!
-
 */
 
-/*main board 6
+
+//main board 6
 float Vcalibration     = 0.91;   // to obtain the mains exact value 
 //float Icalibration     = 90;     // current in milliampères
 //float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 //float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
-int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
-int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
-*/
+
+int Treshold_relay1 = 00000;          // Threshold to stop relay 50W ; 0W due to bad calibration of main board master
+int tresholdP     = -150000;           // Threshold to start power adjustment 1 = 1mW ; -150W due to bad calibration of main board master
+
 
 
 
