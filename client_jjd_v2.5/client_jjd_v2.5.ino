@@ -225,7 +225,7 @@ byte unballasting_dim_min = 10;             // value of dim to start relay
 
 //byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
-unsigned int reaction_coeff  = 25; // small coeff due to wifi timing
+unsigned int reaction_coeff  = 20; // small coeff due to wifi timing
 
 
 // Input and ouput of the ESP32
