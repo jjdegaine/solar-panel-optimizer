@@ -217,8 +217,8 @@ int tresholdP     = -150000;           // Threshold to start power adjustment 1 
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
-//unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
-unsigned long unballasting_timeout = 60000; // for test
+unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
+//unsigned long unballasting_timeout = 60000; // for test
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
@@ -300,8 +300,8 @@ bool relay_2 = false ; // Flag relay 2
 
 bool synchro = false ; // Flag for synchro with wifi and regulation
 
-// unsigned long mean_power_timing = 300000; // timer 5 minutes to calculate mean power
-unsigned long mean_power_timing = 60000; // for test 
+unsigned long mean_power_timing = 300000; // timer 5 minutes to calculate mean power
+//unsigned long mean_power_timing = 60000; // for test 
 unsigned long mean_power_time;            // timer for unballasting
 
 float mean_power =0;
