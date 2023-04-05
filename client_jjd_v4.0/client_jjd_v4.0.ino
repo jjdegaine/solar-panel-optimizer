@@ -114,7 +114,7 @@ version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballast
 version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected)
 version 2.5 march 2023 adding relay status on serial 1; supress calibration and verbose (not needed anymore ).
 version 2.6 march 2023 adding mean dim value on serial 1 
-
+version 4.0 april 2023, suppress IT Zero cross detect. Zero cross detect using ADC V not created
 */
 
 
@@ -346,6 +346,7 @@ void IRAM_ATTR zero_cross_detect() {   //
      portEXIT_CRITICAL_ISR(&mux);  
    
 }  
+
 
 
 /* _________________________________________________________________
