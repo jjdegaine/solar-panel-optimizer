@@ -211,7 +211,7 @@ float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 //float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
 
 int Treshold_relay1 = 00000;          // Threshold to stop relay 50W ; 0W due to bad calibration of main board master
-int tresholdP     = -150000;           // Threshold to start power adjustment 1 = 1mW ; -150W due to bad calibration of main board master
+int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ; -100W due to bad calibration of main board master
 
 
 
