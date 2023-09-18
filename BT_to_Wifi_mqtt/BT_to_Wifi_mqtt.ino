@@ -80,8 +80,7 @@ void loop() {
   delay(5);
 
    if ( display == 4) {
-      M5.Lcd.clear(BLACK);
-
+  
       display = 0 ;
    }
     
