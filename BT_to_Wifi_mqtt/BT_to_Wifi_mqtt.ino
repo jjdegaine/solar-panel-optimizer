@@ -55,22 +55,23 @@ void loop() {
 
   if (SerialBT.available()) {
     //Serial.write(SerialBT.read());
+    M5.Lcd.clear(BLACK);
     switch (display){
       case 0:
       M5.Lcd.setCursor(0,0);
-      M5.Lcd.clear(BLACK);
+      
       break;
       case 1:
       M5.Lcd.setCursor(0,30);
-      M5.Lcd.clear(BLACK);
+      
       break;
       case 2:
       M5.Lcd.setCursor(0,60);
-      M5.Lcd.clear(BLACK);
+      
       break;
       case 3:
       M5.Lcd.setCursor(0,90);
-      M5.Lcd.clear(BLACK);
+      
       break;
     }
     M5.Lcd.print(SerialBT.read());
