@@ -16,8 +16,8 @@ String name = "HC-06";
 char *pin = "1234"; //<- standard pin would be provided by default
 bool connected;
 byte display =0 ; //
-uint16_t position_y =0 ;
-uint16_t xo =0 ;
+int position_y =0 ;
+
 
 void setup() {
   Serial.begin(9600);
@@ -55,16 +55,29 @@ void loop() {
 
   if (SerialBT.available()) {
     //Serial.write(SerialBT.read());
-    M5.Lcd.setCursor(0, position_Y);
+    switch (display){
+      case 0:
+      M5.Lcd.setCursor(0,0);
+      break;
+      case 1:
+      M5.Lcd.setCursor(0,30);
+      break;
+      case 2:
+      M5.Lcd.setCursor(0,60);
+      break;
+      case 3:
+      M5.Lcd.setCursor(0,90);
+      break;
+    }
     M5.Lcd.print(SerialBT.read());
   }
-  position_y=position_y+30 ;
+  
   display = display + 1 ;
   delay(5);
 
    if ( display == 4) {
       M5.Lcd.clear(BLACK);
-      position_y = 0;
+
       display = 0 ;
    }
     
