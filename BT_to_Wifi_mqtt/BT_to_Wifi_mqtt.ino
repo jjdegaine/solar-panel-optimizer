@@ -37,9 +37,13 @@ void setup() {
   connected = SerialBT.connect(address);
   
   if(connected) {
+    M5.Lcd.setCursor(0,0);
+    M5.Lcd.clear(BLACK);
     M5.Lcd.print("Connected Succesfully!");
   } else {
     while(!SerialBT.connected(10000)) {
+      M5.Lcd.setCursor(0,0);
+      M5.Lcd.clear(BLACK);
       M5.Lcd.print("Failed to connect. Make sure remote device is available and in range, then restart app."); 
     }
   }
@@ -49,6 +53,8 @@ void loop() {
 
   if (SerialBT.available()) {
     //Serial.write(SerialBT.read());
+    M5.Lcd.setCursor(0,0);
+    M5.Lcd.clear(BLACK);
     M5.Lcd.print(SerialBT.read());
   }
   delay(5);
