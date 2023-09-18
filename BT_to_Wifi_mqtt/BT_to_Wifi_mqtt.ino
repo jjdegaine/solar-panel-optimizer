@@ -1,5 +1,11 @@
 #include "BluetoothSerial.h"
-#define RELAY_PIN 2 
+#include <M5Stack.h>
+#include <Esp.h>
+#include <WiFi.h>
+#include <esp_task_wdt.h>
+#include <PubSubClient.h> //MQTT
+
+
 BluetoothSerial SerialBT;
 
 
@@ -14,16 +20,27 @@ bool connected;
 void setup() {
   Serial.begin(9600);
   SerialBT.begin("ESPBT", true); 
-  SerialBT.setPin(pin);
-  Serial.println("The device started in master mode, make sure remote BT device is on!");
+  M5.begin();
+  M5.Power.begin();
+ // SerialBT.setPin(pin);
+
+   // Initialize the M5Stack object
+  
+  M5.Lcd.clear(BLACK);
+  M5.Lcd.setCursor(0,0);
+  M5.Lcd.setTextSize(4);
+  M5.Lcd.print("ready ...");
+  delay(1000);
+
+  M5.Lcd.print("The device started in master mode, make sure remote BT device is on!");
   
   connected = SerialBT.connect(address);
   
   if(connected) {
-    Serial.println("Connected Succesfully!");
+    M5.Lcd.print("Connected Succesfully!");
   } else {
     while(!SerialBT.connected(10000)) {
-      Serial.println("Failed to connect. Make sure remote device is available and in range, then restart app."); 
+      M5.Lcd.print("Failed to connect. Make sure remote device is available and in range, then restart app."); 
     }
   }
 }
@@ -31,7 +48,8 @@ void setup() {
 void loop() {
 
   if (SerialBT.available()) {
-    Serial.write(SerialBT.read());
+    //Serial.write(SerialBT.read());
+    M5.Lcd.print(SerialBT.read());
   }
   delay(5);
 }
