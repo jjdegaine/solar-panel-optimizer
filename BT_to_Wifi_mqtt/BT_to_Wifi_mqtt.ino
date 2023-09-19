@@ -17,7 +17,7 @@ char *pin = "1234"; //<- standard pin would be provided by default
 bool connected;
 byte display =0 ; //
 int position_y =0 ;
-
+byte DataToRead [13]; 
 
 void setup() {
   Serial.begin(9600);
@@ -75,7 +75,10 @@ void loop() {
       break;
     }
     */
-    M5.Lcd.print(SerialBT.read());
+    
+  int data = Serial.readBytesUntil(char(13), DataToRead, 13);
+  M5.Lcd.print (data) ;
+    //M5.Lcd.print(SerialBT.read());
   }
   
   /*display = display + 1 ;
