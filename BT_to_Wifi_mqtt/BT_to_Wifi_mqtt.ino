@@ -55,8 +55,8 @@ void loop() {
 
   if (SerialBT.available()) {
     //Serial.write(SerialBT.read());
-    M5.Lcd.clear(BLACK);
-    switch (display){
+    //M5.Lcd.clear(BLACK);
+    /*switch (display){
       case 0:
       M5.Lcd.setCursor(0,0);
       
@@ -74,15 +74,16 @@ void loop() {
       
       break;
     }
+    */
     M5.Lcd.print(SerialBT.read());
   }
   
-  display = display + 1 ;
+  /*display = display + 1 ;
   delay(5);
 
    if ( display == 4) {
   
       display = 0 ;
    }
-    
+   */ 
 }
