@@ -51,42 +51,65 @@ void setup() {
   }
 }
 
+/*
 void loop() {
 
   if (SerialBT.available()) {
-    //Serial.write(SerialBT.read());
-    //M5.Lcd.clear(BLACK);
-    /*switch (display){
-      case 0:
-      M5.Lcd.setCursor(0,0);
-      
-      break;
-      case 1:
-      M5.Lcd.setCursor(0,30);
-      
-      break;
-      case 2:
-      M5.Lcd.setCursor(0,60);
-      
-      break;
-      case 3:
-      M5.Lcd.setCursor(0,90);
-      
-      break;
-    }
-    */
+   
     
-  int data = Serial.readBytesUntil(char(13), DataToRead, 13);
+  int data = SerialBT.readBytesUntil(char(13), DataToRead, 13);
   M5.Lcd.print (data) ;
     //M5.Lcd.print(SerialBT.read());
   }
   
-  /*display = display + 1 ;
-  delay(5);
+ 
+}
+*/
 
-   if ( display == 4) {
-  
-      display = 0 ;
-   }
-   */ 
+
+void loop() {
+
+  // if there's any serial available, read it:
+
+  if (SerialBT.available()) {
+
+    // look for the next valid integer in the incoming serial stream:
+
+    int power = Serial.parseInt();
+
+    // do it again:
+
+    int relay1 = Serial.parseInt();
+
+    // do it again:
+
+    int relay2 = Serial.parseInt();
+
+     // do it again:
+
+    int dim = Serial.parseInt();
+
+    // look for the newline. That's the end of your sentence:
+
+    if (SerialBT.read() == '\n') {
+
+      // constrain the values to 0 - 255 and invert
+
+      // if you're using a common-cathode LED, just use "constrain(color, 0, 255);"
+
+      
+
+      // print the three numbers in one string as hexadecimal:
+
+      M5.Lcd.print(power);
+
+      M5.Lcd.print(relay1);
+
+      M5.Lcd.print(relay2);
+
+      M5.Lcd.print(dim);
+
+    }
+
+  }
 }
