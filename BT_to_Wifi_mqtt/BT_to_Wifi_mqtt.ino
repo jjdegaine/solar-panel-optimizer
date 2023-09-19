@@ -51,22 +51,24 @@ void setup() {
   }
 }
 
-/*
+
 void loop() {
 
   if (SerialBT.available()) {
    
     
-  int data = SerialBT.readBytesUntil(char(13), DataToRead, 13);
-  M5.Lcd.print (data) ;
-    //M5.Lcd.print(SerialBT.read());
+  int numBytes = SerialBT.readBytesUntil(char(13), DataToRead, 13);
+  M5.Lcd.print (DataToRead, numBytes) ;
+  
+
   }
   
  
 }
-*/
 
 
+
+/*
 void loop() {
 
   // if there's any serial available, read it:
@@ -75,19 +77,19 @@ void loop() {
 
     // look for the next valid integer in the incoming serial stream:
 
-    int power = Serial.parseInt();
+    int power = SerialBT.parseInt();
 
     // do it again:
 
-    int relay1 = Serial.parseInt();
+    int relay1 = SerialBT.parseInt();
 
     // do it again:
 
-    int relay2 = Serial.parseInt();
+    int relay2 = SerialBT.parseInt();
 
      // do it again:
 
-    int dim = Serial.parseInt();
+    int dim = SerialBT.parseInt();
 
     // look for the newline. That's the end of your sentence:
 
@@ -113,3 +115,4 @@ void loop() {
 
   }
 }
+*/
