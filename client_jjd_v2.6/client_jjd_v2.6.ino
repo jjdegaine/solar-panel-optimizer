@@ -686,7 +686,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
       }
    }
    
-  // meam_power calculation
+  // meam_power calculation for bluetooth module connected on TX
      if (long (millis() - mean_power_time > mean_power_timing)) 
       {
         mean_power_bluetooth = (mean_power / mean_power_counter);
@@ -737,7 +737,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           //Serial.print(mean_power); 
 
           display.setColor(BLACK);        // clear first line
-          display.fillRect(0, 0, 128, 22);
+          display.fillRect(0, 0, 128, 23);
           display.setColor(WHITE); 
 
           display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
@@ -764,18 +764,18 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         if (TTL == true)
               {
               display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
+              display.fillRect(0, 23, 128, 23);
               display.setColor(WHITE); 
-              display.drawString(0, 22, "TIME UDP");
+              display.drawString(0, 23, "TIME UDP");
               display.display();
               TTL= false ;
               }
         if ( UDP_OK == true) 
             {
               display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
+              display.fillRect(0, 23, 128, 23);
               display.setColor(WHITE); 
-              display.drawString(0, 22, "UDP OK");
+              display.drawString(0, 23, "UDP OK");
               display.display();
             UDP_OK = false ;
             }

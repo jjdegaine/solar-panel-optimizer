@@ -111,10 +111,13 @@ version 1.9 june 2021 modification led scr
 version 2.1 ==> final version available on web site  https://solar-panel-optimizer.com/
 version 2.2 april 2022 priority SCR before relay1
 version 2.3 may 2022 update unballasting_timeout (5 minutes) and reset unballasting_counter
-version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected)
-version 2.5 march 2023 adding relay status on serial 1; supress calibration and verbose (not needed anymore ).
-version 2.6 march 2023 adding mean dim value on serial 1 
-version 4.0 april 2023, suppress IT Zero cross detect. Zero cross detect using ADC V ==> not created
+version 2.4 june 2022 adding 5 minutes mean power on serial 1 (bluetooth module connected) if relay 1 ON
+version 2.4 january 2023. SCR regulation with on/off (if power < tresholdP  SCR on ; power > tresholdP+Treshold_heater SCR off )
+                          to connect a 400W heater. the output relay will commut too often.
+version 2.5 skipped 
+version 2.6 November 2023 adding relay status on serial 1; supress calibration and verbose (not needed anymore ).adding mean dim value on serial 1                         
+
+
 */
 
 
@@ -160,25 +163,21 @@ IPAddress Subnet(255, 255, 255, 0);
 
 byte totalCount        = 20;     // number of half perid used for measurement
 
-/* main board 2
+// main board 2
 //float Vcalibration     = 0.97;   // to obtain the mains exact value 
 //float Icalibration     = 93;     // current in milliampères
 //float phasecalibration = 1.7;    // value to compensate  the phase shift linked to the sensors. 
 //float ADC_V_0V = 467 ;
 //float ADC_I_0A = 467 ;
-int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
-int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
-*/
+//byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 
-/*main board 3
+//main board 3
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
 float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 462 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
-int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
-int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
-*/
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 
 /*main board 4
 float Vcalibration     = 0.955;   // to obtain the mains exact value 
@@ -186,8 +185,7 @@ float Icalibration     = 85;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
-int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
-int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 */
 
 
@@ -197,36 +195,40 @@ float Icalibration     = 95;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 470 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 471 ; // ADC value for 0V input 3.3V/2
-int Treshold_relay1 = 50000;          // Threshold to stop relay 50W
-int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ;
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
 !!!!!! wrover module !!!!!
+
 */
 
-
-//main board 6
+/*main board 6
 float Vcalibration     = 0.91;   // to obtain the mains exact value 
 //float Icalibration     = 90;     // current in milliampères
 //float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 //float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
-
-int Treshold_relay1 = 00000;          // Threshold to stop relay 50W ; 0W due to bad calibration of main board master
-int tresholdP     = -150000;           // Threshold to start power adjustment 1 = 1mW ; -150W due to bad calibration of main board master
-
+byte dimthreshold=40 ;					// dimthreshold; value to added at dim to compensate phase shift
+*/
 
 
+// Threshold value for power adjustment: 
+
+//int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 1mW ; 10 Watt
+int tresholdP     = -200000;           // Threshold to start power adjustment 1 = 1mW ; -200 Watt for 400W heater 
+byte confirm_heater = 10;  // counter to confirm tresholdP
+byte confirm_heater_stop = 10;  // counter to confirm tresholdp+Treshold_heater
 
 #define WDT_TIMEOUT 6 // 6 secondes watchdog
 
 unsigned long unballasting_timeout = 300000; // timeout to avoid relay command too often 300 secondes 5 minutes
-//unsigned long unballasting_timeout = 60000; // for test
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
 byte unballasting_dim_min = 10;             // value of dim to start relay
-
+int Treshold_relay1 = 50000;               // Threshold to stop relay 50W
+int Treshold_heater = 450000;             // Threshold to stop SCR Heater 400W
+int limit_injection = 3000000;                // in case of wifi problem rpower overflow 
 //byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
-unsigned int reaction_coeff  = 15; // small coeff due to wifi timing
+unsigned int reaction_coeff  = 25; // small coeff due to wifi timing
 
 
 // Input and ouput of the ESP32
@@ -245,10 +247,10 @@ const byte zeroCrossPin      = 19;
 
 // zero-crossing interruption  :
  
-byte dimthreshold=35 ;					// dimthreshold; value to added at dim to compensate phase shift
+//byte dimthreshold=50 ;					// dimthreshold; value to added at dim to compensate phase shift
 byte dimmax = 128;              // max value to start SCR command
 byte dim = dimmax;              // Dimming level (0-128)  0 = on, 128 = 0ff 
-
+//byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
 byte dim_sinus [129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128} ;
 
 byte dimphase = dim + dimthreshold; 
@@ -280,9 +282,9 @@ volatile bool UDP_OK = false;
 
 // Voltage and current measurement  :
 
-
+//int readV, memo_readV, readI;   // voltage and current withn ADC (0 à 1023 bits)
 int readV, memo_readV;   // voltage and current withn ADC (0 à 1023 bits)
-
+//float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
 float rPower, V,  sqV, sumV = 0 ;  
 float Power_wifi;  // power to be received by wifi
                    
@@ -302,7 +304,6 @@ bool relay_2 = false ; // Flag relay 2
 bool synchro = false ; // Flag for synchro with wifi and regulation
 
 unsigned long mean_power_timing = 300000; // timer 5 minutes to calculate mean power
-//unsigned long mean_power_timing = 60000; // for test 
 unsigned long mean_power_time;            // timer for unballasting
 
 float mean_power =0;
@@ -310,7 +311,6 @@ float mean_power_bluetooth =0;
 byte mean_dim=0 ;
 byte mean_dim_bluetooth = 0;
 int mean_power_counter =0;
-//char buffer_bluetooth [40]; 
 
 // init timer IT
 hw_timer_t * timer = NULL;
@@ -340,13 +340,12 @@ void IRAM_ATTR zero_cross_detect() {   //
         zero_cross_flag = true;   // Flag for power calculation
         zero_cross = true;        // Flag for SCR
         first_it_zero_cross = true ;  // flag to start a delay 2msec
-        
+
         dimphaseit = dimphase;
 
      portEXIT_CRITICAL_ISR(&mux);  
    
 }  
-
 
 
 /* _________________________________________________________________
@@ -360,13 +359,13 @@ void IRAM_ATTR onTimer() {
    if(zero_cross == true && dimphaseit < dimphasemax )  // First check to make sure the zero-cross has 
  {                                                    // happened else do nothing
    
-    
+ 
 
      if(i>dimphaseit) {            // i is a counter which is used to SCR command delay 
                                 // i minimum ==> start SCR just after zero crossing half period ==> max power
                                 // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
        digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(5);             // Pause briefly to ensure the SCR turned on
+       delayMicroseconds(7);             // Pause briefly to ensure the SCR turned on
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
        digitalWrite(SCRLED, HIGH);      // start led SCR 
@@ -404,7 +403,7 @@ unballasting_time= millis(); // set up timer unballasting
 
 
 // USB init
-
+ 
  Serial.begin(9600);
 
  //init OLED
@@ -422,7 +421,8 @@ display.display();
  delay(500);
 
 
- 
+
+
   display.setFont(ArialMT_Plain_24);
   display.clear();
 
@@ -462,7 +462,8 @@ display.display();
     ,  ARDUINO_RUNNING_CORE);
 
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
- 
+
+
   
 }                
 
@@ -503,7 +504,9 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   
   unsigned int numberOfSamples = 0;
   sumV = 0;
-   unsigned int time_now_second = millis()/1000;      // timer in second
+  //sumI = 0;
+  //sumP = 0;
+  unsigned int time_now_second = millis()/1000;      // timer in second
 
 
   
@@ -526,10 +529,10 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     readV = analogRead(voltageSensorPin) / 4;   // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
     
 	if( memo_readV == 0 && readV == 0 ) { break; } // exit the while if no powersupply
+
   
-  
-  
-   
+     
+
 
 // function delay 2msec
 
@@ -566,7 +569,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 //
 // dimstep calculation.  Dimstep must be calculate when synchro is true (rpower received by wifi )
 //
- if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
+ /*if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
   else { dimstep = 1 - (rPower/1000)/reaction_coeff; }
   
   // when rPower is less than tresholdP ==> unlalanced power must increased ==> DIM must be reduced
@@ -574,9 +577,9 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if( rPower < tresholdP ) {      
     if( dim > dimstep )  dim -= dimstep; else  dim = 0;
   } 
-
+*/
 // when rPower is higher than tresholdP ==> unlalanced power must decreased ==> DIM must be increasad
-
+/*
   else if( rPower > tresholdP ) {                   
     if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
   }
@@ -584,14 +587,52 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // if dim is at the minimum, control regulation is at the maximum 
   else { digitalWrite(limiteLED, LOW); }
   
-
+*/
 // Value to used by the timer interrupt due to real phase between interruption and mains
-dimphase = dim_sinus [ dim ] + dimthreshold;
+//dimphase = dim_sinus [ dim ] + dimthreshold;
+
+if (rPower < limit_injection || rPower > -limit_injection)  // in case off wifi off-line
+  { 
+    if (rPower < tresholdP ){
+        if (confirm_heater <=0){
+            dimphase = dimthreshold; //==> dim=0 power max
+            confirm_heater_stop = 10 ; 
+        }
+      else {
+        confirm_heater -- ; //
+      }
+    }
+
+    if (rPower > (tresholdP + Treshold_heater) ){
+      
+        if (confirm_heater_stop <=0){
+          dimphase = dimphasemax; //==> dim=128 power 0
+          confirm_heater = 10 ; // reset counter confirm_heater
+        }
+        else {
+          confirm_heater_stop -- ; //
+        }
+      }
+
+  }
+
+  else {                          // rpower too high
+          dimphase = dimphasemax; //==> dim=128 power 0
+          confirm_heater = 10 ;   // reset counter confirm_heater
+       }
+if (rPower > limit_injection || rPower < -limit_injection) // in case off wifi off-line
+{
+dimphase = dimphasemax; // stop SCR 
+digitalWrite (unballast_relay1, LOW) ; 
+digitalWrite (unballast_relay2, LOW) ; 
+}
 
 // Relay command. to avoid control regulation with a large power (which imply large harmonic) two relay are used to command fixed power charge. 
 // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
 //  a thershold is added using dim_min and dim_max
 //
+
+  
   if (long (millis() - unballasting_time > unballasting_timeout))
    {
     
@@ -603,33 +644,31 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           
           if (relay_1 == true) 
           {
-                  if(relay_2 == true)
-                    {
-                      unballasting_counter = 0;      // overflow
-                      digitalWrite(limiteLED, HIGH) ;
-                      
-                    }
-                  else 
-                    {
-                      digitalWrite( unballast_relay2, HIGH) ; // set relay 2 
-                      relay_2 =true;
-                      unballasting_counter= 0 ;
-                      unballasting_time = millis() ;
-                    }
+            if(relay_2 == true)
+              {
+                unballasting_counter = 0;      // overflow
+                digitalWrite(limiteLED, HIGH) ;
+                
+              }
+            else 
+              {
+                digitalWrite( unballast_relay2, HIGH) ; // set relay 2 
+                relay_2 =true;
+                unballasting_counter= 0 ;
+                unballasting_time = millis() ;
+              }
           }     
-              else
-                  {
-                  digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
-                  relay_1 = true;
-                  unballasting_counter= 0 ;
-                  unballasting_time = millis() ;
-                  }     
-              
+          else
+              {
+              digitalWrite (unballast_relay1, HIGH)  ; //set relay 1
+              relay_1 = true;
+              unballasting_counter= 0 ;
+              unballasting_time = millis() ;
+              }     
+          
       
           } 
-
-          else 
-          {
+          else {
                 unballasting_counter ++ ;
           } 
         
@@ -668,16 +707,16 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           }
          
         } 
-
-      if (dim > unballasting_dim_min && rPower < Treshold_relay1)
+       if (dim > unballasting_dim_min && rPower < Treshold_relay1)
 
       {
         unballasting_counter = 0 ; //
       
       }
-   }
-   
-  // meam_power calculation
+      
+      }
+
+  // meam_power calculation for bluetooth module connected on TX
      if (long (millis() - mean_power_time > mean_power_timing)) 
       {
         mean_power_bluetooth = (mean_power / mean_power_counter);
@@ -686,7 +725,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         mean_dim=0;
         mean_power_counter=0;
         mean_power_time= millis();
-             
+        
         Serial.print(mean_power_bluetooth); // Bluetooth data
         Serial.print (",");
         Serial.print (relay_1);
@@ -694,7 +733,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         Serial.print (relay_2);
         Serial.print (",");
         Serial.println(mean_dim_bluetooth);
-
+        
 
 
       }
@@ -704,7 +743,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
       mean_dim=mean_dim+dim ;
       mean_power_counter ++ ;
       
-      
+
     }
 
   // Display each 2 seconds
@@ -728,7 +767,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           //Serial.print(mean_power); 
 
           display.setColor(BLACK);        // clear first line
-          display.fillRect(0, 0, 128, 22);
+          display.fillRect(0, 0, 128, 23);
           display.setColor(WHITE); 
 
           display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
@@ -737,11 +776,12 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
          }  // 
       
         
+
           // delay (7000); // to test watchdog with switch calibration
 
         
-        
-         delay(1);            // needed for stability 
+
+                 delay(1);            // needed for stability
 
 // update switches winter, verbose, calibration
 
@@ -749,24 +789,24 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         
  //       VERBOSE = digitalRead (pin_verbose);
         
- //       CALIBRATION = digitalRead (pin_calibration);
+  //       CALIBRATION = digitalRead (pin_calibration);
 
 // display WIFI information
         if (TTL == true)
               {
               display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
+              display.fillRect(0, 23, 128, 23);
               display.setColor(WHITE); 
-              display.drawString(0, 22, "TIME UDP");
+              display.drawString(0, 23, "TIME UDP");
               display.display();
               TTL= false ;
               }
         if ( UDP_OK == true) 
             {
               display.setColor(BLACK);        // clear second  line
-              display.fillRect(0, 22, 128, 22);
+              display.fillRect(0, 23, 128, 23);
               display.setColor(WHITE); 
-              display.drawString(0, 22, "UDP OK");
+              display.drawString(0, 23, "UDP OK");
               display.display();
             UDP_OK = false ;
             }
@@ -800,7 +840,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   WiFi.config(ipCliente, ipServidor, Subnet);
   Udp.begin(localPort);
   delay(5); //
-
+  
   UDP_OK = true ;
 
     for (;;) // A Task shall never return or exit.
@@ -808,7 +848,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
               if (long (millis() - time_udp_now > time_udp_limit))             // comparing durations
               {                    
               Power_wifi = tresholdP +1 ; // as wifi is down Power_wifi is set up to tresholdP so dim will increased to 128 and stop SCR
-              
+             
               TTL = true ;
 
               WiFi.begin(ssid, password, channel);
