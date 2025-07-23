@@ -510,8 +510,8 @@ display.display();
           display.drawString(0, 22, "MQTT KO" + client.state() );
           delay(2000); 
       } 
-      client.subscribe(topic);
-      client.setCallback(callback);
+      // client.subscribe(topic);
+
   }
  // init timer 
   timer = timerBegin(0, 80, true);
@@ -932,7 +932,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
       
       		send_MQTT = false ; 
           sprintf(mystring_power_wifi, "%g", mean_power_MQTT); 
-      		client.publish(topic, mystring_power_wifi); 
+      		client.publish(topic, mystring_power_wifi, true); 
       
     }
 
