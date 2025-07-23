@@ -281,7 +281,7 @@ float mean_power =0;
 float mean_power_MQTT =0;
 int mean_power_counter =0; 
 unsigned long mean_power_time;            // timer for mean power mqtt
-unsigned long mean_power_timing = 300000; // timer 5 minutes to calculate mean power MQTT
+unsigned long mean_power_timing = 10000; // timer 10 secondes minutes to calculate mean power MQTT
 char mystring_power_wifi [50] ;       // string to be transmitted by wifi MQTT
 
 // other value :
@@ -770,8 +770,9 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         mean_power=0;
         mean_power_counter=0;
         mean_power_time= millis();
-        send_MQTT = true ; // ready to send UDP   
-        Serial.println("mean_power_mqtt" + mean_power_MQTT); // MQTT data
+        send_MQTT = true ; // ready to send UDP 
+        Serial.print("mean_power_mq ");
+        Serial.println(mean_power_MQTT); // MQTT data
        
       }
 
