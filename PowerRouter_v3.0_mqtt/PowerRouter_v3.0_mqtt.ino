@@ -510,7 +510,7 @@ display.display();
           display.drawString(0, 22, "MQTT KO" + client.state() );
           delay(2000); 
       } 
-      // client.subscribe(topic);
+      client.subscribe(topic, 1 );
 
   }
  // init timer 
