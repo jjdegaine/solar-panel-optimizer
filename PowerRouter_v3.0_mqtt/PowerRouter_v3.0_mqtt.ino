@@ -113,7 +113,7 @@ const char *password = "Cairojude58"; // mot de passe WiFi
 
 // MQTT Broker 
 const char *mqtt_broker = "192.168.0.154"; 
-const char *topic = "routeur"; 
+const char *topic = "routeur/Wmqtt"; 
 const char *mqtt_username = "mqtt_adm"; 
 const char *mqtt_password = "surel"; 
 const int mqtt_port = 1883; 
