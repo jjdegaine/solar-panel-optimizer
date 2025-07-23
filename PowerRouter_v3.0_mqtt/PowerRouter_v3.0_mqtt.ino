@@ -485,7 +485,14 @@ display.display();
   display.drawString(0, 22, "UDP OK");
   display.display();
   */
+  // init wifi 
 
+  WiFi.begin(ssid, password); 
+  while (WiFi.status() != WL_CONNECTED) { 
+  delay(500); 
+   Serial.println("Connecting to WiFi.."); 
+  } 
+  Serial.println("Connected to the Wi-Fi network"); 
   // init wifi mqtt
 
   client.setServer(mqtt_broker, mqtt_port); 
