@@ -258,8 +258,10 @@ volatile bool zero_cross = false;                // zero cross flag for SSR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
 volatile bool wait_2msec ; // flag no IT on falling edge 
+
 //volatile bool TTL = false ; // time to leave UDP
 //volatile bool UDP_OK = false; 
+
 volatile bool led_zero = false;
 
 #define WDT_TIMEOUT 15 // watch dog time
@@ -850,7 +852,11 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
      
       CALIBRATION = digitalRead (pin_calibration);
 
+
         /* display WIFI information
+
+        // display WIFI information
+
         if (TTL == true)
               {
               display.setColor(BLACK);        // clear second  line
@@ -869,7 +875,9 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
               display.display();
             UDP_OK = false ;
             }
-            */
+
+
+
    /*   if (long (millis() - time_wdt_now > time_wdt))             // comparing durations to test watchdog
       {
           delay (20000) ; // program stop duting 20sec to check watchdog
