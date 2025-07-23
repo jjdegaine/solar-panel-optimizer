@@ -495,7 +495,7 @@ display.display();
   Serial.println("Connected to the Wi-Fi network"); 
   // init wifi mqtt
 
-  //client.setServer(mqtt_broker, mqtt_port); 
+  client.setServer(mqtt_broker, mqtt_port); 
   connect ("routeur", mqtt_broker, mqtt_port, topic, 1, true ) ;
   //client.setCallback(callback); 
   while (!client.connected()) { 
@@ -511,6 +511,7 @@ display.display();
           display.drawString(0, 22, "MQTT KO" + client.state() );
           delay(2000); 
       } 
+      connect ("routeur", mqtt_broker, mqtt_port, topic, 1, true ) ;
       client.subscribe(topic, 1 );
 
   }
