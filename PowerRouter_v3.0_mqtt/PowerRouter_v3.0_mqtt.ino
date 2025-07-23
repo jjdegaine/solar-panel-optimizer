@@ -495,7 +495,8 @@ display.display();
   Serial.println("Connected to the Wi-Fi network"); 
   // init wifi mqtt
 
-  client.setServer(mqtt_broker, mqtt_port); 
+  //client.setServer(mqtt_broker, mqtt_port); 
+  connect ("routeur", mqtt_broker, mqtt_port, topic, 1, true ) ;
   //client.setCallback(callback); 
   while (!client.connected()) { 
       String client_id = "routeur"; 
