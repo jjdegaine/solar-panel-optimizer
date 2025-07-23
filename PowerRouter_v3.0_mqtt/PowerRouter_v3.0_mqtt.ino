@@ -511,6 +511,7 @@ display.display();
           delay(2000); 
       } 
       client.subscribe(topic);
+      client.setCallback(callback);
   }
  // init timer 
   timer = timerBegin(0, 80, true);
