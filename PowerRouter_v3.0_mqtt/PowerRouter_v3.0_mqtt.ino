@@ -883,14 +883,17 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
             UDP_OK = false ;
             }
 
-
+        
 
    /*   if (long (millis() - time_wdt_now > time_wdt))             // comparing durations to test watchdog
       {
           delay (20000) ; // program stop duting 20sec to check watchdog
       }
     */
-
+    
+        
+          
+        
      esp_task_wdt_reset(); // reset watch dog
 
   } 
@@ -921,14 +924,14 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   	   }
 
        // logic: we want wifi if not (calibration or verbose or winter)
-      if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
+      //if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
       
-      {
- 
+      
+          println ("send_mqtt")
       		send_MQTT = false ; 
           sprintf(mystring_power_wifi, "%g", mean_power_MQTT); 
       		client.publish(topic, mystring_power_wifi); 
-      } 
+      
     }
 
 } // end for loop wifi
