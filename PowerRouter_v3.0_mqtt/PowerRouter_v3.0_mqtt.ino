@@ -771,7 +771,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
         mean_power_counter=0;
         mean_power_time= millis();
         send_MQTT = true ; // ready to send UDP   
-        Serial.println(mean_power_MQTT); // MQTT data
+        Serial.println("mean_power_mqtt" + mean_power_MQTT); // MQTT data
        
       }
 
@@ -927,7 +927,6 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
       //if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
       
       
-          println ("send_mqtt")
       		send_MQTT = false ; 
           sprintf(mystring_power_wifi, "%g", mean_power_MQTT); 
       		client.publish(topic, mystring_power_wifi); 
