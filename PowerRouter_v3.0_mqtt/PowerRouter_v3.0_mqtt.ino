@@ -511,7 +511,7 @@ display.display();
           display.drawString(0, 22, "MQTT KO" + client.state() );
           delay(2000); 
       } 
-      connect ("routeur", mqtt_broker, mqtt_port, topic, 1, true ) ;
+      client.connect ("routeur", mqtt_broker, mqtt_port, topic, 1, true ) ;
       client.subscribe(topic, 1 );
 
   }
