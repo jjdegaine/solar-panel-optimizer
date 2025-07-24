@@ -113,7 +113,7 @@ const char *password = "Cairojude58"; // mot de passe WiFi
 
 // MQTT Broker 
 const char *mqtt_broker = "192.168.0.154"; 
-const char *topic = "routeur2/Wmqtt"; 
+const char *topic = "routeur/Wmqtt"; 
 const char *mqtt_username = "mqtt_adm"; 
 const char *mqtt_password = "surel"; 
 const int mqtt_port = 1883; 
@@ -499,7 +499,7 @@ display.display();
 
   //client.setCallback(callback); 
   while (!client.connected()) { 
-      String client_id = "routeur2"; 
+      String client_id = "routeur"; 
       client_id += String(WiFi.macAddress()); 
       Serial.printf("The client %s connects to the public MQTT brokern", client_id.c_str()); 
       if (client.connect(client_id.c_str(), mqtt_username, mqtt_password)) { 
