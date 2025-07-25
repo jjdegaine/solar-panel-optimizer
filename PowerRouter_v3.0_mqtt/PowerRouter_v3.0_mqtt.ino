@@ -805,7 +805,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
       }
 
     else{
-      mean_power_5mn=mean_power+Power_wifi_5mn;
+      mean_power_5mn=mean_power_5mn+Power_wifi;
       mean_power_counter_5mn ++ ;
            
         }
