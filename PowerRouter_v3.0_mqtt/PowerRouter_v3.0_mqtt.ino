@@ -957,7 +957,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
           sprintf(mystring_power_wifi, "%g", mean_power_MQTT); 
       		client.publish(topic, mystring_power_wifi, true); 
 
-      if (send_mqqt_5mn == true ) 
+      if (send_MQTT_5mn == true ) 
           {
           send_MQTT_5mn = false ; 
           sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn); 
