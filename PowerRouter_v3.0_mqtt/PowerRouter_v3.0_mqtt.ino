@@ -114,6 +114,7 @@ const char *password = "Cairojude58"; // mot de passe WiFi
 // MQTT Broker 
 const char *mqtt_broker = "192.168.0.154"; 
 const char *topic = "routeur/Wmqtt"; 
+const char *topic_5mn = "routeur/Wmqtt_5mn"; 
 const char *mqtt_username = "mqtt_adm"; 
 const char *mqtt_password = "surel"; 
 const int mqtt_port = 1883; 
@@ -515,8 +516,9 @@ display.display();
           display.drawString(0, 22, "MQTT KO" + client.state() );
           delay(2000); 
       } 
-      //client.connect ("routeur", mqtt_broker, mqtt_port, topic, 1, true ) ;
+    
       client.subscribe(topic, 1 );
+      client.subscribe(topic_5mn, 1 );
 
   }
  // init timer 
@@ -962,7 +964,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
           {
           send_MQTT_5mn = false ; 
           sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn); 
-      		client.publish(topic, mystring_power_wifi_5mn, true); 
+      		client.publish(topic_5mn, mystring_power_wifi_5mn, true); 
           }
     }
 
