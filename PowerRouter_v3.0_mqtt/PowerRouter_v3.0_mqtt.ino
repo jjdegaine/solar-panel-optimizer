@@ -820,7 +820,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
     if ( (CALIBRATION ==false) || (VERBOSE == false)) {
           memo_temps = time_now_second;
 
-
+        /*
           Serial.print("P= ");
           Serial.print(rPower/1000);   
           Serial.print("w");
@@ -830,7 +830,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           Serial.println (dimphase) ;
           Serial.print ("i_counter ");
           Serial.println (i_counter) ;
-
+        */
 
 
           display.setColor(BLACK);        // clear first line
