@@ -948,7 +948,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     for (;;) // A Task shall never return or exit.
     {
   	   //while(send_MQTT == false )
-       while(send_MQTT == false or send_MQTT_5mn == false )
+       while(send_MQTT == false || send_MQTT_5mn == false )
   	   {
   		wifi_wait=0; // loop to wait update DIM
   	    		
