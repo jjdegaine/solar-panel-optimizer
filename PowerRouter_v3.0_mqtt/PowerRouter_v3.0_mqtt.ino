@@ -280,7 +280,7 @@ float mean_power =0;
 float mean_power_MQTT =0;
 int mean_power_counter =0; 
 unsigned long mean_power_time;            // timer for mean power mqtt
-unsigned long mean_power_timing = 15000; // timer 15 secondes minutes to calculate mean power MQTT
+unsigned long mean_power_timing = 20000; // timer 20 secondes minutes to calculate mean power MQTT
 char mystring_power_wifi [50] ;       // string to be transmitted by wifi MQTT
 // 5 minutes mean power mqtt
 float mean_power_5mn =0;
