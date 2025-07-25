@@ -154,8 +154,8 @@ float Icalibration     = 100;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors. 
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
-int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ; 
-
+//int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ; 
+int tresholdP     = 00000; 
 
 
 
