@@ -270,6 +270,7 @@ unsigned long time_wdt_now = millis() ;
 int readV, memo_readV, readI;   // voltage and current withn ADC (0 à 1023 bits)
 float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;  
 float Power_wifi;
+float Power_wifi_5mn;
 byte zero_crossCount = 0;          // half period counter
 
 // 10 sec mean power mqtt
