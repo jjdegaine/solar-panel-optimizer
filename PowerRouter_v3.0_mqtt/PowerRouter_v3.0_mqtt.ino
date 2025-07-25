@@ -120,7 +120,7 @@ const int mqtt_port = 1883;
 WiFiClient espClient; 
 PubSubClient client(espClient); 
 volatile bool send_MQTT = false;
-
+volatile bool send_MQTT_5mn = false;
 
 // Information to be displayed
 
