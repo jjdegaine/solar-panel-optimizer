@@ -182,8 +182,6 @@ int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 
 byte totalCount        = 20;     // number of half perid used for measurement
 // Threshold value for power adjustment: 
 
-
-
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
 unsigned long unballasting_time;            // timer for unballasting 
 byte unballasting_counter = 0;             // counter mains half period
@@ -227,7 +225,7 @@ byte dimphasemax = dimmax + dimthreshold;
 
 
 //byte reset_wifi = 0;			// counter for wifi reset due to time to leave
-byte wifi_wait = 0;       // 
+byte wifi_wait = 0;       // used for the waiting loop on task wifi
        
 
 // wifi UDP 
@@ -242,11 +240,8 @@ unsigned long time_udp_limit = 5000 ; // time to leave UDP 5 sec
 unsigned long timeout_now;
 */
 
-
-
 unsigned long wait_it_limit = 3 ;  // delay 3msec
 unsigned long it_elapsed; // counter for delay 3 msec
-
 
 char periodStep = 73;                            // 73 * 127 = 10msec, calibration using oscilloscope
 //char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
@@ -277,12 +272,20 @@ float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;
 float Power_wifi;
 byte zero_crossCount = 0;          // half period counter
 
+// 10 sec mean power mqtt
 float mean_power =0;
 float mean_power_MQTT =0;
 int mean_power_counter =0; 
 unsigned long mean_power_time;            // timer for mean power mqtt
 unsigned long mean_power_timing = 10000; // timer 10 secondes minutes to calculate mean power MQTT
 char mystring_power_wifi [50] ;       // string to be transmitted by wifi MQTT
+// 5 minutes mean power mqtt
+float mean_power_5mn =0;
+float mean_power_MQTT_5mn =0;
+int mean_power_counter_5mn =0; 
+unsigned long mean_power_time_5 mn;            // timer for mean power mqtt
+unsigned long mean_power_timing_5mn = 300000; // timer 5 minutes minutes to calculate mean power MQTT
+char mystring_power_wifi_5mn [50] ;       // string to be transmitted by wifi MQTT
 
 // other value :
 
@@ -767,7 +770,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
       
       }
   
-// meam_power calculation for MQTT
+// meam_power calculation for MQTT 10 sec
      if (long (millis() - mean_power_time > mean_power_timing)) 
       {
         mean_power_MQTT = (mean_power / mean_power_counter);
@@ -783,6 +786,24 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
     else{
       mean_power=mean_power+Power_wifi;
       mean_power_counter ++ ;
+           
+        }
+ // meam_power calculation for MQTT 5mn
+     if (long (millis() - mean_power_time_5mn > mean_power_timing_5mn)) 
+      {
+        mean_power_MQTT_5mn = (mean_power_5mn / mean_power_counter_5mn);
+        mean_power_5mn=0;
+        mean_power_counter_5mn=0;
+        mean_power_time_5mn= millis();
+        send_MQTT_5mn = true ; // ready to send UDP 
+        Serial.print("mean_power_mq_5mn ");
+        Serial.println(mean_power_MQTT_5mn); // MQTT data
+       
+      }
+
+    else{
+      mean_power_5mn=mean_power+Power_wif_5mni;
+      mean_power_counter_5mn ++ ;
            
         }
  
@@ -935,7 +956,13 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
       		send_MQTT = false ; 
           sprintf(mystring_power_wifi, "%g", mean_power_MQTT); 
       		client.publish(topic, mystring_power_wifi, true); 
-          
+
+      if (send_mqqt_5mn == true ) 
+          {
+          send_MQTT_5mn = false ; 
+          sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn); 
+      		client.publish(topic, mystring_power_wifi_5mn, true); 
+          }
     }
 
 } // end for loop wifi
