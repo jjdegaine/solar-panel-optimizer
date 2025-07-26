@@ -518,9 +518,11 @@ display.display();
           delay(2000); 
       } 
     
-      client.subscribe(topic, 1 );
-      client.subscribe(topic_5mn, 1 );
+      //client.subscribe(topic, 1 );
+      //client.subscribe(topic_5mn, 1 );
 
+      client.subscribe(topic );
+      client.subscribe(topic_5mn );
   }
  // init timer 
   timer = timerBegin(0, 80, true);
