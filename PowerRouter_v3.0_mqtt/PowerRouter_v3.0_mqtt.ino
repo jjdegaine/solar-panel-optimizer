@@ -503,11 +503,6 @@ display.display();
   } 
   Serial.println("Connected to the Wi-Fi network"); 
 
-  // init wifi mqtt
-  client.setServer(mqtt_broker, mqtt_port); 
-
-
-
   //client.setCallback(callback); 
   Connect_MQTT ();
 
@@ -972,15 +967,17 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     
 void Connect_MQTT()
 {
-    String l_client_id = client_id;
-    l_client_id += String(WiFi.macAddress()); 
-
-    
-
     while (!client.connected()) { 
       client.disconnect();
 
-      Serial.printf("The client %s connects to the public MQTT brokern", l_client_id.c_str()); 
+      String l_client_id;  = client_id;
+      l_client_id += String(WiFi.macAddress());
+
+      // init wifi mqtt
+      client.setServer(mqtt_broker, mqtt_port);
+
+      Serial.println("The client %s connects to the public MQTT broker ", l_client_id.c_str()); 
+      
       if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password)) { 
         Serial.println("Public EMQX MQTT broker connected"); 
         display.drawString(0, 22, "MQTT OK");
