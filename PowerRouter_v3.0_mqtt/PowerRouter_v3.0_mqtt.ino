@@ -122,7 +122,7 @@ WiFiClient espClient;
 PubSubClient client(espClient); 
 volatile bool send_MQTT = false;
 volatile bool send_MQTT_5mn = false;
-const char client_id ="routeur";
+char client_id ="routeur";
 
 // Information to be displayed
 
