@@ -959,6 +959,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
        
        Serial.print(" state MQTT"); 
        Serial.println(client.state()); 
+
+       client.connect(client_id.c_str(), mqtt_username, mqtt_password)
        // logic: we want wifi if not (calibration or verbose or winter)
       //if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
       
