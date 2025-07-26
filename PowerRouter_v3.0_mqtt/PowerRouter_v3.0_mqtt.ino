@@ -968,7 +968,11 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 void Connect_MQTT()
 {
     while (!client.connected()) { 
+      Serial.println(client.state()); 
+
       client.disconnect();
+      client.unsubscribe(topic);
+      client.unsubscribe(topic_5mn);
 
       String l_client_id  = client_id;
       l_client_id += String(WiFi.macAddress());
@@ -978,19 +982,28 @@ void Connect_MQTT()
 
       Serial.printf("The client %s connects to the public MQTT broker ", l_client_id.c_str()); 
       Serial.println();
-      
+
       if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password)) { 
         Serial.println("Public EMQX MQTT broker connected"); 
         display.drawString(0, 22, "MQTT OK");
 
-        client.subscribe(topic, 1 );
-        client.subscribe(topic_5mn, 1 );
+        if (client.subscribe(topic, 1 ))
+        {
+          Serial.printf("%s suscribed", topic);
+          Serial.println(); 
+        }
+        if (client.subscribe(topic_5mn, 1 ))
+        {
+          Serial.printf("%s suscribed", topic_5mn);
+          Serial.println();
+        }
 
       } else { 
           Serial.print("failed with state "); 
           Serial.println(client.state()); 
           display.drawString(0, 22, "MQTT KO " + client.state() );
           delay(2000); 
-      } 
+      }
+      Serial.println(client.state()); 
   }
 }
