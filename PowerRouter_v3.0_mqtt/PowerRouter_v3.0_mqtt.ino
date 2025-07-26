@@ -947,7 +947,7 @@ void Connect_MQTT()
 {
   while (!client.connected())
   {
-     Serial.print(" state MQTT ");
+    Serial.print(" state MQTT ");
     Serial.println(client.state());
     Serial.print(" state wifi ");
     Serial.println(WiFi.status());
@@ -989,6 +989,9 @@ void Connect_MQTT()
       display.drawString(0, 22, "MQTT KO " + client.state());
       delay(2000);
     }
+    Serial.print(" state MQTT ");
     Serial.println(client.state());
+    Serial.print(" state wifi ");
+    Serial.println(WiFi.status());
   }
 }
