@@ -122,7 +122,7 @@ WiFiClient espClient;
 PubSubClient client(espClient); 
 volatile bool send_MQTT = false;
 volatile bool send_MQTT_5mn = false;
-char client_id [30] ;
+String client_id ;
 
 // Information to be displayed
 
@@ -502,14 +502,16 @@ display.display();
    Serial.println("Connecting to WiFi.."); 
   } 
   Serial.println("Connected to the Wi-Fi network"); 
-  // init wifi mqtt
 
+  // init wifi mqtt
   client.setServer(mqtt_broker, mqtt_port); 
+
+  client_id = "routeur"; 
+  client_id += String(WiFi.macAddress()); 
 
   //client.setCallback(callback); 
   while (!client.connected()) { 
-      String client_id = "routeur"; 
-      client_id += String(WiFi.macAddress()); 
+      
       Serial.printf("The client %s connects to the public MQTT brokern", client_id.c_str()); 
       if (client.connect(client_id.c_str(), mqtt_username, mqtt_password)) { 
    Serial.println("Public EMQX MQTT broker connected"); 
