@@ -976,7 +976,8 @@ void Connect_MQTT()
       // init wifi mqtt
       client.setServer(mqtt_broker, mqtt_port);
 
-      Serial.println("The client %s connects to the public MQTT broker ", l_client_id.c_str()); 
+      Serial.printf("The client %s connects to the public MQTT broker ", l_client_id.c_str()); 
+      Serial.println();
       
       if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password)) { 
         Serial.println("Public EMQX MQTT broker connected"); 
