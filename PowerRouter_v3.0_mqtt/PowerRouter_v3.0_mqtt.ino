@@ -942,14 +942,14 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   		    wifi_wait=0; // loop to wait update DIM
   	    		
   	   }
-       Serial.print(" state wifi"); 
+       Serial.print(" state wifi "); 
        Serial.println(WiFi.status()); 
        
-       Serial.print(" state MQTT"); 
+       Serial.print(" state MQTT "); 
        Serial.println(client.state()); 
 
        Connect_MQTT ();
-       
+
        // logic: we want wifi if not (calibration or verbose or winter)
       //if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
       
@@ -975,8 +975,11 @@ void Connect_MQTT()
     String l_client_id = client_id;
     l_client_id += String(WiFi.macAddress()); 
 
+    
+
     while (!client.connected()) { 
-      
+      client.disconnect();
+
       Serial.printf("The client %s connects to the public MQTT brokern", l_client_id.c_str()); 
       if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password)) { 
         Serial.println("Public EMQX MQTT broker connected"); 
@@ -987,8 +990,8 @@ void Connect_MQTT()
 
       } else { 
           Serial.print("failed with state "); 
-          Serial.print(client.state()); 
-          display.drawString(0, 22, "MQTT KO" + client.state() );
+          Serial.println(client.state()); 
+          display.drawString(0, 22, "MQTT KO " + client.state() );
           delay(2000); 
       } 
   }
