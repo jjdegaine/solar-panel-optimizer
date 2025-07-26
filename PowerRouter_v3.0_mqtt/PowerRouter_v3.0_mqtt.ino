@@ -970,7 +970,7 @@ void Connect_MQTT()
     while (!client.connected()) { 
       client.disconnect();
 
-      String l_client_id;  = client_id;
+      String l_client_id  = client_id;
       l_client_id += String(WiFi.macAddress());
 
       // init wifi mqtt
