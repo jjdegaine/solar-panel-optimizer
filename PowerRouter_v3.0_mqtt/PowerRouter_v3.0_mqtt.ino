@@ -921,30 +921,36 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
     Serial.print(" state MQTT ");
     Serial.println(client.state());
 
-    Connect_MQTT();
+    if (Connect_MQTT()) 
+      {
+      // logic: we want wifi if not (calibration or verbose or winter)
+      // if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
 
-    // logic: we want wifi if not (calibration or verbose or winter)
-    // if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
+      if (send_MQTT == true)
+      {
+        send_MQTT = false;
+        sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
+        client.publish(topic, mystring_power_wifi, true);
+      }
 
-    if (send_MQTT == true)
-    {
-      send_MQTT = false;
-      sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
-      client.publish(topic, mystring_power_wifi, true);
-    }
-
-    if (send_MQTT_5mn == true)
-    {
-      send_MQTT_5mn = false;
-      sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
-      client.publish(topic_5mn, mystring_power_wifi_5mn, true);
-    }
+      if (send_MQTT_5mn == true)
+      {
+        send_MQTT_5mn = false;
+        sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
+        client.publish(topic_5mn, mystring_power_wifi_5mn, true);
+      }
+    };
   }
 
 } // end for loop wifi
 
-void Connect_MQTT()
+bool Connect_MQTT()
 {
+  if (client.connected())
+  {
+    return true;
+  }
+
   while (!client.connected())
   {
     Serial.print(" state MQTT ");
@@ -970,7 +976,8 @@ void Connect_MQTT()
     {
       Serial.println("Public EMQX MQTT broker connected");
       display.drawString(0, 22, "MQTT OK");
-
+      
+      return true;
       /*if (client.subscribe(topic, 1))
       {
         Serial.printf("%s suscribed", topic);
