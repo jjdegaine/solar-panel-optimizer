@@ -290,7 +290,7 @@ unsigned long mean_power_time_5mn;            // timer for mean power mqtt
 unsigned long mean_power_timing_5mn = 300000; // timer 5 minutes minutes to calculate mean power MQTT
 char mystring_power_wifi_5mn [50] ;       // string to be transmitted by wifi MQTT
 
-char client_id [20];
+string client_id ="routeur";
 
 // other value :
 
