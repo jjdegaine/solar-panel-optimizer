@@ -122,7 +122,7 @@ WiFiClient espClient;
 PubSubClient client(espClient); 
 volatile bool send_MQTT = false;
 volatile bool send_MQTT_5mn = false;
-String client_id ;
+String client_id = "routeur";
 
 // Information to be displayed
 
@@ -506,28 +506,11 @@ display.display();
   // init wifi mqtt
   client.setServer(mqtt_broker, mqtt_port); 
 
-  client_id = "routeur"; 
-  client_id += String(WiFi.macAddress()); 
+
 
   //client.setCallback(callback); 
-  while (!client.connected()) { 
-      
-      Serial.printf("The client %s connects to the public MQTT brokern", client_id.c_str()); 
-      if (client.connect(client_id.c_str(), mqtt_username, mqtt_password)) { 
-   Serial.println("Public EMQX MQTT broker connected"); 
-   display.drawString(0, 22, "MQTT OK");
-      } else { 
-    Serial.print("failed with state "); 
-          Serial.print(client.state()); 
-          display.drawString(0, 22, "MQTT KO" + client.state() );
-          delay(2000); 
-      } 
-    
-      client.subscribe(topic, 1 );
-      client.subscribe(topic_5mn, 1 );
+  Connect_MQTT ();
 
-     
-  }
  // init timer 
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &onTimer, true);
@@ -956,7 +939,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   	  
        while(send_MQTT == false )
   	   {
-  		wifi_wait=0; // loop to wait update DIM
+  		    wifi_wait=0; // loop to wait update DIM
   	    		
   	   }
        Serial.print(" state wifi"); 
@@ -965,7 +948,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
        Serial.print(" state MQTT"); 
        Serial.println(client.state()); 
 
-       client.connect(client_id.c_str(), mqtt_username, mqtt_password)
+       Connect_MQTT ();
+       
        // logic: we want wifi if not (calibration or verbose or winter)
       //if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
       
@@ -986,4 +970,26 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
 } // end for loop wifi
     
+void Connect_MQTT()
+{
+    String l_client_id = client_id;
+    l_client_id += String(WiFi.macAddress()); 
 
+    while (!client.connected()) { 
+      
+      Serial.printf("The client %s connects to the public MQTT brokern", l_client_id.c_str()); 
+      if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password)) { 
+        Serial.println("Public EMQX MQTT broker connected"); 
+        display.drawString(0, 22, "MQTT OK");
+
+        client.subscribe(topic, 1 );
+        client.subscribe(topic_5mn, 1 );
+
+      } else { 
+          Serial.print("failed with state "); 
+          Serial.print(client.state()); 
+          display.drawString(0, 22, "MQTT KO" + client.state() );
+          delay(2000); 
+      } 
+  }
+}
