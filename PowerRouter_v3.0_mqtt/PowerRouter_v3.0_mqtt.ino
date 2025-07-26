@@ -954,6 +954,9 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   		wifi_wait=0; // loop to wait update DIM
   	    		
   	   }
+       Serial.print(" state wifi"); 
+       Serial.println(WiFi.status()); 
+       
        Serial.print(" state MQTT"); 
        Serial.println(client.state()); 
        // logic: we want wifi if not (calibration or verbose or winter)
