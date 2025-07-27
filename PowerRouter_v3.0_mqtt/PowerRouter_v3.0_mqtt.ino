@@ -94,19 +94,6 @@ SSD1306Wire display(0x3c, SDA, SCL); // ADDRESS, SDA, SCL
 
 const int channel = 4; // define channel 4 seems to be the best for wifi....
 
-/*
-WiFiUDP Udp; // Creation of wifi Udp instance, UDP is used to maximized the timing transfert
-
-unsigned int localPort = 9999;
-
-const char *ssid = "BB9ESERVER";   // for example to be changed
-const char *password = "BB9ESERVER";  // for example  to be changed
-
-
-IPAddress ipServidor(192, 168, 4, 1);   // default IP for server
-IPAddress ipCliente(192, 168, 4, 10);   // Different IP than server
-*/
-
 const char *ssid = "freebox_ZPRLHQ_2GEXT"; // SSID WiFi
 const char *password = "Cairojude58";      // mot de passe WiFi
 
@@ -223,17 +210,6 @@ byte dimphasemax = dimmax + dimthreshold;
 // byte reset_wifi = 0;			// counter for wifi reset due to time to leave
 byte wifi_wait = 0; // used for the waiting loop on task wifi
 
-// wifi UDP
-/*
-byte ack = 0; // byte received ack from client
-byte send_UDP = 0 ; //
-byte send_UDP_max = 5; // send UDP data each 5*10 msec
-volatile bool send_UDP_wifi = false;
-
-unsigned long time_udp_now;
-unsigned long time_udp_limit = 5000 ; // time to leave UDP 5 sec
-unsigned long timeout_now;
-*/
 
 unsigned long wait_it_limit = 3; // delay 3msec
 unsigned long it_elapsed;        // counter for delay 3 msec
@@ -249,16 +225,11 @@ volatile bool zero_cross_flag = false;     // zero cross flag for power calculat
 volatile bool first_it_zero_cross = false; // flag first IT on rising edge zero cross
 volatile bool wait_2msec;                  // flag no IT on falling edge
 
-// volatile bool TTL = false ; // time to leave UDP
-// volatile bool UDP_OK = false;
 
 volatile bool led_zero = false;
 
 #define WDT_TIMEOUT 15 // watch dog time
 
-/*unsigned long time_wdt = 30000 ; // time before stop to verify watchdog 30 sec
-unsigned long time_wdt_now = millis() ;
-*/
 
 // Voltage and current measurement  :
 
@@ -323,16 +294,7 @@ void IRAM_ATTR zero_cross_detect()
   first_it_zero_cross = true; // flag to start a delay 2msec
   led_zero = true;
   // digitalWrite(SCRLED, LOW); //reset SSR LED
-
-  /* UDP
-        send_UDP ++ ;
-       if (send_UDP > send_UDP_max)
-       {
-         send_UDP=0; // reset counter send_UDP
-         send_UDP_wifi = true ; // ready to send UDP
-       }
-  */
-  // digitalWrite(limiteLED, LOW) ; for scope measurement
+   // digitalWrite(limiteLED, LOW) ; for scope measurement
   portEXIT_CRITICAL_ISR(&mux);
 }
 
@@ -360,8 +322,7 @@ void IRAM_ATTR onTimer()
   }
 
   if (zero_cross == true && dimphase < dimphasemax) // First check to make sure the zero-cross has
-  {                                                 // happened else do nothing                                                   // happened else do nothing
-
+  {                                                 // happened else do nothing 
     if (i_counter > dimphase)
     {                              // i is a counter which is used to SSR command delay
                                    // i minimum ==> start SSR just after zero crossing half period ==> max power
@@ -466,18 +427,7 @@ void setup()
   digitalWrite(unballast_relay1, LOW); // unballast relay 1 init
   digitalWrite(unballast_relay2, LOW); // unballast relay 2 init
 
-  // init wifi_udp
-
-  /*
-    WiFi.softAP(ssid, password,channel);  // ESP-32 as access point
-    delay(500); // Delay to wait Wifi init
-    Udp.begin(localPort);
-    Serial.println("init access point UDP OK");
-
-    display.drawString(0, 22, "UDP OK");
-    display.display();
-    */
-  // init wifi
+    // init wifi
 
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
@@ -604,7 +554,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
         it_elapsed = millis() + wait_it_limit;
 
-        // detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
+        
         first_it_zero_cross = false; // flag for IT zero_cross
         wait_2msec = true;
       }
@@ -884,12 +834,6 @@ void TaskUI(void *pvParameters) // This is the task UI.
         UDP_OK = false ;
         }
 
-
-
-/*   if (long (millis() - time_wdt_now > time_wdt))             // comparing durations to test watchdog
-  {
-      delay (20000) ; // program stop duting 20sec to check watchdog
-  }
 */
 
     esp_task_wdt_reset(); // reset watch dog
@@ -923,8 +867,6 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 
     if (Connect_MQTT()) 
       {
-      // logic: we want wifi if not (calibration or verbose or winter)
-      // if (((CALIBRATION == false) && (VERBOSE == false) && (WINTER == true)))
 
       if (send_MQTT == true)
       {
@@ -959,10 +901,7 @@ bool Connect_MQTT()
     Serial.println(WiFi.status());
 
     client.disconnect();
-    /*client.unsubscribe(topic);
-    client.unsubscribe(topic_5mn);
-    */
-
+  
     String l_client_id = client_id;
     l_client_id += String(WiFi.macAddress());
 
@@ -978,16 +917,6 @@ bool Connect_MQTT()
       display.drawString(0, 22, "MQTT OK");
       
       return true;
-      /*if (client.subscribe(topic, 1))
-      {
-        Serial.printf("%s suscribed", topic);
-        Serial.println();
-      }
-      if (client.subscribe(topic_5mn, 1))
-      {
-        Serial.printf("%s suscribed", topic_5mn);
-        Serial.println();
-      }*/
     }
     else
     {
