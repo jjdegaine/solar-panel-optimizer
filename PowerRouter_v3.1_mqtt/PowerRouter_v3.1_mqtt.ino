@@ -256,8 +256,8 @@ unsigned long mean_power_timing_5mn = 300000; // timer 5 minutes minutes to calc
 char mystring_power_wifi_5mn[50];             // string to be transmitted by wifi MQTT
 
 // max Power on grid (6000W)
-float PowerMax = 600; // 6000W 
-float Power_water_heater = 300; // 3000W 
+float PowerMax = 6000; // 6000W 
+float Power_water_heater = 3000; // 3000W Heater water
 
 // other value :
 
