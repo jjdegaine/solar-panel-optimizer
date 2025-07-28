@@ -634,7 +634,8 @@ void TaskUI(void *pvParameters) // This is the task UI.
     }
     // when rPower is higher than Max power allowed on the grid Relay2 is activated
 
-    if ( rPower > PowerMax ){
+    if ( rPower > PowerMax )
+    {
       digitalWrite(unballast_relay2, HIGH); // set relay 2
       relay_2 = true;
     }
@@ -661,11 +662,11 @@ void TaskUI(void *pvParameters) // This is the task UI.
             unballasting_time = millis();
           }
 
-        }
-        unballasting_counter++;
       }
+        unballasting_counter++;
+    }
       //
-      if (dim > unballasting_dim_max)
+    if (dim > unballasting_dim_max)
       {
         //
         if (unballasting_counter > 10) //
@@ -681,13 +682,15 @@ void TaskUI(void *pvParameters) // This is the task UI.
       //
       // relay2 verification, if power on the grid is lessthan PowerMax-Power_water_heater (6000-3000W)
       //
-      if (relay_2 == true){
-        if (rPower < (PowerMax-Power_water_heater)){
+    if (relay_2 == true)
+      {
+        if (rPower < (PowerMax-Power_water_heater))
+        {
           digitalWrite(unballast_relay2, LOW);
           relay_2 = false;
         }
       }
-    }
+    
 
     // meam_power calculation for MQTT 10 sec
     if (long(millis() - mean_power_time > mean_power_timing))
