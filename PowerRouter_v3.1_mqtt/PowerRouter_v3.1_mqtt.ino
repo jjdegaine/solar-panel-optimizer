@@ -256,8 +256,8 @@ unsigned long mean_power_timing_5mn = 300000; // timer 5 minutes minutes to calc
 char mystring_power_wifi_5mn[50];             // string to be transmitted by wifi MQTT
 
 // max Power on grid (6000W)
-float PowerMax = 6000; // 6000W 
-float Power_water_heater = 3000; // 3000W 
+float PowerMax = 600; // 6000W 
+float Power_water_heater = 300; // 3000W 
 
 // other value :
 
@@ -855,14 +855,16 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
     {
       wifi_wait = 0; // loop to wait update DIM
     }
+    /*
     Serial.print(" state wifi ");
     Serial.println(WiFi.status());
 
     Serial.print(" state MQTT ");
     Serial.println(client.state());
+    */
 
     if (Connect_MQTT()) 
-      {
+    {
 
       if (send_MQTT == true)
       {
@@ -891,11 +893,11 @@ bool Connect_MQTT()
 
   while (!client.connected())
   {
-    Serial.print(" state MQTT ");
+    /*Serial.print(" state MQTT ");
     Serial.println(client.state());
     Serial.print(" state wifi ");
     Serial.println(WiFi.status());
-
+    */
     client.disconnect();
   
     String l_client_id = client_id;
@@ -921,9 +923,11 @@ bool Connect_MQTT()
       display.drawString(0, 22, "MQTT KO " + client.state());
       delay(2000);
     }
+    /*
     Serial.print(" state MQTT ");
     Serial.println(client.state());
     Serial.print(" state wifi ");
     Serial.println(WiFi.status());
+    */
   }
 }
