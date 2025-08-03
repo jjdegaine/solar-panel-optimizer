@@ -103,6 +103,7 @@ const char *mqtt_broker = "192.168.0.154";
 const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 //const char *topic_5mn = "routeur/conso";
+const char *topic_10mn = "routeur/Wmqtt_10mn";
 const char *mqtt_username = "mqtt_adm";
 const char *mqtt_password = "surel";
 const int mqtt_port = 1883;
@@ -110,6 +111,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 volatile bool send_MQTT = false;
 volatile bool send_MQTT_5mn = false;
+volatile bool send_MQTT_10mn = false;
 String client_id = "routeur";
 
 // Information to be displayed
@@ -255,6 +257,14 @@ int mean_power_counter_5mn = 0;
 unsigned long mean_power_time_5mn;            // timer for mean power mqtt
 unsigned long mean_power_timing_5mn = 300000; // timer 5 minutes minutes to calculate mean power MQTT
 char mystring_power_wifi_5mn[50];             // string to be transmitted by wifi MQTT
+
+// 10 minutes mean power mqtt
+float mean_power_10mn = 0;
+float mean_power_MQTT_10mn = 0;
+int mean_power_counter_10mn = 0;
+unsigned long mean_power_time_10mn;            // timer for mean power mqtt
+unsigned long mean_power_timing_10mn = 600000; // timer 10 minutes minutes to calculate mean power MQTT
+char mystring_power_wifi_10mn[50];             // string to be transmitted by wifi MQTT
 
 // max Power on grid (6000W)
 float PowerMax = 6000; // 6000W 
@@ -710,6 +720,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
       mean_power = mean_power + Power_wifi;
       mean_power_counter++;
     }
+
     // meam_power calculation for MQTT 5mn
     if (long(millis() - mean_power_time_5mn > mean_power_timing_5mn))
     {
@@ -727,7 +738,23 @@ void TaskUI(void *pvParameters) // This is the task UI.
       mean_power_5mn = mean_power_5mn + Power_wifi;
       mean_power_counter_5mn++;
     }
+// meam_power calculation for MQTT 10mn
+    if (long(millis() - mean_power_time_10mn > mean_power_timing_10mn))
+    {
+      mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
+      mean_power_10mn = 0;
+      mean_power_counter_10mn = 0;
+      mean_power_time_10mn = millis();
+      send_MQTT_10mn = true; // ready to send UDP
+      Serial.print("mean_power_mq_10mn ");
+      Serial.println(mean_power_MQTT_10mn); // MQTT data
+    }
 
+    else
+    {
+      mean_power_10mn = mean_power_10mn + Power_wifi;
+      mean_power_counter_10mn++;
+    }
     // Display each 2 seconds
 
     if (time_now_second >= memo_temps + 2)
@@ -879,6 +906,13 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
         send_MQTT_5mn = false;
         sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
         client.publish(topic_5mn, mystring_power_wifi_5mn, true);
+      }
+
+      if (send_MQTT_10mn == true)
+      {
+        send_MQTT_10mn = false;
+        sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
+        client.publish(topic_10mn, mystring_power_wifi_10mn, true);
       }
     };
   }
