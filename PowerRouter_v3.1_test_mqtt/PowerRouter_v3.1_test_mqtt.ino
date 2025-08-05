@@ -140,14 +140,14 @@ float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
 int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ;
 */
 
-/*main board 4 (the main board used on the TGBT)
+main board 4 (the main board used on the TGBT)
 float Vcalibration     = 0.975;   // to obtain the mains exact value
 float Icalibration     = 100;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors.
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
 int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ;
-*/
+
 
 /*main board 5
 float Vcalibration     = 0.95;   // to obtain the mains exact value
@@ -160,13 +160,14 @@ int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 
 
 */
 
-// main board 6
+/* main board 6
 float Vcalibration = 0.91;   // to obtain the mains exact value
 float Icalibration = 90;     // current in milliampères
 float phasecalibration = -6; // value to compensate  the phase shift linked to the sensors.
 float ADC_V_0V = 480;        // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 481;        // ADC value for 0V input 3.3V/2
 int tresholdP = 50000;       // Threshold to start power adjustment 1 = 1mW ;
+*/
 
 byte totalCount = 20; // number of half perid used for measurement
 // Threshold value for power adjustment:
