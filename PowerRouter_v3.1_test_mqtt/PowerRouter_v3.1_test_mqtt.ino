@@ -901,22 +901,25 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
       if (send_MQTT == true)
       {
         send_MQTT = false;
-        sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
-        client.publish(topic, mystring_power_wifi, true);
+        //sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
+        //client.publish(topic, mystring_power_wifi, true);
+        client.publish(topic, mean_power_MQTT, true);
       }
 
       if (send_MQTT_5mn == true)
       {
         send_MQTT_5mn = false;
-        sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
-        client.publish(topic_5mn, mystring_power_wifi_5mn, true);
+        //sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
+        //client.publish(topic_5mn, mystring_power_wifi_5mn, true);
+        client.publish(topic_5mn, mean_power_MQTT_5mn, true);
       }
 
        if (send_MQTT_10mn == true)
       {
         send_MQTT_10mn = false;
-        sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
-        client.publish(topic_10mn, mystring_power_wifi_10mn, true);
+        //sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
+        //client.publish(topic_10mn, mystring_power_wifi_10mn, true);
+        client.publish(topic_10mn, mean_power_MQTT_10mn, true);
       }
     };
   }
