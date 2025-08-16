@@ -154,6 +154,9 @@ const char *topic_10mn = "routeur/conso";
 const char *mqtt_username = "mqtt_adm";
 const char *mqtt_password = "surel";
 const int mqtt_port = 1883;
+int MQTT_wait = 0;
+bool received_MQTT = false ;
+bool check_mqtt = true ;
 WiFiClient espClient;
 PubSubClient client(espClient);
 //volatile bool send_MQTT = false;
@@ -316,7 +319,7 @@ volatile bool UDP_OK = false;
 int readV, memo_readV;   // voltage and current withn ADC (0 à 1023 bits)
 
 float rPower, V,  sqV, sumV = 0 ;  
-float Power_wifi;  // power to be received by wifi
+float Power_wifi =0;  // power to be received by wifi
                    
 char mystring_power_wifi [50] ;       // string transmitted by wifi
 byte zero_crossCount = 0;          // half period counter
@@ -436,7 +439,7 @@ unballasting_time= millis(); // set up timer unballasting
 
 // USB init
 
- Serial.begin(9600);
+ Serial.begin(115200);
 
  //init OLED
 display.init();
@@ -462,7 +465,21 @@ display.display();
  digitalWrite(unballast_relay2, LOW);    // unballast relay 2 init
 
  rPower = 0;
-   
+
+     // init wifi
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.println("Connecting to WiFi..");
+  }
+  Serial.println("Connected to the Wi-Fi network");
+
+  // client.setCallback(callback);
+  Connect_MQTT();
+
+
  // init timer 
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &onTimer, true);
@@ -740,10 +757,10 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
 
   // Display each 2 seconds
 
+  if (long (millis() - memo_temps > 2000) ) {
+  
 
-  if( time_now_second - memo_temps >= 2 ) {
-
-          memo_temps = time_now_second;
+          memo_temps = millis();
 
 
           /*Serial.print("P= ");
@@ -765,6 +782,7 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           display.drawString(0, 0, String(int(Power_wifi)) + "||" + String (dim));
           display.display();
 
+          check_mqtt = true ;
          }  // 
       
         
@@ -823,15 +841,15 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
 {
     (void) pvParameters;
-
+ 
 for (;;) // A Task shall never return or exit.
   {
-  if (Connect_MQTT()) 
+    
+       
+    if (Connect_MQTT()) 
     {
-    
-    
-      Power_wifi = strtof(mystring_power_wifi, NULL);
-
+      MQTT_wait = 0; // loop to wait 
+      client.loop();
     }
 
   }  
@@ -860,13 +878,16 @@ bool Connect_MQTT()
     Serial.println(WiFi.status());
     */
     client.disconnect();
-  
+    client.unsubscribe (topic);
+
     String l_client_id = client_id;
     l_client_id += String(WiFi.macAddress());
 
     // init wifi mqtt
     client.setServer(mqtt_broker, mqtt_port);
-    client.setCallback(callback); 
+
+    client.setCallback(OnMqttReceived);
+ 
     Serial.printf("The client %s connects to the public MQTT broker ", l_client_id.c_str());
     Serial.println();
 
@@ -874,7 +895,7 @@ bool Connect_MQTT()
     {
       Serial.println("Public EMQX MQTT broker connected");
       display.drawString(0, 22, "MQTT OK");
-      
+      if (client.subscribe (topic)) Serial.println("topic suscribed");;
       return true;
     }
     else
@@ -891,4 +912,22 @@ bool Connect_MQTT()
     Serial.println(WiFi.status());
     */
   }
+}
+
+void OnMqttReceived(char *r_topic, byte *payload, unsigned int length)
+{
+    
+    Serial.print("Received on ");
+    Serial.print(r_topic);
+    Serial.print(": ");
+
+    String content = "";
+    for (size_t i = 0; i < length; i++)
+    {
+        content.concat((char)payload[i]);
+    }
+    Serial.print(content);
+    Serial.println();
+    Power_wifi = strtof(content.c_str(), NULL);
+
 }
