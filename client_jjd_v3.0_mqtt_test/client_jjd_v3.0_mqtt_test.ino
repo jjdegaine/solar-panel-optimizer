@@ -320,7 +320,7 @@ int readV, memo_readV;   // voltage and current withn ADC (0 à 1023 bits)
 
 float rPower, V,  sqV, sumV = 0 ;  
 float Power_wifi =0;  // power to be received by wifi
-                   
+float power_resistor = 200 // resistor on scr is 200W                 
 char mystring_power_wifi [50] ;       // string transmitted by wifi
 byte zero_crossCount = 0;          // half period counter
     
@@ -611,23 +611,39 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 //
 //____________________________________________________________________________________________
 //
+// Dim is calculated using the Watt value of the resistor on the SCR
 //
-// dimstep calculation.  Dimstep must be calculate when synchro is true (rpower received by wifi )
+// exemple = resistor 200W
+// powerwifi = -200W
+// tresholdP =-100W
 //
- if( rPower > 0 ) { dimstep = (rPower/1000)/reaction_coeff + 1; } 
-  else { dimstep = 1 - (rPower/1000)/reaction_coeff; }
-  
-  // when rPower is less than tresholdP ==> unlalanced power must increased ==> DIM must be reduced
+// powerwifi-tresholdP = -100W ==> 100W must be progam to the SCR 200/100 => 50% DIM= 128/.5 => 64
+//
+/*trheshold	powerwifi	resistor	W	 -DIM	    DIM
+-100	      -100	    200	      0	    0	    128
+-100	      -150	    200	      -50	  0,25	96
+-100	      -200	    200	      -100	0,5	  64
+-100	      -250	    200	      -150	0,75	32
+-100	      -300	    200	      -200	1	    0
+*/
 
-  if( rPower < tresholdP ) {      
-    if( dim > dimstep )  dim -= dimstep; else  dim = 0;
-  } 
-
-// when rPower is higher than tresholdP ==> unlalanced power must decreased ==> DIM must be increasad
-
-  else if( rPower > tresholdP ) {                   
-    if( dim + dimstep < dimmax ) dim += dimstep;  else  dim = dimmax; 
+ if (Power_wifi <  ((tresholdP/1000) - power_resistor) )
+  { 
+    DIM=0;
   }
+  else
+    {
+    if (Power_wifi > ((tresholdP/1000) + power_resistor) )
+    {
+      DIM= 128;
+    }
+    }
+    else
+    {
+      DIM = (128-(((Power_wifi -(tresholdP/1000)) / power_resistor)*128));
+    }
+  
+
 
   if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // if dim is at the minimum, control regulation is at the maximum 
   else { digitalWrite(limiteLED, LOW); }
