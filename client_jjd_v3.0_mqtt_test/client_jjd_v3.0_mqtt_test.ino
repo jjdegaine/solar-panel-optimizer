@@ -629,18 +629,18 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
  if (Power_wifi <  ((tresholdP/1000) - power_resistor) )
   { 
-    DIM=0;
+    dim=0;
   }
   else
     {
     if (Power_wifi > ((tresholdP/1000) + power_resistor) )
     {
-      DIM= 128;
+      dim = 128;
     }
     }
     else
     {
-      DIM = (128-(((Power_wifi -(tresholdP/1000)) / power_resistor)*128));
+      dim = (128-(((Power_wifi -(tresholdP/1000)) / power_resistor)*128));
     }
   
 
