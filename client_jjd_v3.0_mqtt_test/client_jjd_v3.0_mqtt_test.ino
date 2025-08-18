@@ -320,7 +320,7 @@ int readV, memo_readV;   // voltage and current withn ADC (0 à 1023 bits)
 
 float rPower, V,  sqV, sumV = 0 ;  
 float Power_wifi =0;  // power to be received by wifi
-float power_resistor = 200 // resistor on scr is 200W                 
+float power_resistor = 200 ; // resistor on scr is 200W                 
 char mystring_power_wifi [50] ;       // string transmitted by wifi
 byte zero_crossCount = 0;          // half period counter
     
