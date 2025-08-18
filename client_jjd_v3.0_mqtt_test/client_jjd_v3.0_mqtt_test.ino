@@ -637,12 +637,12 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     {
       dim = 128;
     }
+    
+      else
+      {
+        dim = (128-(((Power_wifi -(tresholdP/1000)) / power_resistor)*128));
+      }
     }
-    else
-    {
-      dim = (128-(((Power_wifi -(tresholdP/1000)) / power_resistor)*128));
-    }
-  
 
 
   if(dim < 1) { digitalWrite(limiteLED, HIGH); }  // if dim is at the minimum, control regulation is at the maximum 
