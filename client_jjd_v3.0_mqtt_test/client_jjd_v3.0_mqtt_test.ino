@@ -185,7 +185,7 @@ IPAddress Subnet(255, 255, 255, 0);
 
 byte totalCount        = 20;     // number of half perid used for measurement
 
-
+/*
 //main board 0 
 float Vcalibration     = 0.97;   // to obtain the mains exact value 
 //float Icalibration     = 93;     // current in milliampères!! current transfo not working!!
@@ -193,8 +193,8 @@ float Vcalibration     = 0.97;   // to obtain the mains exact value
 float ADC_V_0V = 467 ;
 //float ADC_I_0A = 467 ;
 int Treshold_relay1 = 00000;          // Threshold to stop relay 00W
-//int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ;
-int tresholdP     = 1400000;           // Threshold to start power adjustment 1 = 1mW ;
+int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ;
+*/
 
 /* main board 2
 //float Vcalibration     = 0.97;   // to obtain the mains exact value 
@@ -238,7 +238,7 @@ int tresholdP     = 10000;           // Threshold to start power adjustment 1 = 
 !!!!!! wrover module !!!!!
 */
 
-/*
+
 //main board 6
 float Vcalibration     = 0.91;   // to obtain the mains exact value 
 //float Icalibration     = 90;     // current in milliampères
@@ -247,8 +247,9 @@ float ADC_V_0V = 480 ; // ADC value for 0V input 3.3V/2
 //float ADC_I_0A = 481 ; // ADC value for 0V input 3.3V/2
 
 int Treshold_relay1 = 00000;          // Threshold to stop relay 50W ; 0W due to bad calibration of main board master
-int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ; -100W due to bad calibration of main board master
-*/
+//int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ; -100W due to bad calibration of main board master
+int tresholdP     = 1400000;           // Threshold to start power adjustment 1 = 1mW ;
+
 
 
 
