@@ -780,14 +780,14 @@ dimphase = dim_sinus [ dim ] + dimthreshold;
           memo_temps = millis();
 
 
-          /*Serial.print("P= ");
+          Serial.print("P= ");
           Serial.print(rPower/1000);   
           Serial.print("w ");
           Serial.print("dim: ");
           Serial.print(dim);
           Serial.print("dimstep: ");
           Serial.println(dimstep);
-          */
+          
           
           //Serial.print("mean_power ");
           //Serial.print(mean_power); 
