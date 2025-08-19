@@ -193,7 +193,8 @@ float Vcalibration     = 0.97;   // to obtain the mains exact value
 float ADC_V_0V = 467 ;
 //float ADC_I_0A = 467 ;
 int Treshold_relay1 = 00000;          // Threshold to stop relay 00W
-int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ;
+//int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ;
+int tresholdP     = 1400000;           // Threshold to start power adjustment 1 = 1mW ;
 
 /* main board 2
 //float Vcalibration     = 0.97;   // to obtain the mains exact value 
