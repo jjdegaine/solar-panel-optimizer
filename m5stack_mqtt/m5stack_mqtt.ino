@@ -24,8 +24,8 @@ version 1.0 November 2025 client connected on mqtt HA
 #include <Esp.h>
 #include <WiFi.h>
 #include "PubSubClient.h" //wifi mqtt
-#include <M5Stack.h>
-
+//#include <M5Stack.h>
+#include <M5Unified.h>
 // initialization wifi
 
 const int channel = 4;  // define channel 4 seems to be the best for wifi....
@@ -49,6 +49,7 @@ PubSubClient client(espClient);
 
 String client_id = "routeur";
 
+float Power_wifi =0;  // power to be received by wifi
 
 //_____________________________________________________________________________________________
 //
@@ -101,37 +102,6 @@ void setup() {                  // Begin setup
 
 void loop()
 {
-  
-
-
-          Serial.print("P= ");
-          Serial.print(rPower/1000);   
-          Serial.print("w ");
-
-          
-          M5.Lcd.clear(BLACK);
-          M5.Lcd.setCursor(0,0);
-          M5.Lcd.print ("power");
-          M5.Lcd.print ( Power_wifi);
-
-         //Serial.print("mean_power ");
-          //Serial.print(mean_power); 
-
-          check_mqtt = true ;
-         }  // 
-      
-        
-
-
-        
-        
-
-
-
-
-
-
-
 
  
 for (;;) // A Task shall never return or exit.
@@ -147,8 +117,8 @@ for (;;) // A Task shall never return or exit.
   }  
 
     
-       
-}		
+}    
+
                
     
 
@@ -164,11 +134,7 @@ bool Connect_MQTT()
 
   while (!client.connected())
   {
-    /*Serial.print(" state MQTT ");
-    Serial.println(client.state());
-    Serial.print(" state wifi ");
-    Serial.println(WiFi.status());
-    */
+ 
     client.disconnect();
     client.unsubscribe (topic);
 
@@ -186,7 +152,9 @@ bool Connect_MQTT()
     if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password))
     {
       Serial.println("Public EMQX MQTT broker connected");
-      display.drawString(0, 22, "MQTT OK");
+      M5.Lcd.clear(BLACK);
+      M5.Lcd.setCursor(0,0);
+      M5.Lcd.print ("MQTT OK");
       if (client.subscribe (topic)) Serial.println("topic suscribed");;
       return true;
     }
@@ -194,15 +162,12 @@ bool Connect_MQTT()
     {
       Serial.print("failed with state ");
       Serial.println(client.state());
-      display.drawString(0, 22, "MQTT KO " + client.state());
+      M5.Lcd.clear(BLACK);
+      M5.Lcd.setCursor(0,0);
+      M5.Lcd.print ("MQTT KO");
       delay(2000);
     }
-    /*
-    Serial.print(" state MQTT ");
-    Serial.println(client.state());
-    Serial.print(" state wifi ");
-    Serial.println(WiFi.status());
-    */
+   
   }
 }
 
@@ -221,5 +186,8 @@ void OnMqttReceived(char *r_topic, byte *payload, unsigned int length)
     Serial.print(content);
     Serial.println();
     Power_wifi = strtof(content.c_str(), NULL);
-
+    M5.Lcd.clear(BLACK);
+    M5.Lcd.setCursor(0,0);
+    M5.Lcd.print ("power");
+    M5.Lcd.print (content);
 }

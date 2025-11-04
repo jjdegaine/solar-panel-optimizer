@@ -29,6 +29,10 @@ _____________________________________________________________________
 
 an ESP32 is used instead of an classic arduino Atmel AVR. The goal is to use the wifi link to transmit to an another ESP32 module the energy to be used to optimize the solar panel energy
 
+
+ESP32 DEV MODULE
+
+
 PIN description
 
  IN description
