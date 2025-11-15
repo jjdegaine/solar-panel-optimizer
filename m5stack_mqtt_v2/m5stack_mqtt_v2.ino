@@ -158,6 +158,10 @@ bool Connect_MQTT()
       M5.Lcd.setCursor(0,0);
       M5.Lcd.print ("MQTT OK");
       if (client.subscribe (topic)) Serial.println("topic suscribed");;
+      
+      if (client.subscribe (topic_5mn)) Serial.println("topic_5mn suscribed");;
+      
+      if (client.subscribe (topic_10mn)) Serial.println("topic_10mn suscribed");;
       return true;
     }
     else
@@ -167,9 +171,10 @@ bool Connect_MQTT()
       M5.Lcd.clear(BLACK);
       M5.Lcd.setCursor(0,0);
       M5.Lcd.print ("MQTT KO");
-      delay(2000);
+
     }
-   
+    delay(2000);
+    M5.Lcd.clear(BLACK);
   }
 }
 
@@ -179,7 +184,7 @@ void OnMqttReceived(char *r_topic, byte *payload, unsigned int length)
     Serial.print("Received on ");
     Serial.print(r_topic);
     Serial.print(": ");
-if (strcmp(r_topic,"topic")==0){
+if (strcmp(r_topic,"routeur/Wmqtt")==0){
     String content = "";
     for (size_t i = 0; i < length; i++)
     {
@@ -188,12 +193,13 @@ if (strcmp(r_topic,"topic")==0){
     Serial.print(content);
     Serial.println();
     Power_wifi = strtof(content.c_str(), NULL);
-    M5.Lcd.clear(BLACK);
+
     M5.Lcd.setCursor(0,0);
-    M5.Lcd.print ("power");
+    M5.Lcd.print ("W    ");
     M5.Lcd.print (content);
     }
-  if (strcmp(r_topic,"topic_5mn")==0){
+    
+  if (strcmp(r_topic,"routeur/Wmqtt_5mn")==0){
     String content = "";
     for (size_t i = 0; i < length; i++)
     {
@@ -202,13 +208,13 @@ if (strcmp(r_topic,"topic")==0){
     Serial.print(content);
     Serial.println();
     Power_wifi = strtof(content.c_str(), NULL);
-    M5.Lcd.clear(BLACK);
-    M5.Lcd.setCursor(0,15);
-    M5.Lcd.print ("power_5mn");
+
+    M5.Lcd.setCursor(0,40);
+    M5.Lcd.print ("W_5  ");
     M5.Lcd.print (content);
     } 
 
-    if (strcmp(r_topic,"topic_10mn")==0){
+    if (strcmp(r_topic,"routeur/conso")==0){
     String content = "";
     for (size_t i = 0; i < length; i++)
     {
@@ -217,9 +223,9 @@ if (strcmp(r_topic,"topic")==0){
     Serial.print(content);
     Serial.println();
     Power_wifi = strtof(content.c_str(), NULL);
-    M5.Lcd.clear(BLACK);
-    M5.Lcd.setCursor(0,30);
-    M5.Lcd.print ("power_10mn");
+
+    M5.Lcd.setCursor(0,110);
+    M5.Lcd.print ("W_10 ");
     M5.Lcd.print (content);
     }  
 }
