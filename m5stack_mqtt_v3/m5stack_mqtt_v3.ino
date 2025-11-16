@@ -3,7 +3,7 @@
 _____________________________________________________________________
 |																                                  	|
 |              M5STACK MQTT display by J.J.Delorme 2025             |
-|                      				                                    	|
+|                      				                                     	|
 |																                                  	|
 _____________________________________________________________________
 
@@ -16,6 +16,7 @@ PIN description
  - 
 version 1.0 November 2025 client connected on mqtt HA
 version 2.0 November 2025 client connected on mqtt HA adding watt 5mn and watt 10mn
+version 3.0 November 2025 client connected on mqtt HA adding watt PV
 */
 
 
@@ -38,6 +39,7 @@ const char *mqtt_broker = "192.168.0.154";
 const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 const char *topic_10mn = "routeur/conso";
+const char *topic_PV = "production_watt_pv";
 const char *mqtt_username = "mqtt_adm";
 const char *mqtt_password = "surel";
 const int mqtt_port = 1883;
@@ -139,6 +141,7 @@ bool Connect_MQTT()
     client.unsubscribe (topic);
     client.unsubscribe (topic_5mn);
     client.unsubscribe (topic_10mn);
+     client.unsubscribe (topic_PV);
 
     String l_client_id = client_id;
     l_client_id += String(WiFi.macAddress());
@@ -162,6 +165,8 @@ bool Connect_MQTT()
       if (client.subscribe (topic_5mn)) Serial.println("topic_5mn suscribed");;
       
       if (client.subscribe (topic_10mn)) Serial.println("topic_10mn suscribed");;
+
+      if (client.subscribe (topic_PV)) Serial.println("topic_PV suscribed");;
       return true;
     }
     else
@@ -227,5 +232,21 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     M5.Lcd.setCursor(0,80);
     M5.Lcd.print ("W_10 ");
     M5.Lcd.print (content);
-    }  
+    } 
+
+    if (strcmp(r_topic,"production_watt_pv")==0){
+    String content = "";
+    for (size_t i = 0; i < length; i++)
+    {
+        content.concat((char)payload[i]);
+    }
+    Serial.print(content);
+    Serial.println();
+    Power_wifi = strtof(content.c_str(), NULL);
+
+    M5.Lcd.setCursor(0,120);
+    M5.Lcd.print ("W_PV ");
+    M5.Lcd.print (content);
+    } 
+    
 }
