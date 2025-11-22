@@ -15,8 +15,9 @@ PIN description
 
  - 
 version 1.0 November 2025 client connected on mqtt HA
-version 2.0 November 2025 client connected on mqtt HA adding watt 5mn and watt 10mn
-version 3.0 November 2025 client connected on mqtt HA adding watt PV
+version 2.0 November 2025 adding watt 5mn and watt 10mn
+version 3.0 November 2025 adding watt PV
+version 4.0 November 2025 adding time using NTP
 */
 
 
@@ -27,12 +28,22 @@ version 3.0 November 2025 client connected on mqtt HA adding watt PV
 #include "PubSubClient.h" //wifi mqtt
 //#include <M5Stack.h>
 #include <M5Unified.h>
+
+#include <time.h>
 // initialization wifi
 
 const int channel = 4;  // define channel 4 seems to be the best for wifi....
 
 const char *ssid = "freebox_ZPRLHQ_2GEXT"; // SSID WiFi
 const char *password = "Cairojude58";      // mot de passe WiFi
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;
+const int   daylightOffset_sec = 3600;
+
+
+
+
+
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";
@@ -88,6 +99,9 @@ void setup() {                  // Begin setup
   // client.setCallback(callback);
   Connect_MQTT();
 
+ // Init and get the time
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  printLocalTime();
 
 
    
@@ -249,6 +263,49 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     M5.Lcd.setCursor(0,120);
     M5.Lcd.print ("W_PV ");
     M5.Lcd.print (content);
-    } 
+
     
+    } 
+    printLocalTime();
+
 }
+
+
+void printLocalTime(){
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  Serial.print("Day of week: ");
+  Serial.println(&timeinfo, "%A");
+  Serial.print("Month: ");
+  Serial.println(&timeinfo, "%B");
+  Serial.print("Day of Month: ");
+  Serial.println(&timeinfo, "%d");
+  Serial.print("Year: ");
+  Serial.println(&timeinfo, "%Y");
+  Serial.print("Hour: ");
+  Serial.println(&timeinfo, "%H");
+  Serial.print("Hour (12 hour format): ");
+  Serial.println(&timeinfo, "%I");
+  Serial.print("Minute: ");
+  Serial.println(&timeinfo, "%M");
+  Serial.print("Second: ");
+  Serial.println(&timeinfo, "%S");
+
+  Serial.println("Time variables");
+  char timeHour[3];
+  strftime(timeHour,3, "%H", &timeinfo);
+  Serial.println(timeHour);
+  char timeWeekDay[10];
+  strftime(timeWeekDay,10, "%A", &timeinfo);
+  Serial.println(timeWeekDay);
+  Serial.println();
+
+      M5.Lcd.setCursor(80,180);
+      M5.Lcd.print (&timeinfo, "%H:%M");
+
+}  
+
