@@ -18,6 +18,7 @@ version 1.0 November 2025 client connected on mqtt HA
 version 2.0 November 2025 adding watt 5mn and watt 10mn
 version 3.0 November 2025 adding watt PV
 version 4.0 November 2025 adding time using NTP
+version 5.0 November 2025 adding temperature
 */
 
 
@@ -51,6 +52,8 @@ const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 const char *topic_10mn = "routeur/conso";
 const char *topic_PV = "sensor.production_watt_pv";
+const char *topic_temp_in = "sensor.0xa4c1380333e7ffff_temperature";
+const char *topic_temp_out = "sensor.0xa4c1380376a0ffff_temperature";
 const char *mqtt_username = "mqtt_adm";
 const char *mqtt_password = "surel";
 const int mqtt_port = 1883;
@@ -155,7 +158,9 @@ bool Connect_MQTT()
     client.unsubscribe (topic);
     client.unsubscribe (topic_5mn);
     client.unsubscribe (topic_10mn);
-     client.unsubscribe (topic_PV);
+    client.unsubscribe (topic_PV);
+    client.unsubscribe (topic_temp_in);
+    client.unsubscribe (topic_temp_out);
 
     String l_client_id = client_id;
     l_client_id += String(WiFi.macAddress());
@@ -181,6 +186,10 @@ bool Connect_MQTT()
       if (client.subscribe (topic_10mn)) Serial.println("topic_10mn suscribed");;
 
       if (client.subscribe (topic_PV)) Serial.println("topic_PV suscribed");;
+
+      if (client.subscribe (topic_temp_in)) Serial.println("topic_temp_in suscribed");;
+
+      if (client.subscribe (topic_temp_out)) Serial.println("topic_temp_out suscribed");;
       return true;
     }
     else
@@ -263,9 +272,45 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     M5.Lcd.setCursor(0,120);
     M5.Lcd.print ("W_PV ");
     M5.Lcd.print (content);
-
     
     } 
+
+if (strcmp(r_topic,"sensor.0xa4c1380333e7ffff_temperature")==0){
+    String content = "";
+    for (size_t i = 0; i < length; i++)
+    {
+       content.concat((char)payload[i]);
+
+    }
+   
+    Serial.print(content);
+    Serial.println();
+    Power_wifi = strtof(content.c_str(), NULL);
+
+    M5.Lcd.setCursor(0,200);
+    M5.Lcd.print ("W_PV ");
+    M5.Lcd.print (content);
+
+    } 
+
+if (strcmp(r_topic,"sensor.0xa4c1380376a0ffff_temperature")==0){
+    String content = "";
+    for (size_t i = 0; i < length; i++)
+    {
+       content.concat((char)payload[i]);
+
+    }
+   
+    Serial.print(content);
+    Serial.println();
+    Power_wifi = strtof(content.c_str(), NULL);
+
+    M5.Lcd.setCursor(80,200);
+    M5.Lcd.print ("W_PV ");
+    M5.Lcd.print (content);
+    
+    } 
+
     printLocalTime();
 
 }
@@ -304,7 +349,7 @@ void printLocalTime(){
   Serial.println(timeWeekDay);
   Serial.println();
 
-      M5.Lcd.setCursor(80,180);
+      M5.Lcd.setCursor(80,160);
       M5.Lcd.print (&timeinfo, "%H:%M");
 
 }  
