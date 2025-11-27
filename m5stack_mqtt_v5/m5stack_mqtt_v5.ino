@@ -7,13 +7,9 @@ _____________________________________________________________________
 |																                                  	|
 _____________________________________________________________________
 
-an ESP32 is used instead of an classic arduino Atmel AVR. The goal is to use the wifi link to transmit to an another ESP32 module the energy to be used to optimize the solar panel energy
 
-PIN description
+M5core used for ESP card
 
- IN description
-
- - 
 version 1.0 November 2025 client connected on mqtt HA
 version 2.0 November 2025 adding watt 5mn and watt 10mn
 version 3.0 November 2025 adding watt PV
@@ -21,8 +17,6 @@ version 4.0 November 2025 adding time using NTP
 version 5.0 November 2025 adding temperature
 */
 
-
-// init to use the two core of the ESP32; one core for power calculation and one core for wifi
 
 #include <Esp.h>
 #include <WiFi.h>
@@ -220,7 +214,7 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     }
     Serial.print(content);
     Serial.println();
-    Power_wifi = strtof(content.c_str(), NULL);
+    //Power_wifi = strtof(content.c_str(), NULL);
 
     M5.Lcd.setCursor(0,0);
     M5.Lcd.print ("W    ");
@@ -235,7 +229,7 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     }
     Serial.print(content);
     Serial.println();
-    Power_wifi = strtof(content.c_str(), NULL);
+    //Power_wifi = strtof(content.c_str(), NULL);
 
     M5.Lcd.setCursor(0,40);
     M5.Lcd.print ("W_5  ");
@@ -250,7 +244,7 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     }
     Serial.print(content);
     Serial.println();
-    Power_wifi = strtof(content.c_str(), NULL);
+    //Power_wifi = strtof(content.c_str(), NULL);
 
     M5.Lcd.setCursor(0,80);
     M5.Lcd.print ("W_10 ");
@@ -267,7 +261,7 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
    
     Serial.print(content);
     Serial.println();
-    Power_wifi = strtof(content.c_str(), NULL);
+    //Power_wifi = strtof(content.c_str(), NULL);
 
     M5.Lcd.setCursor(0,120);
     M5.Lcd.print ("W_PV ");
@@ -285,10 +279,10 @@ if (strcmp(r_topic,"sensor.0xa4c1380333e7ffff_temperature")==0){
    
     Serial.print(content);
     Serial.println();
-    Power_wifi = strtof(content.c_str(), NULL);
+    //Power_wifi = strtof(content.c_str(), NULL);
 
     M5.Lcd.setCursor(0,200);
-    M5.Lcd.print ("W_PV ");
+    M5.Lcd.print ("T_IN ");
     M5.Lcd.print (content);
 
     } 
@@ -303,10 +297,10 @@ if (strcmp(r_topic,"sensor.0xa4c1380376a0ffff_temperature")==0){
    
     Serial.print(content);
     Serial.println();
-    Power_wifi = strtof(content.c_str(), NULL);
+    //Power_wifi = strtof(content.c_str(), NULL);
 
     M5.Lcd.setCursor(80,200);
-    M5.Lcd.print ("W_PV ");
+    M5.Lcd.print ("T_OUT");
     M5.Lcd.print (content);
     
     } 
@@ -323,6 +317,7 @@ void printLocalTime(){
     return;
   }
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  /*
   Serial.print("Day of week: ");
   Serial.println(&timeinfo, "%A");
   Serial.print("Month: ");
@@ -348,7 +343,7 @@ void printLocalTime(){
   strftime(timeWeekDay,10, "%A", &timeinfo);
   Serial.println(timeWeekDay);
   Serial.println();
-
+*/
       M5.Lcd.setCursor(80,160);
       M5.Lcd.print (&timeinfo, "%H:%M");
 
