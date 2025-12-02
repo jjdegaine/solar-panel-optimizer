@@ -46,8 +46,8 @@ const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 const char *topic_10mn = "routeur/conso";
 const char *topic_PV = "sensor.production_watt_pv";
-const char *topic_temp_in = "sensor.0xa4c1380333e7ffff_temperature";
-const char *topic_temp_out = "sensor.0xa4c1380376a0ffff_temperature";
+const char *topic_temp_in = "zigbee2mqtt/0xa4c1380333e7ffff";
+const char *topic_temp_out = "zigbee2mqtt/0xa4c1380376a0ffff";
 const char *mqtt_username = "mqtt_adm";
 const char *mqtt_password = "surel";
 const int mqtt_port = 1883;
@@ -59,7 +59,24 @@ PubSubClient client(espClient);
 
 String client_id = "routeur";
 
-float Power_wifi =0;  // power to be received by wifi
+
+String battery; //data String
+String humidity;
+String linkquality;
+String temperature;
+String voltage;
+String temp_in;
+String temp_out;
+String temp_text;
+
+
+int ind1; // , locations
+int ind2;
+int ind3;
+int ind4;
+int ind5;
+int ind6;
+int ind7;
 
 //_____________________________________________________________________________________________
 //
@@ -80,9 +97,6 @@ void setup() {                  // Begin setup
 
  Serial.begin(115200);
  
-
-
- 
      // init wifi
 
   WiFi.begin(ssid, password);
@@ -93,14 +107,11 @@ void setup() {                  // Begin setup
   }
   Serial.println("Connected to the Wi-Fi network");
 
-  // client.setCallback(callback);
   Connect_MQTT();
 
  // Init and get the time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   printLocalTime();
-
-
    
 }           
 
@@ -109,17 +120,11 @@ void setup() {                  // Begin setup
 //____________________________________________________________________________________________
 
 
-                              
-
-
-
 void loop()
 {
 
- 
 for (;;) // A Task shall never return or exit.
   {
-    
        
     if (Connect_MQTT()) 
     {
@@ -131,11 +136,8 @@ for (;;) // A Task shall never return or exit.
 
     
 }    
-
-               
-    
-
-     // end for loop wifi
+            
+  // end for loop wifi
     
 
 bool Connect_MQTT()
@@ -184,6 +186,7 @@ bool Connect_MQTT()
       if (client.subscribe (topic_temp_in)) Serial.println("topic_temp_in suscribed");;
 
       if (client.subscribe (topic_temp_out)) Serial.println("topic_temp_out suscribed");;
+
       return true;
     }
     else
@@ -214,8 +217,6 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     }
     Serial.print(content);
     Serial.println();
-    //Power_wifi = strtof(content.c_str(), NULL);
-
     M5.Lcd.setCursor(0,0);
     M5.Lcd.print ("W    ");
     M5.Lcd.print (content);
@@ -229,7 +230,6 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     }
     Serial.print(content);
     Serial.println();
-    //Power_wifi = strtof(content.c_str(), NULL);
 
     M5.Lcd.setCursor(0,40);
     M5.Lcd.print ("W_5  ");
@@ -244,7 +244,6 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     }
     Serial.print(content);
     Serial.println();
-    //Power_wifi = strtof(content.c_str(), NULL);
 
     M5.Lcd.setCursor(0,80);
     M5.Lcd.print ("W_10 ");
@@ -261,50 +260,94 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
    
     Serial.print(content);
     Serial.println();
-    //Power_wifi = strtof(content.c_str(), NULL);
 
     M5.Lcd.setCursor(0,120);
     M5.Lcd.print ("W_PV ");
     M5.Lcd.print (content);
+    M5.Lcd.print ("       ");
     
     } 
 
-if (strcmp(r_topic,"sensor.0xa4c1380333e7ffff_temperature")==0){
+if (strcmp(r_topic,"zigbee2mqtt/0xa4c1380333e7ffff")==0){
     String content = "";
     for (size_t i = 0; i < length; i++)
     {
        content.concat((char)payload[i]);
 
     }
-   
-    Serial.print(content);
-    Serial.println();
-    //Power_wifi = strtof(content.c_str(), NULL);
+      ind1 = content.indexOf(',');  //finds location of first ,
+      battery = content.substring(0, ind1);   //captures first data String
+      ind2 = content.indexOf(',', ind1+1 );   //finds location of second ,
+      humidity = content.substring(ind1+1, ind2+1);   //captures second data String
+      ind3 = content.indexOf(',', ind2+1 );
+      linkquality = content.substring(ind2+1, ind3+1);
+      ind4 = content.indexOf(',', ind3+1 );
+      temperature = content.substring(ind3+1, ind4+1); 
+      ind5 = content.indexOf(',', ind4+1 );
+      voltage = content.substring(ind4+1); 
+      Serial.print("temperature content: ");
+      Serial.print(temperature);
+      Serial.println();
+      Serial.print("ind1: ");
+      Serial.print (ind1);
+
+      
+      ind6 = temperature.indexOf(':');  //finds location of first 
+      temp_text = temperature.substring(0, ind6);   //captures first data String
+      ind7 = temperature.indexOf(',', ind6+1 );   //finds location of second ,
+      temp_in = temperature.substring(ind6+1, ind7);   //captures second data String
+      Serial.print("temp_in content: ");
+      Serial.print(temp_in);
+      Serial.println();
+
+
 
     M5.Lcd.setCursor(0,200);
-    M5.Lcd.print ("T_IN ");
-    M5.Lcd.print (content);
+    M5.Lcd.print("      ");
+    M5.Lcd.setCursor(0,200);
+    M5.Lcd.print ("I ");
+    M5.Lcd.print (temp_in);
 
     } 
 
-if (strcmp(r_topic,"sensor.0xa4c1380376a0ffff_temperature")==0){
+if (strcmp(r_topic,"zigbee2mqtt/0xa4c1380376a0ffff")==0){
     String content = "";
     for (size_t i = 0; i < length; i++)
     {
        content.concat((char)payload[i]);
 
     }
-   
-    Serial.print(content);
-    Serial.println();
-    //Power_wifi = strtof(content.c_str(), NULL);
+      ind1 = content.indexOf(',');  //finds location of first ,
+      battery = content.substring(0, ind1);   //captures first data String
+      ind2 = content.indexOf(',', ind1+1 );   //finds location of second ,
+      humidity = content.substring(ind1+1, ind2+1);   //captures second data String
+      ind3 = content.indexOf(',', ind2+1 );
+      linkquality = content.substring(ind2+1, ind3+1);
+      ind4 = content.indexOf(',', ind3+1 );
+      temperature = content.substring(ind3+1, ind4+1); 
+      ind5 = content.indexOf(',', ind4+1 );
+      voltage = content.substring(ind4+1); 
 
-    M5.Lcd.setCursor(80,200);
-    M5.Lcd.print ("T_OUT");
-    M5.Lcd.print (content);
-    
+      ind6 = temperature.indexOf(':');  //finds location of first 
+      temp_text = temperature.substring(0, ind6);   //captures first data String
+      ind7 = temperature.indexOf(',', ind6+1 );   //finds location of second ,
+      temp_out = temperature.substring(ind6+1, ind7);   //captures second data String
+      Serial.print("temp_out content: ");
+      Serial.print(temp_out);
+      Serial.println();
+
+    M5.Lcd.setCursor(160,200);
+    M5.Lcd.print("      ");
+    M5.Lcd.setCursor(160,200);
+    M5.Lcd.print ("E ");
+    M5.Lcd.print (temp_out);
+
+
     } 
 
+    /*
+    heure via NTP
+    */
     printLocalTime();
 
 }

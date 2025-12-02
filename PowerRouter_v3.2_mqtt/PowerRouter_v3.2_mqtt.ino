@@ -108,6 +108,7 @@ const char *mqtt_broker = "192.168.0.154";
 const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 const char *topic_10mn = "routeur/conso";
+const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
 //const char *topic_10mn = "routeur/Wmqtt_10mn";
 const char *mqtt_username = "mqtt_adm";
 const char *mqtt_password = "surel";
@@ -907,7 +908,7 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 
     if (Connect_MQTT()) 
     {
-
+        /*
       if (send_MQTT == true)
       {
         send_MQTT = false;
@@ -921,13 +922,20 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
         sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
         client.publish(topic_5mn, mystring_power_wifi_5mn, true);
       }
-
        if (send_MQTT_10mn == true)
       {
         send_MQTT_10mn = false;
         sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
         client.publish(topic_10mn, mystring_power_wifi_10mn, true);
       }
+      */
+     // for test only
+      if (send_MQTT_10mn == true)
+      {
+        send_MQTT_10mn = false;
+        sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
+        client.publish(topic_test, mystring_power_wifi_10mn, true);
+
     };
   }
 
