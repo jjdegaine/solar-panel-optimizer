@@ -919,7 +919,7 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
     Serial.println(client.state());
     */
     MQTT_time = millis();
-    
+
     if (Connect_MQTT()) 
     {
         /*
@@ -944,9 +944,9 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
       }
       */
      // for test only
-      if (send_MQTT_10mn == true)
+      if (send_MQTT == true)
       {
-        send_MQTT_10mn = false;
+        send_MQTT = false;
         sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
         client.publish(topic_test, mystring_power_wifi_10mn, true);
       }
