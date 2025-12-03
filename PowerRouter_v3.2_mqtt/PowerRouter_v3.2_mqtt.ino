@@ -70,7 +70,7 @@ version 2.3 SSR LED improvement
 version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
-version 3.2 2025-11 improvement
+version 3.2 2025-11 improvement timeoput mqtt
 */
 
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
@@ -180,6 +180,10 @@ byte totalCount = 20; // number of half perid used for measurement
 
 unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
 unsigned long unballasting_time;            // timer for unballasting
+
+unsigned long MQTT_timeout = 1800000;       // timeout MQTT: 180 secondes 3 minutes
+unsigned long MQTT_time;
+
 byte unballasting_counter = 0;              // counter mains half period
 byte unballasting_dim_min = 5;              // value of dim to start relay
 byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
@@ -387,6 +391,10 @@ void setup()
   pinMode(pin_calibration, INPUT);
 
   unballasting_time = millis(); // set up timer unballasting
+  mean_power_time = millis();
+  mean_power_time_5mn = millis();
+  mean_power_time_10mn = millis();
+  MQTT_time = millis();
 
   // USB init
   Serial.begin(115200);
@@ -897,6 +905,11 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
     while (send_MQTT == false)
     {
       wifi_wait = 0; // loop to wait update DIM
+      if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
+      {
+          ESP.restart(); 
+      }
+      
     }
     /*
     Serial.print(" state wifi ");
@@ -905,7 +918,8 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
     Serial.print(" state MQTT ");
     Serial.println(client.state());
     */
-
+    MQTT_time = millis();
+    
     if (Connect_MQTT()) 
     {
         /*
