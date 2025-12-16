@@ -70,7 +70,7 @@ version 2.3 SSR LED improvement
 version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
-version 3.2 2025-11 improvement timeoput mqtt
+version 3.2 2025-11 improvement timeout mqtt
 */
 
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
@@ -907,7 +907,10 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
       wifi_wait = 0; // loop to wait update DIM
       if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
       {
-          ESP.restart(); 
+        delay (100000)  ; // delay 100 secondes
+        ESP.restart(); 
+
+          break;
       }
       
     }
