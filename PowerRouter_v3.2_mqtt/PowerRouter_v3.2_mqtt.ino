@@ -279,6 +279,10 @@ unsigned long mean_power_time_10mn;            // timer for mean power mqtt
 unsigned long mean_power_timing_10mn = 600000; // timer 10 minutes minutes to calculate mean power MQTT
 char mystring_power_wifi_10mn[50];             // string to be transmitted by wifi MQTT
 
+// DIM
+int dim_test  = 0 ;
+char mystring_dim [50];             // string to be transmitted by wifi MQTT
+
 // max Power on grid (6000W)
 float PowerMax = 6000; // 6000W 
 float Power_water_heater = 3000; // 3000W Heater water
@@ -908,6 +912,8 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
       wifi_wait = 0; // loop to wait update DIM
       if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
       {
+        sprintf(mystring_dim, "%g", dim_test); //send dim_test in case off timeout
+        client.publish(topic_test, mystring_dim, true);
         delay (100000)  ; // delay 100 secondes
         ESP.restart(); 
 
