@@ -912,8 +912,9 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
       wifi_wait = 0; // loop to wait update DIM
       if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
       {
+        dim_test = 1 ;
         sprintf(mystring_dim, "%g", dim_test); //send dim_test in case off timeout
-        client.publish(topic_test, mystring_dim, true);
+        client.publish(topic_dim, mystring_dim, true);
         delay (100000)  ; // delay 100 secondes
         ESP.restart(); 
 
