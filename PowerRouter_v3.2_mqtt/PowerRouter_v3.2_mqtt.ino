@@ -70,7 +70,7 @@ version 2.3 SSR LED improvement
 version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
-version 3.2 2025-11 improvement timeout mqtt
+version 3.2 2025-11 test improvement timeout mqtt
 */
 
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
@@ -109,6 +109,7 @@ const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 const char *topic_10mn = "routeur/conso";
 const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
+const char *topic_dim = "routeur/dim";  // for test only
 //const char *topic_10mn = "routeur/Wmqtt_10mn";
 const char *mqtt_username = "mqtt_adm";
 const char *mqtt_password = "surel";
