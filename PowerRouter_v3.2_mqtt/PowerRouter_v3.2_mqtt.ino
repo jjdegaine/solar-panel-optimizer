@@ -1008,6 +1008,7 @@ bool Connect_MQTT()
       Serial.println(client.state());
       display.drawString(0, 22, "MQTT KO " + client.state());
       delay(2000);
+      return false;
     }
     /*
     Serial.print(" state MQTT ");
