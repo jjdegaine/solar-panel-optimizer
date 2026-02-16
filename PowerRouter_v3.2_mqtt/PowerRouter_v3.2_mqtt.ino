@@ -985,7 +985,8 @@ bool Connect_MQTT()
     Serial.println(WiFi.status());
     */
     client.disconnect();
-  
+    delay(2000); // wait 2 secondes before connecting again.
+
     String l_client_id = client_id;
     l_client_id += String(WiFi.macAddress());
 
