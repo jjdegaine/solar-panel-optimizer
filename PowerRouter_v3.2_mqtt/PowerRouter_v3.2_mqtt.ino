@@ -989,7 +989,7 @@ bool Connect_MQTT()
 
     WiFi.disconnect();
       delay(2000);
-    serial.println("disConnecting to WiFi..");
+    Serial.println("disConnecting to WiFi..");
         // init wifi
 
     WiFi.begin(ssid, password);
