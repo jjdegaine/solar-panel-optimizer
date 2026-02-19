@@ -1011,11 +1011,11 @@ bool Connect_MQTT()
       delay(2000);
       return false;
     }
-    /*
+    
     Serial.print(" state MQTT ");
     Serial.println(client.state());
     Serial.print(" state wifi ");
     Serial.println(WiFi.status());
-    */
+    
   }
 }
