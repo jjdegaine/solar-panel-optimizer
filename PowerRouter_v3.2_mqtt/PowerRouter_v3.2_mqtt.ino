@@ -102,6 +102,7 @@ const int channel = 4; // define channel 4 seems to be the best for wifi....
 
 const char *ssid = "freebox_ZPRLHQ_2GEXT"; // SSID WiFi
 const char *password = "Cairojude58";      // mot de passe WiFi
+String hostname= "ESP32 routeur"; 
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";
@@ -468,7 +469,7 @@ void setup()
   digitalWrite(unballast_relay2, LOW); // unballast relay 2 init
 
     // init wifi
-
+  WiFi.setHostname(hostname.c_str()); //define hostname
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
