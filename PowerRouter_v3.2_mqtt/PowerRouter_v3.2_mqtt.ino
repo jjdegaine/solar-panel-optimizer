@@ -70,7 +70,7 @@ version 2.3 SSR LED improvement
 version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
-version 3.2 2025-11 test improvement timeout mqtt
+version 3.2 2026-02 test improvement timeout mqtt and OTA
 */
 
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
@@ -84,9 +84,7 @@ version 3.2 2025-11 test improvement timeout mqtt
 #include <Esp.h>
 
 #include <WiFi.h>
-/*
-#include <WiFiUdp.h> //wifi udp
-*/
+
 #include "PubSubClient.h" //wifi mqtt
 
 #include <esp_task_wdt.h> // watch dog
@@ -224,7 +222,6 @@ byte dim_sinus[129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 
 byte dimphase = dim + dimthreshold;
 byte dimphasemax = dimmax + dimthreshold;
 
-// byte reset_wifi = 0;			// counter for wifi reset due to time to leave
 byte wifi_wait = 0; // used for the waiting loop on task wifi
 
 
@@ -232,7 +229,6 @@ unsigned long wait_it_limit = 3; // delay 3msec
 unsigned long it_elapsed;        // counter for delay 3 msec
 
 char periodStep = 73; // 73 * 127 = 10msec, calibration using oscilloscope
-// char periodStep = 68;                            // 68 * 127 = 10msec, calibration using oscilloscope
 
 volatile int i_counter = 0;                // Variable to use as a counter for SSR
 volatile int i = 0;                        // Variable to use as a counter for LCD
@@ -903,8 +899,6 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 {
   (void)pvParameters;
 
-  // time_udp_now= millis();
-
   for (;;) // A Task shall never return or exit.
   {
 
@@ -923,13 +917,7 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
       }
       
     }
-    /*
-    Serial.print(" state wifi ");
-    Serial.println(WiFi.status());
-
-    Serial.print(" state MQTT ");
-    Serial.println(client.state());
-    */
+    
     MQTT_time = millis();
 
     if (Connect_MQTT()) 
