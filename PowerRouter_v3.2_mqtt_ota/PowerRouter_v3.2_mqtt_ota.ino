@@ -70,7 +70,7 @@ version 2.3 SSR LED improvement
 version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
-version 3.2 2026-02 test improvement timeout mqtt 
+version 3.2 2026-02 test improvement timeout mqtt and OTA
 */
 
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
@@ -89,7 +89,10 @@ version 3.2 2026-02 test improvement timeout mqtt
 
 #include <esp_task_wdt.h> // watch dog
 
-
+//OTA
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <ElegantOTA.h>
 
 // oled
 
@@ -467,7 +470,7 @@ void setup()
   digitalWrite(unballast_relay2, LOW); // unballast relay 2 init
 
     // init wifi
-
+  WiFi.mode(WIFI_STA);
   WiFi.setHostname(hostname.c_str()); //define hostname
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
@@ -479,6 +482,15 @@ void setup()
   Serial.println("Connected to the WiFi network");
   display.drawString(0, 0, "connected to WiFi");
 
+  //OTA server
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "ESP routeur");
+  });
+
+  server.begin();
+  Serial.println("HTTP server started OTA");
+
+  ElegantOTA.begin(&server);    // Start ElegantOTA
 
   // client.setCallback(callback);
   Connect_MQTT();
@@ -935,6 +947,9 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 
     };
   }
+  //OTA
+
+ElegantOTA.loop();
 
 } // end for loop wifi
 
