@@ -89,6 +89,11 @@ version 3.2 2026-02 test improvement timeout mqtt and OTA
 
 #include <esp_task_wdt.h> // watch dog
 
+//OTA
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <ElegantOTA.h>
+
 // oled
 
 #include "SSD1306.h"
@@ -465,6 +470,7 @@ void setup()
   digitalWrite(unballast_relay2, LOW); // unballast relay 2 init
 
     // init wifi
+  WiFi.mode(WIFI_STA);
   WiFi.setHostname(hostname.c_str()); //define hostname
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
@@ -475,6 +481,16 @@ void setup()
   }
   Serial.println("Connected to the WiFi network");
   display.drawString(0, 0, "connected to WiFi");
+
+  //OTA server
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "ESP routeur");
+  });
+
+  server.begin();
+  Serial.println("HTTP server started OTA");
+
+  ElegantOTA.begin(&server);    // Start ElegantOTA
 
   // client.setCallback(callback);
   Connect_MQTT();
@@ -860,31 +876,6 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
     CALIBRATION = digitalRead(pin_calibration);
 
-    /* display WIFI information
-
-    // display WIFI information
-
-    if (TTL == true)
-          {
-          display.setColor(BLACK);        // clear second  line
-          display.fillRect(0, 22, 128, 22);
-          display.setColor(WHITE);
-          display.drawString(0, 22, "TIME UDP");
-          display.display();
-          TTL= false ;
-          }
-    if ( UDP_OK == true)
-        {
-          display.setColor(BLACK);        // clear second  line
-          display.fillRect(0, 22, 128, 22);
-          display.setColor(WHITE);
-          display.drawString(0, 22, "UDP OK");
-          display.display();
-        UDP_OK = false ;
-        }
-
-*/
-
     esp_task_wdt_reset(); // reset watch dog
   }
 
@@ -956,6 +947,9 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 
     };
   }
+  //OTA
+
+ElegantOTA.loop();
 
 } // end for loop wifi
 
@@ -980,7 +974,8 @@ bool Connect_MQTT()
       delay(2000);
     Serial.println("disConnecting to WiFi..");
         // init wifi
-
+    WiFi.mode(WIFI_STA);
+    WiFi.setHostname(hostname.c_str()); //define hostname
     WiFi.begin(ssid, password);
       while (WiFi.status() != WL_CONNECTED)
       {
