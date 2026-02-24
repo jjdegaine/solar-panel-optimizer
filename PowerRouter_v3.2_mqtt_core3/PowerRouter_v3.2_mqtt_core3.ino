@@ -85,9 +85,9 @@ version 3.2 2026-02 test improvement timeout mqtt and OTA
 
 #include <WiFi.h>
 
-#include "PubSubClient.h" //wifi mqtt
+#include "PubSubClient.h"  //wifi mqtt
 
-#include <esp_task_wdt.h> // watch dog
+#include <esp_task_wdt.h>  // watch dog
 
 //OTA
 #include <AsyncTCP.h>
@@ -97,23 +97,23 @@ version 3.2 2026-02 test improvement timeout mqtt and OTA
 // oled
 
 #include "SSD1306.h"
-SSD1306Wire display(0x3c, SDA, SCL); // ADDRESS, SDA, SCL
+SSD1306Wire display(0x3c, SDA, SCL);  // ADDRESS, SDA, SCL
 
 // initialization wifi
 
-const int channel = 4; // define channel 4 seems to be the best for wifi....
+const int channel = 4;  // define channel 4 seems to be the best for wifi....
 
-const char *ssid = "freebox_ZPRLHQ_2GEXT"; // SSID WiFi
-const char *password = "Cairojude58";      // mot de passe WiFi
-String hostname= "ESP32 routeur"; 
+const char *ssid = "freebox_ZPRLHQ_2GEXT";  // SSID WiFi
+const char *password = "Cairojude58";       // mot de passe WiFi
+String hostname = "ESP32 routeur";
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";
 const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 const char *topic_10mn = "routeur/conso";
-const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
-const char *topic_dim = "routeur/dim";  // for test only
+const char *topic_test = "routeur/Wmqtt_10mn";  // for test only
+const char *topic_dim = "routeur/dim";          // for test only
 //const char *topic_10mn = "routeur/Wmqtt_10mn";
 const char *mqtt_username = "mqtt_adm";
 const char *mqtt_password = "surel";
@@ -127,11 +127,11 @@ String client_id = "routeur";
 
 // Information to be displayed
 
-bool CALIBRATION = false; // to calibrate Vcalibration and Icalibration
-bool VERBOSE = false;     // to verify dim and dimstep
-bool WINTER = false;      // winter -> no wifi summer --> wifi
+bool CALIBRATION = false;  // to calibrate Vcalibration and Icalibration
+bool VERBOSE = false;      // to verify dim and dimstep
+bool WINTER = false;       // winter -> no wifi summer --> wifi
 
-bool do_nothing = false; //
+bool do_nothing = false;  //
 
 /*main board 1
 float Vcalibration     = 0.90;   // to obtain the mains exact value main
@@ -152,12 +152,12 @@ int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 
 */
 
 //main board 4 (the main board used on the TGBT)
-float Vcalibration     = 0.975;   // to obtain the mains exact value
-float Icalibration     = 100;     // current in milliampères
-float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors.
-float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
-float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
-int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ;
+float Vcalibration = 0.975;   // to obtain the mains exact value
+float Icalibration = 100;     // current in milliampères
+float phasecalibration = -6;  // value to compensate  the phase shift linked to the sensors.
+float ADC_V_0V = 446;         // ADC value for 0V input 3.3V/2
+float ADC_I_0A = 454;         // ADC value for 0V input 3.3V/2
+int tresholdP = -100000;      // Threshold to start power adjustment 1 = 1mW ;
 
 
 /*main board 5
@@ -180,18 +180,18 @@ float ADC_I_0A = 481;        // ADC value for 0V input 3.3V/2
 int tresholdP = 50000;       // Threshold to start power adjustment 1 = 1mW ;
 */
 
-byte totalCount = 20; // number of half perid used for measurement
+byte totalCount = 20;  // number of half perid used for measurement
 // Threshold value for power adjustment:
 
-unsigned long unballasting_timeout = 10000; // timeout to avoid relay command to often: 10 secondes
-unsigned long unballasting_time;            // timer for unballasting
+unsigned long unballasting_timeout = 10000;  // timeout to avoid relay command to often: 10 secondes
+unsigned long unballasting_time;             // timer for unballasting
 
-unsigned long MQTT_timeout = 1800000;       // timeout MQTT: 180 secondes 3 minutes
+unsigned long MQTT_timeout = 1800000;  // timeout MQTT: 180 secondes 3 minutes
 unsigned long MQTT_time;
 
-byte unballasting_counter = 0;              // counter mains half period
-byte unballasting_dim_min = 5;              // value of dim to start relay
-byte unballasting_dim_max = 64;             // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
+byte unballasting_counter = 0;   // counter mains half period
+byte unballasting_dim_min = 5;   // value of dim to start relay
+byte unballasting_dim_max = 64;  // The resistive charge connected on the relay must be lower than half the resistice charge connected on the SSR
 
 // reaction rate coefficient
 // reaction_coeff define the DIM value to be added or substract
@@ -219,84 +219,84 @@ const byte zeroCrossPin = 19;
 
 // zero-crossing interruption  :
 
-byte dimthreshold = 30; // dimthreshold; value to added at dim to compensate phase shift
-byte dimmax = 128;      // max value to start SSR command
-byte dim = dimmax;      // Dimming level (0-128)  0 = on, 128 = 0ff
-byte dim_sinus[129] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128};
+byte dimthreshold = 30;  // dimthreshold; value to added at dim to compensate phase shift
+byte dimmax = 128;       // max value to start SSR command
+byte dim = dimmax;       // Dimming level (0-128)  0 = on, 128 = 0ff
+byte dim_sinus[129] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 27, 28, 31, 32, 34, 35, 37, 39, 41, 43, 44, 47, 49, 50, 53, 54, 57, 58, 60, 63, 64, 65, 68, 70, 71, 74, 77, 78, 79, 82, 84, 86, 87, 89, 91, 93, 94, 96, 99, 100, 101, 103, 104, 106, 107, 108, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 122, 123, 124, 124, 124, 125, 125, 126, 126, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 };
 
 byte dimphase = dim + dimthreshold;
 byte dimphasemax = dimmax + dimthreshold;
 
-byte wifi_wait = 0; // used for the waiting loop on task wifi
+byte wifi_wait = 0;  // used for the waiting loop on task wifi
 
 
-unsigned long wait_it_limit = 3; // delay 3msec
-unsigned long it_elapsed;        // counter for delay 3 msec
+unsigned long wait_it_limit = 3;  // delay 3msec
+unsigned long it_elapsed;         // counter for delay 3 msec
 
-char periodStep = 73; // 73 * 127 = 10msec, calibration using oscilloscope
+char periodStep = 73;  // 73 * 127 = 10msec, calibration using oscilloscope
 
-volatile int i_counter = 0;                // Variable to use as a counter for SSR
-volatile int i = 0;                        // Variable to use as a counter for LCD
-volatile int I_led = 0;                    // Variable to use as a counter for LED
-volatile bool zero_cross = false;          // zero cross flag for SSR
-volatile bool zero_cross_flag = false;     // zero cross flag for power calculation
-volatile bool first_it_zero_cross = false; // flag first IT on rising edge zero cross
-volatile bool wait_2msec;                  // flag no IT on falling edge
+volatile int i_counter = 0;                 // Variable to use as a counter for SSR
+volatile int i = 0;                         // Variable to use as a counter for LCD
+volatile int I_led = 0;                     // Variable to use as a counter for LED
+volatile bool zero_cross = false;           // zero cross flag for SSR
+volatile bool zero_cross_flag = false;      // zero cross flag for power calculation
+volatile bool first_it_zero_cross = false;  // flag first IT on rising edge zero cross
+volatile bool wait_2msec;                   // flag no IT on falling edge
 
 
 volatile bool led_zero = false;
 
-#define WDT_TIMEOUT 15 // watch dog time
+#define WDT_TIMEOUT 15  // watch dog time
 
 
 // Voltage and current measurement  :
 
-int readV, memo_readV, readI; // voltage and current withn ADC (0 à 1023 bits)
+int readV, memo_readV, readI;  // voltage and current withn ADC (0 à 1023 bits)
 float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;
 float Power_wifi;
 float Power_wifi_5mn;
-byte zero_crossCount = 0; // half period counter
+byte zero_crossCount = 0;  // half period counter
 
 // 10 sec mean power mqtt
 float mean_power = 0;
 float mean_power_MQTT = 0;
 int mean_power_counter = 0;
-unsigned long mean_power_time;           // timer for mean power mqtt
-unsigned long mean_power_timing = 20000; // timer 20 secondes minutes to calculate mean power MQTT
-char mystring_power_wifi[50];            // string to be transmitted by wifi MQTT
+unsigned long mean_power_time;            // timer for mean power mqtt
+unsigned long mean_power_timing = 20000;  // timer 20 secondes minutes to calculate mean power MQTT
+char mystring_power_wifi[50];             // string to be transmitted by wifi MQTT
 
 // 5 minutes mean power mqtt
 float mean_power_5mn = 0;
 float mean_power_MQTT_5mn = 0;
 int mean_power_counter_5mn = 0;
-unsigned long mean_power_time_5mn;            // timer for mean power mqtt
-unsigned long mean_power_timing_5mn = 300000; // timer 5 minutes minutes to calculate mean power MQTT
-char mystring_power_wifi_5mn[50];             // string to be transmitted by wifi MQTT
+unsigned long mean_power_time_5mn;             // timer for mean power mqtt
+unsigned long mean_power_timing_5mn = 300000;  // timer 5 minutes minutes to calculate mean power MQTT
+char mystring_power_wifi_5mn[50];              // string to be transmitted by wifi MQTT
 
 // 10 minutes mean power mqtt
 float mean_power_10mn = 0;
 float mean_power_MQTT_10mn = 0;
 int mean_power_counter_10mn = 0;
-unsigned long mean_power_time_10mn;            // timer for mean power mqtt
-unsigned long mean_power_timing_10mn = 600000; // timer 10 minutes minutes to calculate mean power MQTT
-char mystring_power_wifi_10mn[50];             // string to be transmitted by wifi MQTT
+unsigned long mean_power_time_10mn;             // timer for mean power mqtt
+unsigned long mean_power_timing_10mn = 600000;  // timer 10 minutes minutes to calculate mean power MQTT
+char mystring_power_wifi_10mn[50];              // string to be transmitted by wifi MQTT
 
 // DIM
-int dim_test  = 0 ;
-char mystring_dim [50];             // string to be transmitted by wifi MQTT
+int dim_test = 0;
+char mystring_dim[50];  // string to be transmitted by wifi MQTT
 
 // max Power on grid (6000W)
-float PowerMax = 6000; // 6000W 
-float Power_water_heater = 3000; // 3000W Heater water
+float PowerMax = 6000;            // 6000W
+float Power_water_heater = 3000;  // 3000W Heater water
 
 // other value :
 
-int dimstep; // DIM step value
+int dimstep;  // DIM step value
 
 unsigned int memo_temps = 0;
 
-bool relay_1; // Flag relay 1
-bool relay_2; // Flag relay 2
+bool relay_1;  // Flag relay 1
+bool relay_2;  // Flag relay 2
 
 // init timer IT
 hw_timer_t *timer = NULL;
@@ -317,19 +317,18 @@ void Taskwifi_udp(void *pvParameters);
 // interruption on the falling edge ==> first_it_zero_cross with 3msec time delay
 //____________________________________________________________________________________________
 
-void IRAM_ATTR zero_cross_detect()
-{ //
+void IRAM_ATTR zero_cross_detect() {  //
   portENTER_CRITICAL_ISR(&mux);
   // digitalWrite(limiteLED, HIGH) ; for scope measurement
 
-  detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
+  detachInterrupt(digitalPinToInterrupt(zeroCrossPin));  // invalid interrupt during 3msec to avoid false interrupt during falling edge
 
-  zero_cross_flag = true;     // Flag for power calculation
-  zero_cross = true;          // Flag for SSR
-  first_it_zero_cross = true; // flag to start a delay 2msec
+  zero_cross_flag = true;      // Flag for power calculation
+  zero_cross = true;           // Flag for SSR
+  first_it_zero_cross = true;  // flag to start a delay 2msec
   led_zero = true;
   // digitalWrite(SCRLED, LOW); //reset SSR LED
-   // digitalWrite(limiteLED, LOW) ; for scope measurement
+  // digitalWrite(limiteLED, LOW) ; for scope measurement
   portEXIT_CRITICAL_ISR(&mux);
 }
 
@@ -338,43 +337,35 @@ void IRAM_ATTR zero_cross_detect()
  * IT timer task
  * _________________________________________________________________
  */
-void IRAM_ATTR onTimer()
-{
+void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
 
-  if (led_zero == true)
-  {
+  if (led_zero == true) {
     I_led = 0;
     led_zero = false;
   }
-  if (led_zero == false && I_led == dimthreshold)
-  {
-    digitalWrite(SCRLED, LOW); // reset SSR LED
-  }
-  else
-  {
+  if (led_zero == false && I_led == dimthreshold) {
+    digitalWrite(SCRLED, LOW);  // reset SSR LED
+  } else {
     I_led++;
   }
 
-  if (zero_cross == true && dimphase < dimphasemax) // First check to make sure the zero-cross has
-  {                                                 // happened else do nothing 
-    if (i_counter > dimphase)
-    {                              // i is a counter which is used to SSR command delay
-                                   // i minimum ==> start SSR just after zero crossing half period ==> max power
-                                   // i maximum ==> start SSR at the end of the zero crossing half period ==> minimum power
-      digitalWrite(SCR_pin, HIGH); // start SSR
-      delayMicroseconds(5);        // Pause briefly to ensure the SSR turned on
-      digitalWrite(SCR_pin, LOW);  // Turn off the SSR gate,
-      i_counter = 0;               // Reset the accumulator
-      digitalWrite(SCRLED, HIGH);  // start led SSR
+  if (zero_cross == true && dimphase < dimphasemax)  // First check to make sure the zero-cross has
+  {                                                  // happened else do nothing
+    if (i_counter > dimphase) {                      // i is a counter which is used to SSR command delay
+                                                     // i minimum ==> start SSR just after zero crossing half period ==> max power
+                                                     // i maximum ==> start SSR at the end of the zero crossing half period ==> minimum power
+      digitalWrite(SCR_pin, HIGH);                   // start SSR
+      delayMicroseconds(5);                          // Pause briefly to ensure the SSR turned on
+      digitalWrite(SCR_pin, LOW);                    // Turn off the SSR gate,
+      i_counter = 0;                                 // Reset the accumulator
+      digitalWrite(SCRLED, HIGH);                    // start led SSR
       zero_cross = false;
-    }
-    else
-    {
+    } else {
       i_counter++;
-    } // If the dimming value has not been reached, incriment the counter
+    }  // If the dimming value has not been reached, incriment the counter
 
-  } // End zero_cross check
+  }  // End zero_cross check
 
   portEXIT_CRITICAL_ISR(&timerMux);
 }
@@ -384,20 +375,19 @@ void IRAM_ATTR onTimer()
 // SETUP
 //_____________________________________________________________________________________________
 
-void setup()
-{ // Begin setup
+void setup() {  // Begin setup
 
-  pinMode(SCR_pin, OUTPUT);            // Set the SSR pin as output
-  pinMode(unballast_relay1, OUTPUT);   // Set the Delest pin as output
-  pinMode(unballast_relay2, OUTPUT);   // Set the Delest pin as output
-  pinMode(SCRLED, OUTPUT);             // Set the LED pin as output
-  pinMode(limiteLED, OUTPUT);          // Set the limite pin LED as output
-  pinMode(zeroCrossPin, INPUT_PULLUP); // set the zerocross pin with pullup for interrupt
+  pinMode(SCR_pin, OUTPUT);             // Set the SSR pin as output
+  pinMode(unballast_relay1, OUTPUT);    // Set the Delest pin as output
+  pinMode(unballast_relay2, OUTPUT);    // Set the Delest pin as output
+  pinMode(SCRLED, OUTPUT);              // Set the LED pin as output
+  pinMode(limiteLED, OUTPUT);           // Set the limite pin LED as output
+  pinMode(zeroCrossPin, INPUT_PULLUP);  // set the zerocross pin with pullup for interrupt
   pinMode(pin_winter, INPUT);
   pinMode(pin_verbose, INPUT);
   pinMode(pin_calibration, INPUT);
 
-  unballasting_time = millis(); // set up timer unballasting
+  unballasting_time = millis();  // set up timer unballasting
   mean_power_time = millis();
   mean_power_time_5mn = millis();
   mean_power_time_10mn = millis();
@@ -410,11 +400,10 @@ void setup()
 
   delay(2000);
   // try i2c bus recovery at 100kHz = 5uS high, 5uS low
-  pinMode(SDA_PIN, OUTPUT); // keeping SDA high during recovery
+  pinMode(SDA_PIN, OUTPUT);  // keeping SDA high during recovery
   digitalWrite(SDA_PIN, HIGH);
   pinMode(CLK_PIN, OUTPUT);
-  for (int i = 0; i < 10; i++)
-  { // 9nth cycle acts as NACK
+  for (int i = 0; i < 10; i++) {  // 9nth cycle acts as NACK
     digitalWrite(CLK_PIN, HIGH);
     delayMicroseconds(5);
     digitalWrite(CLK_PIN, LOW);
@@ -454,27 +443,23 @@ void setup()
 
   Serial.println();
   delay(500);
-  if (VERBOSE == true)
-    {
+  if (VERBOSE == true) {
     Serial.print("  Pu (W) || dimstep |  dim || ");
-    }
-  else
-    {
+  } else {
     Serial.println("GO");
     Serial.println();
-    }
+  }
   // display.setFont(ArialMT_Plain_24);
   display.clear();
 
-  digitalWrite(unballast_relay1, LOW); // unballast relay 1 init
-  digitalWrite(unballast_relay2, LOW); // unballast relay 2 init
+  digitalWrite(unballast_relay1, LOW);  // unballast relay 1 init
+  digitalWrite(unballast_relay2, LOW);  // unballast relay 2 init
 
-    // init wifi
+  // init wifi
   WiFi.mode(WIFI_STA);
-  WiFi.setHostname(hostname.c_str()); //define hostname
+  WiFi.setHostname(hostname.c_str());  //define hostname
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
+  while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.println("Connecting to WiFi..");
     display.drawString(0, 0, "connecting to WiFi...");
@@ -490,7 +475,7 @@ void setup()
   server.begin();
   Serial.println("HTTP server started OTA");
 
-  ElegantOTA.begin(&server);    // Start ElegantOTA
+  ElegantOTA.begin(&server);  // Start ElegantOTA
 
   // client.setCallback(callback);
   Connect_MQTT();
@@ -506,20 +491,20 @@ void setup()
 
   // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
-      TaskUI, "TaskUI" // A name just for humans
-      ,
-      20000 // This stack size can be checked & adjusted by reading the Stack Highwater
-      ,
-      NULL, 2 // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-      ,
-      NULL, ARDUINO_RUNNING_CORE);
+    TaskUI, "TaskUI"  // A name just for humans
+    ,
+    20000  // This stack size can be checked & adjusted by reading the Stack Highwater
+    ,
+    NULL, 2  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+    ,
+    NULL, ARDUINO_RUNNING_CORE);
 
   xTaskCreatePinnedToCore(
-      Taskwifi_udp, "wifi_udp", 20000 // Stack size
-      ,
-      NULL, 1 // Priority
-      ,
-      NULL, ARDUINO_RUNNING_CORE);
+    Taskwifi_udp, "wifi_udp", 20000  // Stack size
+    ,
+    NULL, 1  // Priority
+    ,
+    NULL, ARDUINO_RUNNING_CORE);
 
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
 }
@@ -528,8 +513,7 @@ void setup()
 // End setup
 //____________________________________________________________________________________________
 
-void loop()
-{
+void loop() {
   // Empty. Things are done in Tasks.
 }
 
@@ -543,56 +527,51 @@ void loop()
 //____________________________________________________________________________________________
 //
 
-void TaskUI(void *pvParameters) // This is the task UI.
+void TaskUI(void *pvParameters)  // This is the task UI.
 {
   (void)pvParameters;
 
   // init watch dog
-  esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL);               // add current thread to WDT watch
+  esp_task_wdt_init(WDT_TIMEOUT, true);  // enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL);                // add current thread to WDT watch
 
-  for (;;) // A Task shall never return or exit.
+  for (;;)  // A Task shall never return or exit.
   {
 
     unsigned int numberOfSamples = 0;
     sumV = 0;
     sumI = 0;
     sumP = 0;
-    unsigned int time_now_second = millis() / 1000; // timer in second
+    unsigned int time_now_second = millis() / 1000;  // timer in second
 
     // Count 20 zero cross to calculate U / I / P
 
-    if (zero_crossCount >= totalCount)
-    {
+    if (zero_crossCount >= totalCount) {
       zero_crossCount = 0;
     }
 
     // Value are measure during totalcount half period
-    while (zero_crossCount < totalCount)
-    {
-      if (zero_cross_flag == true)
-      { // Half period counter
+    while (zero_crossCount < totalCount) {
+      if (zero_cross_flag == true) {  // Half period counter
         zero_cross_flag = false;
         zero_crossCount++;
       }
 
-      numberOfSamples++; // counter of samples U and I
+      numberOfSamples++;  // counter of samples U and I
 
-      memo_readV = readV;                       //
-      readV = analogRead(voltageSensorPin) / 4; // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
+      memo_readV = readV;                        //
+      readV = analogRead(voltageSensorPin) / 4;  // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
 
-      if (memo_readV == 0 && readV == 0)
-      {
+      if (memo_readV == 0 && readV == 0) {
         esp_task_wdt_reset();
         break;
-      }                                         // exit the while if no powersupply
-      readI = analogRead(currentSensorPin) / 4; // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
+      }                                          // exit the while if no powersupply
+      readI = analogRead(currentSensorPin) / 4;  // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
 
       // RMS Current and Voltage
 
-      if (CALIBRATION == true)
-      {                                                //
-        sqV = (readV - ADC_V_0V) * (readV - ADC_V_0V); // ADC_V_0V ==> 0volt
+      if (CALIBRATION == true) {                        //
+        sqV = (readV - ADC_V_0V) * (readV - ADC_V_0V);  // ADC_V_0V ==> 0volt
         sumV += sqV;
         sqI = (readI - ADC_I_0A) * (readI - ADC_I_0A);
         sumI += sqI;
@@ -604,37 +583,35 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
       // function delay 2msec
 
-      if (first_it_zero_cross == true) // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
+      if (first_it_zero_cross == true)  // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
       {
 
         it_elapsed = millis() + wait_it_limit;
 
-        
-        first_it_zero_cross = false; // flag for IT zero_cross
+
+        first_it_zero_cross = false;  // flag for IT zero_cross
         wait_2msec = true;
       }
 
-      if (wait_2msec == true && long(millis() - it_elapsed) >= 0) // check if delay > 3msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
+      if (wait_2msec == true && long(millis() - it_elapsed) >= 0)  // check if delay > 3msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
       {
 
         attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
         wait_2msec = false;
       }
 
-    } // end while sur zero_crossCount
+    }  // end while sur zero_crossCount
 
     // Power calculation
 
-    if (numberOfSamples > 0)
-    {
-      if (CALIBRATION == true)
-      {
+    if (numberOfSamples > 0) {
+      if (CALIBRATION == true) {
         V = Vcalibration * sqrt(sumV / numberOfSamples);
         I = Icalibration * sqrt(sumI / numberOfSamples);
       }
       rPower = Vcalibration * Icalibration * sumP / numberOfSamples;
 
-      Power_wifi = rPower / 1000; // Power wifi using float
+      Power_wifi = rPower / 1000;  // Power wifi using float
     }
 
     //____________________________________________________________________________________________
@@ -645,19 +622,15 @@ void TaskUI(void *pvParameters) // This is the task UI.
     //
     // dimstep calculation.
     //
-    if (rPower > 0)
-    {
+    if (rPower > 0) {
       dimstep = (rPower / 1000) / reaction_coeff + 1;
-    }
-    else
-    {
+    } else {
       dimstep = 1 - (rPower / 1000) / reaction_coeff;
     }
 
     // when rPower is less than tresholdP ==> unlalanced power must increased ==> DIM must be reduced
 
-    if (rPower < tresholdP)
-    {
+    if (rPower < tresholdP) {
       if (dim > dimstep)
         dim -= dimstep;
       else
@@ -666,27 +639,23 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
     // when rPower is higher than tresholdP ==> unlalanced power must decreased ==> DIM must be increasad
 
-    else if (rPower > tresholdP)
-    {
+    else if (rPower > tresholdP) {
       if (dim + dimstep < dimmax)
         dim += dimstep;
       else
         dim = dimmax;
     }
 
-    if (dim < 1)
-    {
+    if (dim < 1) {
       digitalWrite(limiteLED, HIGH);
-    } // if dim is at the minimum, control regulation is at the maximum
-    else
-    {
+    }  // if dim is at the minimum, control regulation is at the maximum
+    else {
       digitalWrite(limiteLED, LOW);
     }
     // when rPower is higher than Max power allowed on the grid Relay2 is activated
 
-    if ( Power_wifi > PowerMax )
-    {
-      digitalWrite(unballast_relay2, HIGH); // set relay 2
+    if (Power_wifi > PowerMax) {
+      digitalWrite(unballast_relay2, HIGH);  // set relay 2
       relay_2 = true;
     }
     // Value to used by the timer interrupt due to real phase between interruption and mains
@@ -696,113 +665,100 @@ void TaskUI(void *pvParameters) // This is the task UI.
     // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
     //  a thershold is added using dim_min and dim_max
     //
-    if (long(millis() - unballasting_time > unballasting_timeout))
-    {
+    if (long(millis() - unballasting_time > unballasting_timeout)) {
 
-      if (dim < unballasting_dim_min) // DIM is minimum => power in SSR is maximum
+      if (dim < unballasting_dim_min)  // DIM is minimum => power in SSR is maximum
       {
 
-        if (unballasting_counter > 10) // dim is < unballasting_dim_min during 10 half period
+        if (unballasting_counter > 10)  // dim is < unballasting_dim_min during 10 half period
         {
 
-          
-            digitalWrite(unballast_relay1, HIGH); // set relay 1
-            relay_1 = true;
-            unballasting_counter = 0;
-            unballasting_time = millis();
-          }
+
+          digitalWrite(unballast_relay1, HIGH);  // set relay 1
+          relay_1 = true;
+          unballasting_counter = 0;
+          unballasting_time = millis();
+        }
         unballasting_counter++;
       }
-        
-    
+
+
       //
-      if (dim > unballasting_dim_max)
-      {
+      if (dim > unballasting_dim_max) {
         //
-        if (unballasting_counter > 10) //
+        if (unballasting_counter > 10)  //
         {
-            digitalWrite(unballast_relay1, LOW);
-            relay_1 = false;
-            unballasting_time = millis();
-            unballasting_counter = 0;
-          
+          digitalWrite(unballast_relay1, LOW);
+          relay_1 = false;
+          unballasting_time = millis();
+          unballasting_counter = 0;
         }
         unballasting_counter++;
       }
       //
       // relay2 verification, if power on the grid is lessthan PowerMax-Power_water_heater (6000-3000W)
       //
-      if (relay_2 == true)
-      {
-        if (Power_wifi < (PowerMax-Power_water_heater))
-        {
+      if (relay_2 == true) {
+        if (Power_wifi < (PowerMax - Power_water_heater)) {
           digitalWrite(unballast_relay2, LOW);
           relay_2 = false;
         }
       }
-   }
+    }
 
     // meam_power calculation for MQTT 10 sec
-    if (long(millis() - mean_power_time > mean_power_timing))
-    {
+    if (long(millis() - mean_power_time > mean_power_timing)) {
       mean_power_MQTT = (mean_power / mean_power_counter);
       mean_power = 0;
       mean_power_counter = 0;
       mean_power_time = millis();
-      send_MQTT = true; // ready to send UDP
+      send_MQTT = true;  // ready to send UDP
       Serial.print("mean_power_mq ");
-      Serial.println(mean_power_MQTT); // MQTT data
+      Serial.println(mean_power_MQTT);  // MQTT data
     }
 
-    else
-    {
+    else {
       mean_power = mean_power + Power_wifi;
       mean_power_counter++;
     }
 
     // meam_power calculation for MQTT 5mn
-    if (long(millis() - mean_power_time_5mn > mean_power_timing_5mn))
-    {
+    if (long(millis() - mean_power_time_5mn > mean_power_timing_5mn)) {
       mean_power_MQTT_5mn = (mean_power_5mn / mean_power_counter_5mn);
       mean_power_5mn = 0;
       mean_power_counter_5mn = 0;
       mean_power_time_5mn = millis();
-      send_MQTT_5mn = true; // ready to send UDP
+      send_MQTT_5mn = true;  // ready to send UDP
       Serial.print("mean_power_mq_5mn ");
-      Serial.println(mean_power_MQTT_5mn); // MQTT data
+      Serial.println(mean_power_MQTT_5mn);  // MQTT data
     }
 
-    else
-    {
+    else {
       mean_power_5mn = mean_power_5mn + Power_wifi;
       mean_power_counter_5mn++;
     }
 
     // meam_power calculation for MQTT 10mn
-    if (long(millis() - mean_power_time_10mn > mean_power_timing_10mn))
-    {
+    if (long(millis() - mean_power_time_10mn > mean_power_timing_10mn)) {
       mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
       mean_power_10mn = 0;
       mean_power_counter_10mn = 0;
       mean_power_time_10mn = millis();
-      send_MQTT_10mn = true; // ready to send UDP
+      send_MQTT_10mn = true;  // ready to send UDP
       Serial.print("mean_power_mq_10mn ");
-      Serial.println(mean_power_MQTT_10mn); // MQTT data
+      Serial.println(mean_power_MQTT_10mn);  // MQTT data
     }
 
-    else
-    {
+    else {
       mean_power_10mn = mean_power_10mn + Power_wifi;
       mean_power_counter_10mn++;
     }
 
     // Display each 2 seconds
 
-    if (time_now_second >= memo_temps + 2)
-    {
+    if (time_now_second >= memo_temps + 2) {
 
-      if ((CALIBRATION == false) || (VERBOSE == false))
-      {
+      if ((CALIBRATION == false) || (VERBOSE == false)) {
         memo_temps = time_now_second;
 
         /*
@@ -817,7 +773,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
           Serial.println (i_counter) ;
         */
 
-        display.setColor(BLACK); // clear first line
+        display.setColor(BLACK);  // clear first line
         display.fillRect(0, 0, 128, 22);
         display.setColor(WHITE);
 
@@ -828,8 +784,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
     //
 
-    if (CALIBRATION == true)
-    {
+    if (CALIBRATION == true) {
       Serial.print(V);
       Serial.print("  |  ");
       Serial.print(I / 1000);
@@ -842,8 +797,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
       display.drawString(0, 22, String(int(Power_wifi)));
       display.display();
     }
-    if (VERBOSE == true)
-    {
+    if (VERBOSE == true) {
       Serial.print(rPower / 1000);
       Serial.print("  ||     ");
       Serial.print(dimstep);
@@ -863,10 +817,9 @@ void TaskUI(void *pvParameters) // This is the task UI.
       Serial.println();
     }
 
-    else
-    {
+    else {
       delay(1);
-    } // needed for stability
+    }  // needed for stability
 
     // update switches winter, verbose, calibration
 
@@ -876,44 +829,41 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
     CALIBRATION = digitalRead(pin_calibration);
 
-    esp_task_wdt_reset(); // reset watch dog
+    esp_task_wdt_reset();  // reset watch dog
   }
 
-} // end task UI
+}  // end task UI
 
 /*--------------------------------------------------*/
 /*---------------------- Tasks Wifi ----------------*/
 /*--------------------------------------------------*/
 //
 
-void Taskwifi_udp(void *pvParameters) // This is a task.
+void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
   (void)pvParameters;
 
-  for (;;) // A Task shall never return or exit.
+  for (;;)  // A Task shall never return or exit.
   {
 
-    while (send_MQTT == false)
-    {
-      wifi_wait = 0; // loop to wait update DIM
-      if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
+    while (send_MQTT == false) {
+      wifi_wait = 0;                                  // loop to wait update DIM
+      if (long(millis() - MQTT_time > MQTT_timeout))  //timeout MQTT 3 minutes
       {
-        dim_test = 1 ;
-        sprintf(mystring_dim, "%g", dim_test); //send dim_test in case off timeout
+        dim_test = 1;
+        sprintf(mystring_dim, "%g", dim_test);  //send dim_test in case off timeout
         client.publish(topic_dim, mystring_dim, true);
-        delay (100000)  ; // delay 100 secondes
-        ESP.restart(); 
+        delay(100000);  // delay 100 secondes
+        ESP.restart();
 
-          break;
+        break;
       }
-      
     }
-    
+
     MQTT_time = millis();
 
-    if (Connect_MQTT()) 
-    {
-        /*
+    if (Connect_MQTT()) {
+      /*
       if (send_MQTT == true)
       {
         send_MQTT = false;
@@ -934,57 +884,51 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
         client.publish(topic_10mn, mystring_power_wifi_10mn, true);
       }
       */
-     // for test only
-      if (send_MQTT == true)
-      {
+      // for test only
+      if (send_MQTT == true) {
         send_MQTT = false;
         sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
         client.publish(topic_test, mystring_power_wifi_10mn, true);
-        dim_test = 0 ;
-        sprintf(mystring_dim, "%g", dim_test); //send dim_test
+        dim_test = 0;
+        sprintf(mystring_dim, "%g", dim_test);  //send dim_test
         client.publish(topic_dim, mystring_dim, true);
       }
-
     };
   }
   //OTA
 
-ElegantOTA.loop();
+  ElegantOTA.loop();
 
-} // end for loop wifi
+}  // end for loop wifi
 
-bool Connect_MQTT()
-{
-  if (client.connected())
-  {
+bool Connect_MQTT() {
+  if (client.connected()) {
     return true;
   }
 
-  while (!client.connected())
-  {
+  while (!client.connected()) {
     /*Serial.print(" state MQTT ");
     Serial.println(client.state());
     Serial.print(" state wifi ");
     Serial.println(WiFi.status());
     */
     client.disconnect();
-    delay(2000); // wait 2 secondes before connecting again.
+    delay(2000);  // wait 2 secondes before connecting again.
 
     WiFi.disconnect();
-      delay(2000);
+    delay(2000);
     Serial.println("disConnecting to WiFi..");
-        // init wifi
+    // init wifi
     WiFi.mode(WIFI_STA);
-    WiFi.setHostname(hostname.c_str()); //define hostname
+    WiFi.setHostname(hostname.c_str());  //define hostname
     WiFi.begin(ssid, password);
-      while (WiFi.status() != WL_CONNECTED)
-      {
-       delay(500);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
       Serial.println("Connecting to WiFi..");
       display.drawString(0, 0, "connecting to WiFi...");
-      }
-      Serial.println("Connected to the WiFi network");
-      display.drawString(0, 0, "connected to WiFi");
+    }
+    Serial.println("Connected to the WiFi network");
+    display.drawString(0, 0, "connected to WiFi");
 
     String l_client_id = client_id;
     l_client_id += String(WiFi.macAddress());
@@ -995,15 +939,12 @@ bool Connect_MQTT()
     Serial.printf("The client %s connects to the public MQTT broker ", l_client_id.c_str());
     Serial.println();
 
-    if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password))
-    {
+    if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password)) {
       Serial.println("Public EMQX MQTT broker connected");
       display.drawString(0, 22, "MQTT OK");
-      
+
       return true;
-     }
-    else
-    {
+    } else {
       Serial.print("failed with state ");
       Serial.println(client.state());
       display.drawString(0, 22, "MQTT KO " + client.state());
