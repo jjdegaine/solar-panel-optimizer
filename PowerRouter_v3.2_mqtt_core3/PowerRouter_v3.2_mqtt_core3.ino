@@ -70,7 +70,8 @@ version 2.3 SSR LED improvement
 version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
-version 3.2 2026-02 test improvement timeout mqtt and OTA
+version 3.2 2026-02 test improvement timeout mqtt core 3 ESP32 and OTA
+// https://randomnerdtutorials.com/esp32-ota-elegantota-arduino/
 */
 
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
@@ -90,9 +91,18 @@ version 3.2 2026-02 test improvement timeout mqtt and OTA
 #include <esp_task_wdt.h>  // watch dog
 
 //OTA
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <ElegantOTA.h>
+//#include <AsyncTCP.h>
+//#include <ESPAsyncWebServer.h>
+//#include <ElegantOTA.h>
+
+#include <ESPmDNS.h>
+#include <NetworkUdp.h>
+#include <ArduinoOTA.h>
+
+const int ledPin = 2; // Built-in LED pin for most ESP32 boards
+unsigned long prevMillis = 0;  // a helper variable for the timing
+const long interval = 250;  // interval at which to blink the led in milliseconds
+int ledState = LOW;  // state of the LED
 
 // oled
 
@@ -455,6 +465,9 @@ void setup() {  // Begin setup
   digitalWrite(unballast_relay1, LOW);  // unballast relay 1 init
   digitalWrite(unballast_relay2, LOW);  // unballast relay 2 init
 
+  //OTA
+  // pinMode(ledPin, OUTPUT); //led OTA
+
   // init wifi
   WiFi.mode(WIFI_STA);
   WiFi.setHostname(hostname.c_str());  //define hostname
@@ -468,7 +481,7 @@ void setup() {  // Begin setup
   display.drawString(0, 0, "connected to WiFi");
 
   //OTA server
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+  /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { 
     request->send(200, "text/plain", "ESP routeur");
   });
 
@@ -476,15 +489,24 @@ void setup() {  // Begin setup
   Serial.println("HTTP server started OTA");
 
   ElegantOTA.begin(&server);  // Start ElegantOTA
+*/
+
+
 
   // client.setCallback(callback);
   Connect_MQTT();
 
-  // init timer
-  timer = timerBegin(0, 80, true);
-  timerAttachInterrupt(timer, &onTimer, true);
-  timerAlarmWrite(timer, periodStep, true);
-  timerAlarmEnable(timer);
+  // init timer en core 2
+  //timer = timerBegin(0, 80, true);
+  //timerAttachInterrupt(timer, &onTimer, true);
+  //timerAlarmWrite(timer, periodStep, true);
+  //timerAlarmEnable(timer);
+
+  // init timer en core 3
+  timerBegin(1000000);
+  timerAttachInterrupt(timer, &onTimer);
+  timerAlarm(timer, periodStep, true, 0);
+
 
   // init interrupt on PIN  zero_crossing
   attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
@@ -508,6 +530,46 @@ void setup() {  // Begin setup
 
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
 }
+
+ /* ArduinoOTA
+    .onStart([]() {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH) {
+        type = "sketch";
+      } else {  // U_SPIFFS
+        type = "filesystem";
+      }
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial.println("Start updating " + type);
+    })
+    .onEnd([]() {
+      Serial.println("\nEnd");
+    })
+    .onProgress([](unsigned int progress, unsigned int total) {
+      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    })
+    .onError([](ota_error_t error) {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) {
+        Serial.println("Auth Failed");
+      } else if (error == OTA_BEGIN_ERROR) {
+        Serial.println("Begin Failed");
+      } else if (error == OTA_CONNECT_ERROR) {
+        Serial.println("Connect Failed");
+      } else if (error == OTA_RECEIVE_ERROR) {
+        Serial.println("Receive Failed");
+      } else if (error == OTA_END_ERROR) {
+        Serial.println("End Failed");
+      }
+    });
+
+  ArduinoOTA.begin();
+
+  Serial.println("Ready");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+*/
 
 //____________________________________________________________________________________________
 // End setup
@@ -897,7 +959,19 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   }
   //OTA
 
-  ElegantOTA.loop();
+  //ElegantOTA.loop();
+  /*ArduinoOTA.handle();
+
+  unsigned long currentMillis = millis();
+  if (currentMillis - prevMillis >= interval) {
+    // save the last time the LED was blinked
+    prevMillis = currentMillis;
+    // if the LED is off turn it on and vice-versa
+    ledState = !ledState;
+    // update LED state
+    digitalWrite(ledPin,  ledState);
+  }
+    */
 
 }  // end for loop wifi
 
