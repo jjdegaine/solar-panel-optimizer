@@ -91,10 +91,15 @@ version 3.2 2026-02 test improvement timeout mqtt core 3 ESP32 and OTA
 //#include <esp_task_wdt.h>  // watch dog
 
 //OTA
-//#include <AsyncTCP.h>
-//#include <ESPAsyncWebServer.h>
-//#include <ElegantOTA.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <ElegantOTA.h>
 
+AsyncWebServer server(80);
+
+//autre OTA
+
+/*
 #include <ESPmDNS.h>
 #include <NetworkUdp.h>
 #include <ArduinoOTA.h>
@@ -103,6 +108,7 @@ const int ledPin = 2; // Built-in LED pin for most ESP32 boards
 unsigned long prevMillis = 0;  // a helper variable for the timing
 const long interval = 250;  // interval at which to blink the led in milliseconds
 int ledState = LOW;  // state of the LED
+*/
 
 // oled
 
@@ -115,7 +121,7 @@ const int channel = 4;  // define channel 4 seems to be the best for wifi....
 
 const char *ssid = "freebox_ZPRLHQ_2GEXT";  // SSID WiFi
 const char *password = "Cairojude58";       // mot de passe WiFi
-String hostname = "ESP32 routeur";
+const char* hostname = "ESP32 routeur";
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";
@@ -481,8 +487,9 @@ void setup() {  // Begin setup
   // pinMode(ledPin, OUTPUT); //led OTA
 
   // init wifi
+  
+  WiFi.setHostname(hostname);  //define hostname
   WiFi.mode(WIFI_STA);
-  WiFi.setHostname(hostname.c_str());  //define hostname
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -491,17 +498,19 @@ void setup() {  // Begin setup
   }
   Serial.println("Connected to the WiFi network");
   display.drawString(0, 0, "connected to WiFi");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
 
   //OTA server
-  /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { 
-    request->send(200, "text/plain", "ESP routeur");
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { 
+    request->send(200, "text/plain", "ESP routeur server OTA");
   });
 
   server.begin();
   Serial.println("HTTP server started OTA");
 
   ElegantOTA.begin(&server);  // Start ElegantOTA
-*/
+
 
 
 
@@ -987,7 +996,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   }
   //OTA
 
-  //ElegantOTA.loop();
+  ElegantOTA.loop();
   /*ArduinoOTA.handle();
 
   unsigned long currentMillis = millis();
@@ -1021,8 +1030,9 @@ bool Connect_MQTT() {
     delay(2000);
     Serial.println("disConnecting to WiFi..");
     // init wifi
+    
+    WiFi.setHostname(hostname);  //define hostname
     WiFi.mode(WIFI_STA);
-    WiFi.setHostname(hostname.c_str());  //define hostname
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
@@ -1030,6 +1040,8 @@ bool Connect_MQTT() {
       display.drawString(0, 0, "connecting to WiFi...");
     }
     Serial.println("Connected to the WiFi network");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
     display.drawString(0, 0, "connected to WiFi");
 
     String l_client_id = client_id;
