@@ -88,7 +88,7 @@ version 3.2 2026-02 test improvement timeout mqtt core 3 ESP32 and OTA
 
 #include "PubSubClient.h"  //wifi mqtt
 
-#include <esp_task_wdt.h>  // watch dog
+//#include <esp_task_wdt.h>  // watch dog
 
 //OTA
 //#include <AsyncTCP.h>
@@ -256,7 +256,7 @@ volatile bool wait_2msec;                   // flag no IT on falling edge
 
 volatile bool led_zero = false;
 
-#define WDT_TIMEOUT 15  // watch dog time
+//#define WDT_TIMEOUT 10000  // watch dog time
 
 
 // Voltage and current measurement  :
@@ -314,6 +314,15 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 // init external PIN IT
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+
+/*
+// init wdt core 3
+  esp_task_wdt_config_t twdt_config = {
+    .timeout_ms = WDT_TIMEOUT,   //  maintenant en millisecondes
+    .idle_core_mask  = (1 << portNUM_PROCESSORS) - 1, // Tous les cœurs
+    .trigger_panic = true,
+  };
+*/
 
 // define two tasks for UI & wifi_udp (mqtt)
 void TaskUI(void *pvParameters);
@@ -514,16 +523,13 @@ void setup() {  // Begin setup
   // init interrupt on PIN  zero_crossing
   attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
 
-// init wdt core 3
-  esp_task_wdt_config_t wdt_config = {
-    .timeout_ms = WDT_TIMEOUT * 1000,   // ⚠️ maintenant en millisecondes
-    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
-    .trigger_panic = true
-  };
-//init watch dog esp core 3
-  esp_task_wdt_init(&wdt_config);
-  esp_task_wdt_add(NULL);
+  /*
+    esp_task_wdt_deinit();          // Désactiver le WDT par défaut
+    esp_task_wdt_init(&twdt_config); // Initialiser avec notre config
+    //esp_task_wdt_add(NULL);         // Ajouter le thread courant au WDT
+*/
 
+  
   // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
     TaskUI, "TaskUI"  // A name just for humans
@@ -590,6 +596,7 @@ void setup() {  // Begin setup
 
 void loop() {
   // Empty. Things are done in Tasks.
+  
 }
 
 /*--------------------------------------------------*/
@@ -608,7 +615,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
   // init watch dog esp core 2
   //esp_task_wdt_init(WDT_TIMEOUT, true);  // enable panic so ESP32 restarts
-  //esp_task_wdt_add(NULL);                // add current thread to WDT watch
+   // init watch dog esp core 3
+ // esp_task_wdt_add(NULL);                // add current thread to WDT watch
 
   
 
@@ -640,7 +648,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       readV = analogRead(voltageSensorPin) / 4;  // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
 
       if (memo_readV == 0 && readV == 0) {
-        esp_task_wdt_reset();
+        //esp_task_wdt_reset();
         break;
       }                                          // exit the while if no powersupply
       readI = analogRead(currentSensorPin) / 4;  // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
@@ -906,7 +914,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
     CALIBRATION = digitalRead(pin_calibration);
 
-    esp_task_wdt_reset();  // reset watch dog
+   // esp_task_wdt_reset();  // reset watch dog
   }
 
 }  // end task UI
@@ -919,12 +927,17 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
   (void)pvParameters;
-
+  
+  //esp_task_wdt_add(NULL); 
+  
   for (;;)  // A Task shall never return or exit.
   {
-    esp_task_wdt_reset();
+    
     while (send_MQTT == false) {
-      wifi_wait = 0;                                  // loop to wait update DIM
+      wifi_wait = 0;   
+                                     // loop to wait update MQTT
+      //esp_task_wdt_reset();
+
       if (long(millis() - MQTT_time > MQTT_timeout))  //timeout MQTT 3 minutes
       {
         dim_test = 1;
