@@ -329,7 +329,8 @@ void Taskwifi_udp(void *pvParameters);
 
 void IRAM_ATTR zero_cross_detect() {  //
   portENTER_CRITICAL_ISR(&mux);
-  // digitalWrite(limiteLED, HIGH) ; for scope measurement
+
+  digitalWrite(limiteLED, HIGH) ; //for scope measurement
 
   detachInterrupt(digitalPinToInterrupt(zeroCrossPin));  // invalid interrupt during 3msec to avoid false interrupt during falling edge
 
@@ -338,7 +339,9 @@ void IRAM_ATTR zero_cross_detect() {  //
   first_it_zero_cross = true;  // flag to start a delay 2msec
   led_zero = true;
   // digitalWrite(SCRLED, LOW); //reset SSR LED
-  // digitalWrite(limiteLED, LOW) ; for scope measurement
+
+  digitalWrite(limiteLED, LOW) ; //for scope measurement
+
   portEXIT_CRITICAL_ISR(&mux);
 }
 
@@ -511,6 +514,16 @@ void setup() {  // Begin setup
   // init interrupt on PIN  zero_crossing
   attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
 
+// init wdt core 3
+  esp_task_wdt_config_t wdt_config = {
+    .timeout_ms = WDT_TIMEOUT * 1000,   // ⚠️ maintenant en millisecondes
+    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+    .trigger_panic = true
+  };
+//init watch dog esp core 3
+  esp_task_wdt_init(&wdt_config);
+  esp_task_wdt_add(NULL);
+
   // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
     TaskUI, "TaskUI"  // A name just for humans
@@ -593,9 +606,11 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 {
   (void)pvParameters;
 
-  // init watch dog
-  esp_task_wdt_init(WDT_TIMEOUT, true);  // enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL);                // add current thread to WDT watch
+  // init watch dog esp core 2
+  //esp_task_wdt_init(WDT_TIMEOUT, true);  // enable panic so ESP32 restarts
+  //esp_task_wdt_add(NULL);                // add current thread to WDT watch
+
+  
 
   for (;;)  // A Task shall never return or exit.
   {
@@ -907,7 +922,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
   for (;;)  // A Task shall never return or exit.
   {
-
+    esp_task_wdt_reset();
     while (send_MQTT == false) {
       wifi_wait = 0;                                  // loop to wait update DIM
       if (long(millis() - MQTT_time > MQTT_timeout))  //timeout MQTT 3 minutes
