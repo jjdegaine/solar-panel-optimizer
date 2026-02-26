@@ -518,7 +518,7 @@ void setup() {  // Begin setup
 
   server.begin();
   Serial.println("HTTP server started OTA");
-  Serial.println("version test OTA");
+ 
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
   //init time for reset at 00:00:
