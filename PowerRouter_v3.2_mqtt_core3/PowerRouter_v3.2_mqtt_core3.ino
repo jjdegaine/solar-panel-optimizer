@@ -88,6 +88,16 @@ version 3.2 2026-02 test improvement timeout mqtt core 3 ESP32 and OTA
 
 #include "PubSubClient.h"  //wifi mqtt
 
+// time for reset at 00:00
+#include <time.h>
+
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;      // Décalage horaire (ex: France hiver = 3600)
+const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilisé)
+
+int lastDay = -1;
+
+
 //#include <esp_task_wdt.h>  // watch dog
 
 //OTA
@@ -511,7 +521,8 @@ void setup() {  // Begin setup
 
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
-
+  //init time for reset at 00:00:
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
 
   // client.setCallback(callback);
@@ -807,8 +818,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       mean_power_counter = 0;
       mean_power_time = millis();
       send_MQTT = true;  // ready to send UDP
-      Serial.print("mean_power_mq ");
-      Serial.println(mean_power_MQTT);  // MQTT data
+      //Serial.print("mean_power_mq ");
+      //Serial.println(mean_power_MQTT);  // MQTT data
     }
 
     else {
@@ -823,8 +834,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       mean_power_counter_5mn = 0;
       mean_power_time_5mn = millis();
       send_MQTT_5mn = true;  // ready to send UDP
-      Serial.print("mean_power_mq_5mn ");
-      Serial.println(mean_power_MQTT_5mn);  // MQTT data
+      //Serial.print("mean_power_mq_5mn ");
+      //Serial.println(mean_power_MQTT_5mn);  // MQTT data
     }
 
     else {
@@ -952,7 +963,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         dim_test = 1;
         sprintf(mystring_dim, "%g", dim_test);  //send dim_test in case off timeout
         client.publish(topic_dim, mystring_dim, true);
-        delay(100000);  // delay 100 secondes
+        Serial.println("time out boucle mqtt");
+        delay(10000);  // delay 10 secondes
         ESP.restart();
 
         break;
@@ -991,6 +1003,28 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         dim_test = 0;
         sprintf(mystring_dim, "%g", dim_test);  //send dim_test
         client.publish(topic_dim, mystring_dim, true);
+      }
+
+      //reset at 00:00
+      struct tm timeinfo;
+
+      if (!getLocalTime(&timeinfo)) {
+        Serial.println("Erreur récupération heure");
+        delay(1000);
+        return;
+      }
+
+      int currentDay = timeinfo.tm_mday;
+      int currentHour = timeinfo.tm_hour;
+      int currentMinute = timeinfo.tm_min;
+      int currentSecond = timeinfo.tm_sec;
+
+      // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui
+      if (currentHour == 0 && currentMinute == 0 && currentSecond < 5 && currentDay != lastDay) {
+        Serial.println("Redémarrage quotidien...");
+        lastDay = currentDay;
+        delay(1000);
+        ESP.restart();
       }
     };
   }
