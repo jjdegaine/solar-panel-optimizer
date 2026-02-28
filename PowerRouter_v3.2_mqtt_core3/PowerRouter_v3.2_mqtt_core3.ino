@@ -1003,9 +1003,12 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         dim_test = 0;
         sprintf(mystring_dim, "%g", dim_test);  //send dim_test
         client.publish(topic_dim, mystring_dim, true);
-      }
+      }   
+      Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+    };
+  }
 
-      //reset at 00:00
+  //reset at 00:00
       struct tm timeinfo;
 
       if (!getLocalTime(&timeinfo)) {
@@ -1026,8 +1029,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         delay(1000);
         ESP.restart();
       }
-    };
-  }
+  
   //OTA
 
   ElegantOTA.loop();
