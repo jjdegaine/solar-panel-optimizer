@@ -395,10 +395,12 @@ void IRAM_ATTR onTimer() {
       i_counter++;
     }  // If the dimming value has not been reached, incriment the counter
 
- digitalWrite(limiteLED, LOW) ; //for scope measurement
+  
 
   }  // End zero_cross check
 
+  digitalWrite(limiteLED, LOW) ; //for scope measurement
+  
   portEXIT_CRITICAL_ISR(&timerMux);
 }
 
