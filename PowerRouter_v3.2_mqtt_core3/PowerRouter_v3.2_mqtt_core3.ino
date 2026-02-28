@@ -511,7 +511,7 @@ void setup() {  // Begin setup
   });
 
   server.begin();
-  Serial.println("HTTP server started OTA version 2026_02_28_10_26");
+  Serial.println("HTTP server started OTA version 2026_02_28_h13_mn40");
  
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
@@ -532,7 +532,7 @@ void setup() {  // Begin setup
   timer = timerBegin(1000000);
   timerAttachInterrupt(timer, &onTimer);
   timerAlarm(timer, periodStep, true, 0);
-
+  timerStart(timer);
 
   // init interrupt on PIN  zero_crossing
   attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
@@ -709,10 +709,10 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     }
 
     if (dim < 1) {
-      digitalWrite(limiteLED, HIGH);
+      //digitalWrite(limiteLED, HIGH);
     }  // if dim is at the minimum, control regulation is at the maximum
     else {
-      digitalWrite(limiteLED, LOW);
+      //digitalWrite(limiteLED, LOW);
     }
     // when rPower is higher than Max power allowed on the grid Relay2 is activated
 
