@@ -247,7 +247,7 @@ unsigned long wait_it_limit = 3;  // delay 3msec
 unsigned long it_elapsed;         // counter for delay 3 msec
 
 //core 2 timer 1usec
-//char periodStep = 73;  //  calibration using oscilloscope
+//char periodStep = 73;  //  73 * 127 => 10msec calibration using oscilloscope
 //core 3
 char periodStep = 10000; // 73?
 

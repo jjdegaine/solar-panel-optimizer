@@ -7,12 +7,12 @@
 #include <Esp.h>
 
 hw_timer_t *timer = NULL;
-volatile bool flag_10ms = false;
+volatile bool flag_timer = false;
 
 // Routine d'interruption
 void IRAM_ATTR onTimer()
 {
-  flag_10ms = true;   // faire le minimum dans l'ISR !
+  flag_timer = true;   // faire le minimum dans l'ISR !
 }
 
 void setup()
@@ -25,19 +25,19 @@ void setup()
   // Attache l'interruption
   timerAttachInterrupt(timer, &onTimer);
 
-  // Déclenche toutes les 10 000 µs = 10 ms
-  timerAlarm(timer, 10000, true, 0);
+  // Déclenche toutes les 73 µs = 73*128 => 10ms
+  timerAlarm(timer, 73 , true, 0);
 
   timerStart(timer);
 }
 
 void loop()
 {
-  if (flag_10ms)
+  if (flag_timer)
   {
-    flag_10ms = false;
+    flag_timer = false;
 
-    // Code exécuté toutes les 10 ms
-    Serial.println("Tick 10 ms");
+    // Code exécuté toutes les 73 us
+    //Serial.println("Tick 73us");
   }
 }
