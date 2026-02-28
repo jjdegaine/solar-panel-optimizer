@@ -246,10 +246,10 @@ byte wifi_wait = 0;  // used for the waiting loop on task wifi
 unsigned long wait_it_limit = 3;  // delay 3msec
 unsigned long it_elapsed;         // counter for delay 3 msec
 
-//core 2 timer 10msec
-//char periodStep = 73;  // 73 * 127 = 10msec, calibration using oscilloscope
+//core 2 timer 1usec
+//char periodStep = 73;  //  calibration using oscilloscope
 //core 3
-char periodStep = 10000;
+char periodStep = 10000; // 73?
 
 volatile int i_counter = 0;                 // Variable to use as a counter for SSR
 volatile int i = 0;                         // Variable to use as a counter for LCD
