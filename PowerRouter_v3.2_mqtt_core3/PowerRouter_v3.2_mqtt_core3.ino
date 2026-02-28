@@ -107,19 +107,6 @@ int lastDay = -1;
 
 AsyncWebServer server(80);
 
-//autre OTA
-
-/*
-#include <ESPmDNS.h>
-#include <NetworkUdp.h>
-#include <ArduinoOTA.h>
-
-const int ledPin = 2; // Built-in LED pin for most ESP32 boards
-unsigned long prevMillis = 0;  // a helper variable for the timing
-const long interval = 250;  // interval at which to blink the led in milliseconds
-int ledState = LOW;  // state of the LED
-*/
-
 // oled
 
 #include "SSD1306.h"
@@ -259,7 +246,10 @@ byte wifi_wait = 0;  // used for the waiting loop on task wifi
 unsigned long wait_it_limit = 3;  // delay 3msec
 unsigned long it_elapsed;         // counter for delay 3 msec
 
-char periodStep = 73;  // 73 * 127 = 10msec, calibration using oscilloscope
+//core 2 timer 10msec
+//char periodStep = 73;  // 73 * 127 = 10msec, calibration using oscilloscope
+//core 3
+char periodStep = 10000;
 
 volatile int i_counter = 0;                 // Variable to use as a counter for SSR
 volatile int i = 0;                         // Variable to use as a counter for LCD
@@ -537,7 +527,7 @@ void setup() {  // Begin setup
   //timerAlarmEnable(timer);
 
   // init timer en core 3
-  timerBegin(1000000);
+  timer = timerBegin(1000000);
   timerAttachInterrupt(timer, &onTimer);
   timerAlarm(timer, periodStep, true, 0);
 
