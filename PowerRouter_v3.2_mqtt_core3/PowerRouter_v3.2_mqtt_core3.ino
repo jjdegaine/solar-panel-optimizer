@@ -355,7 +355,7 @@ void Taskwifi_udp(void *pvParameters);
 void IRAM_ATTR zero_cross_detect() {  //
   portENTER_CRITICAL_ISR(&mux);
 
-  digitalWrite(limiteLED, HIGH) ; //for scope measurement
+  //digitalWrite(limiteLED, HIGH) ; //for scope measurement
 
   detachInterrupt(digitalPinToInterrupt(zeroCrossPin));  // invalid interrupt during 3msec to avoid false interrupt during falling edge
 
@@ -365,7 +365,7 @@ void IRAM_ATTR zero_cross_detect() {  //
   led_zero = true;
   // digitalWrite(SCRLED, LOW); //reset SSR LED
 
-  digitalWrite(limiteLED, LOW) ; //for scope measurement
+  //digitalWrite(limiteLED, LOW) ; //for scope measurement
 
   portEXIT_CRITICAL_ISR(&mux);
 }
@@ -378,6 +378,8 @@ void IRAM_ATTR zero_cross_detect() {  //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
 
+  digitalWrite(limiteLED, HIGH) ; //for scope measurement
+  
   if (led_zero == true) {
     I_led = 0;
     led_zero = false;
@@ -402,6 +404,8 @@ void IRAM_ATTR onTimer() {
     } else {
       i_counter++;
     }  // If the dimming value has not been reached, incriment the counter
+
+ digitalWrite(limiteLED, LOW) ; //for scope measurement
 
   }  // End zero_cross check
 
@@ -493,9 +497,7 @@ void setup() {  // Begin setup
   digitalWrite(unballast_relay1, LOW);  // unballast relay 1 init
   digitalWrite(unballast_relay2, LOW);  // unballast relay 2 init
 
-  //OTA
-  // pinMode(ledPin, OUTPUT); //led OTA
-
+  
   // init wifi
   
   WiFi.setHostname(hostname);  //define hostname
@@ -517,7 +519,7 @@ void setup() {  // Begin setup
   });
 
   server.begin();
-  Serial.println("HTTP server started OTA");
+  Serial.println("HTTP server started OTA version 2026_02_28_10_26");
  
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
@@ -570,45 +572,8 @@ void setup() {  // Begin setup
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
 }
 
- /* ArduinoOTA
-    .onStart([]() {
-      String type;
-      if (ArduinoOTA.getCommand() == U_FLASH) {
-        type = "sketch";
-      } else {  // U_SPIFFS
-        type = "filesystem";
-      }
+ 
 
-      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-      Serial.println("Start updating " + type);
-    })
-    .onEnd([]() {
-      Serial.println("\nEnd");
-    })
-    .onProgress([](unsigned int progress, unsigned int total) {
-      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    })
-    .onError([](ota_error_t error) {
-      Serial.printf("Error[%u]: ", error);
-      if (error == OTA_AUTH_ERROR) {
-        Serial.println("Auth Failed");
-      } else if (error == OTA_BEGIN_ERROR) {
-        Serial.println("Begin Failed");
-      } else if (error == OTA_CONNECT_ERROR) {
-        Serial.println("Connect Failed");
-      } else if (error == OTA_RECEIVE_ERROR) {
-        Serial.println("Receive Failed");
-      } else if (error == OTA_END_ERROR) {
-        Serial.println("End Failed");
-      }
-    });
-
-  ArduinoOTA.begin();
-
-  Serial.println("Ready");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-*/
 
 //____________________________________________________________________________________________
 // End setup
@@ -1035,18 +1000,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   //OTA
 
   ElegantOTA.loop();
-  /*ArduinoOTA.handle();
-
-  unsigned long currentMillis = millis();
-  if (currentMillis - prevMillis >= interval) {
-    // save the last time the LED was blinked
-    prevMillis = currentMillis;
-    // if the LED is off turn it on and vice-versa
-    ledState = !ledState;
-    // update LED state
-    digitalWrite(ledPin,  ledState);
-  }
-    */
+  
 
 }  // end for loop wifi
 
