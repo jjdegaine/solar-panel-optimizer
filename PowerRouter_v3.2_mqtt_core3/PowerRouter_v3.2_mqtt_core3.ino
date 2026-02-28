@@ -1003,25 +1003,15 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         dim_test = 0;
         sprintf(mystring_dim, "%g", dim_test);  //send dim_test
         client.publish(topic_dim, mystring_dim, true);
-      }   
+      }
+      printLocalTime();
       Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
     };
   }
 
   //reset at 00:00
-      struct tm timeinfo;
-
-      if (!getLocalTime(&timeinfo)) {
-        Serial.println("Erreur récupération heure");
-        delay(1000);
-        return;
-      }
-
-      int currentDay = timeinfo.tm_mday;
-      int currentHour = timeinfo.tm_hour;
-      int currentMinute = timeinfo.tm_min;
-      int currentSecond = timeinfo.tm_sec;
-
+      printLocalTime();
+      
       // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui
       if (currentHour == 0 && currentMinute == 0 && currentSecond < 5 && currentDay != lastDay) {
         Serial.println("Redémarrage quotidien...");
@@ -1047,6 +1037,19 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     */
 
 }  // end for loop wifi
+
+void printLocalTime(){
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+
+  }
+      int currentDay = timeinfo.tm_mday;
+      int currentHour = timeinfo.tm_hour;
+      int currentMinute = timeinfo.tm_min;
+      int currentSecond = timeinfo.tm_sec;
+}
 
 bool Connect_MQTT() {
   if (client.connected()) {
