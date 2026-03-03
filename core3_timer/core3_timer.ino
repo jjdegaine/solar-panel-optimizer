@@ -38,7 +38,10 @@ const byte SDA_PIN = 21;
 const byte CLK_PIN = 22;
 const byte limiteLED = 18;
 
+#define WDT_TIMEOUT 5  // secondes
 
+TaskHandle_t taskUIcHandle = NULL;
+TaskHandle_t taskwifi_udpHandle = NULL;
 
 
 // init timer IT
@@ -140,7 +143,12 @@ void setup()
 
   timerStart(timer);
 
-  
+  esp_task_wdt_config_t config = {
+    .timeout_ms = WDT_TIMEOUT * 1000,
+    .idle_core_mask = 0,   // ⚠️ on ne surveille PAS les idle tasks
+    .trigger_panic = true
+  };
+
 
 // work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
 // Now set up two tasks to run independently.
@@ -181,12 +189,10 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 {
   (void)pvParameters;
 
-  // init watch dog esp core 2
-  //esp_task_wdt_init(WDT_TIMEOUT, true);  // enable panic so ESP32 restarts
-   // init watch dog esp core 3
- // esp_task_wdt_add(NULL);                // add current thread to WDT watch
 
-  
+   // init watch dog esp core 3
+  esp_task_wdt_add(NULL);  // Ajoute cette tâche au WDT
+
 
   for (;;)  // A Task shall never return or exit.
   {
@@ -195,11 +201,11 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if (flag_timer)
   {
     flag_timer = false;
-
+    esp_task_wdt_reset();  // Reset WDT
     // Code exécuté toutes les 73 us
     //Serial.println("Tick 73us");
     
-    //OTA
+    
   
   }
 
@@ -212,10 +218,13 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
   (void)pvParameters;
   
-  //esp_task_wdt_add(NULL); 
   
+  esp_task_wdt_add(NULL);  // Ajoute cette tâche au WDT
+
   for (;;)  // A Task shall never return or exit.
   {
+    //OTA
     ElegantOTA.loop();
+    esp_task_wdt_reset();  
   }
 }
