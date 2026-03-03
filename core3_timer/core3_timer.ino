@@ -10,7 +10,7 @@
 
 const char *ssid = "freebox_ZPRLHQ_2GEXT";  // SSID WiFi
 const char *password = "Cairojude58";       // mot de passe WiFi
-const char* hostname = "ESP32 routeur";
+
 
 // time for reset at 00:00
 #include <time.h>
@@ -25,6 +25,8 @@ int lastDay = -1;
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <ElegantOTA.h>
+
+AsyncWebServer server(80);
 
 const char* hostname = "ESP32 test timer core 3";
 
@@ -75,14 +77,15 @@ void setup()
   Serial.println(WiFi.localIP());
 
   //OTA server
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { 
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { 
     request->send(200, "text/plain", "ESP routeur server OTA esp test timer core 3");
   });
 
   server.begin();
-  Serial.println("HTTP server started OTA version 2026_02_28_h13_mn40");
+  Serial.println("HTTP server started OTA version 2026_03_03");
  
   ElegantOTA.begin(&server);  // Start ElegantOTA
+
 // work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
 
   delay(2000);
