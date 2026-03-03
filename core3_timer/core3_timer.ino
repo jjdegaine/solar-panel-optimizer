@@ -8,6 +8,10 @@
 
 #include <WiFi.h>
 
+const char *ssid = "freebox_ZPRLHQ_2GEXT";  // SSID WiFi
+const char *password = "Cairojude58";       // mot de passe WiFi
+const char* hostname = "ESP32 routeur";
+
 // time for reset at 00:00
 #include <time.h>
 
