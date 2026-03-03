@@ -511,7 +511,7 @@ void setup() {  // Begin setup
   });
 
   server.begin();
-  Serial.println("HTTP server started OTA version 2026_02_28_h13_mn40");
+  Serial.println("HTTP server started OTA version 2026_03_02");
  
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
@@ -966,7 +966,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
      
     };
-  }
+  
 
   
 //reset at 00:00
@@ -980,19 +980,21 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
       int currentHour = timeinfo.tm_hour;
       int currentMinute = timeinfo.tm_min;
       int currentSecond = timeinfo.tm_sec;
+      //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
 
-      // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui
-      if (currentHour == 0 && currentMinute == 0 && currentSecond < 5 && currentDay != lastDay) {
+      // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
+      if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
         Serial.println("Redémarrage quotidien...");
         lastDay = currentDay;
-        delay(1000);
+        delay(60000); // attente 1 minute pour ne pas refaire un reset 
         ESP.restart();
       }
   
   //OTA
 
   ElegantOTA.loop();
-  
+
+  }
 
 }  // end for loop wifi
 
