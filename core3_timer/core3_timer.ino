@@ -49,45 +49,7 @@ void IRAM_ATTR onTimer()
 void setup()
 {
   Serial.begin(115200);
-
-  // Timer 0 avec prescaler 80 → 1 tick = 1 µs (80 MHz / 80)
-  timer = timerBegin(1000000);  // fréquence 1 MHz
-
-  // Attache l'interruption
-  timerAttachInterrupt(timer, &onTimer);
-
-  // Déclenche toutes les 73 µs = 73*128 => 10ms
-  timerAlarm(timer, 73 , true, 0);
-
-  timerStart(timer);
-
   // init wifi
-  
-  WiFi.setHostname(hostname);  //define hostname
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println("Connecting to WiFi..");
-    display.drawString(0, 0, "connecting to WiFi...");
-  }
-  Serial.println("Connected to the WiFi network");
-  display.drawString(0, 0, "connected to WiFi");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  //OTA server
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { 
-    request->send(200, "text/plain", "ESP routeur server OTA esp test timer core 3");
-  });
-
-  server.begin();
-  Serial.println("HTTP server started OTA version 2026_03_03");
- 
-  ElegantOTA.begin(&server);  // Start ElegantOTA
-
-// work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
-
   delay(2000);
   // try i2c bus recovery at 100kHz = 5uS high, 5uS low
   pinMode(SDA_PIN, OUTPUT);  // keeping SDA high during recovery
@@ -123,6 +85,47 @@ void setup()
   display.setFont(ArialMT_Plain_24);
   display.drawString(0, 0, "Ready");
   display.display();
+
+  //Wifi
+  WiFi.setHostname(hostname);  //define hostname
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.println("Connecting to WiFi..");
+    display.drawString(0, 0, "connecting to WiFi...");
+  }
+  Serial.println("Connected to the WiFi network");
+  display.drawString(0, 0, "connected to WiFi");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  //OTA server
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { 
+    request->send(200, "text/plain", "ESP routeur server OTA esp test timer core 3");
+  });
+
+  server.begin();
+  Serial.println("HTTP server started OTA version 2026_03_03");
+ 
+  ElegantOTA.begin(&server);  // Start ElegantOTA
+
+  // Timer 0 avec prescaler 80 → 1 tick = 1 µs (80 MHz / 80)
+  timer = timerBegin(1000000);  // fréquence 1 MHz
+
+  // Attache l'interruption
+  timerAttachInterrupt(timer, &onTimer);
+
+  // Déclenche toutes les 73 µs = 73*128 => 10ms
+  timerAlarm(timer, 73 , true, 0);
+
+  timerStart(timer);
+
+  
+
+// work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
+
+  
 }
 
 void loop()
@@ -135,8 +138,7 @@ void loop()
     //Serial.println("Tick 73us");
     
     //OTA
-
-  ElegantOTA.loop();
   
   }
+  ElegantOTA.loop();
 }
