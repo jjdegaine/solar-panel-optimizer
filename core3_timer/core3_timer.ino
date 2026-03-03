@@ -43,8 +43,32 @@ SSD1306Wire display(0x3c, SDA, SCL);  // ADDRESS, SDA, SCL
 const byte SDA_PIN = 21;
 const byte CLK_PIN = 22;
 const byte limiteLED = 18;
+const byte SCR_pin = 5;
+const byte SCRLED  = 16;
+const byte zeroCrossPin= 19;
 
+// zero-crossing interruption  :
+ 
+byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
+byte dimmax = 128;              // max value to start SCR command
 
+byte dim = 0; // dim increased 0 to  128
+byte dim_sinus [129] = {0, 15, 27, 30, 34, 38, 40, 43, 45, 47, 48, 50, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 67, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 83, 84, 85, 86, 87, 87, 88, 89, 90, 91, 92, 93, 94, 95, 95, 96, 96, 96, 97, 98, 98, 98, 99, 100, 101, 102, 102, 103, 103, 104, 104, 105, 106, 106, 106, 106, 106, 106, 107, 107, 107, 107, 107, 107, 107, 108, 108, 108, 109, 109, 109, 109, 110, 111, 112, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 127, 127, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 128} ;
+byte dim_sinus_display= 0 ;
+byte dimphase = dim + dimthreshold; 
+byte dimphasemax = dimmax + dimthreshold;
+byte dimphaseit = dimphase ; // dimphaseit is used during it timer
+
+signed long wait_it_limit = 3 ;  // delay 3msec
+signed long it_elapsed; // counter for delay 3 msec
+
+volatile int i = 0;                              // Variable to use as a counter
+volatile bool zero_cross = false;                // zero cross flag for SCR
+volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
+volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
+volatile bool wait_2msec ;
+
+byte zero_crossCount = 0;          // half period counter
 
 
 // init timer IT
@@ -56,6 +80,27 @@ volatile bool flag_timer = false;
 // init external PIN IT
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
+//____________________________________________________________________________________________
+//
+// ZERO CROSS DETECT : interruption at each mains zero cross
+// the interruption is not fully in line with the real sinus ==> dimthreshold will compensate the phase
+// the interruption is define on rising edge BUT due to the slope on falling edge there is a "false"
+// interruption on the falling edge ==> first_it_zero_cross with 3msec time delay
+//____________________________________________________________________________________________
+
+void IRAM_ATTR zero_cross_detect() {   // 
+     portENTER_CRITICAL_ISR(&mux);
+     portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
+        zero_cross_flag = true;   // Flag for power calculation
+        zero_cross = true;        // Flag for SCR
+        first_it_zero_cross = true ;  // flag to start a delay 2msec
+        digitalWrite(SCRLED, LOW); //reset SCR LED
+        dimphaseit= dimphase;
+     portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
+     portEXIT_CRITICAL_ISR(&mux);
+   
+}  
+
 
 // Routine d'interruption
 void IRAM_ATTR onTimer()
@@ -63,7 +108,30 @@ void IRAM_ATTR onTimer()
   portENTER_CRITICAL_ISR(&timerMux);
 
   digitalWrite(limiteLED, HIGH) ; //for scope measurement
-  flag_timer = true;   // faire le minimum dans l'ISR !
+   if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
+                                                        // happened else do nothing
+ {                                                    
+      
+     
+     if(i>dimphaseit) {            // i is a counter which is used to SCR command delay 
+                                // i minimum ==> start SCR just after zero crossing half period ==> max power
+                                // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
+       digitalWrite(SCR_pin, HIGH);     // start SCR
+       delayMicroseconds(100);             // Pause briefly to ensure the SCR turned on
+       digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
+       i = 0;                             // Reset the accumulator
+
+          digitalWrite(SCRLED, HIGH);      // start led SCR
+          zero_cross = false;
+          
+     } 
+      else {  
+          i++; 
+          digitalWrite(SCRLED, LOW); //reset SCR LED
+          }           // If the dimming value has not been reached, incriment our counter
+   
+ }      // End zero_cross check
+
   digitalWrite(limiteLED, LOW) ; //for scope measurement
   
   portEXIT_CRITICAL_ISR(&timerMux);
@@ -191,19 +259,63 @@ void TaskUI(void *pvParameters)  // This is the task UI.
    // init watch dog esp core 3
     esp_task_wdt_add(NULL);                // add current thread to WDT watch
 
-  
-
   for (;;)  // A Task shall never return or exit.
   {
 
 
   if (flag_timer)
   {
-    flag_timer = false;
-    esp_task_wdt_reset();  // Reset WDT   
+    if (first_it_zero_cross == true  )            // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
+      {            
+       
+       it_elapsed = millis () + wait_it_limit;
+      
+       detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
+       first_it_zero_cross = false;      // flag for IT zero_cross
+       wait_2msec = true ;
+      }
+      
+      if (wait_2msec == true && long (millis() - it_elapsed) >= 0 )        // check if delay > 3msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
+      {
+      
+        attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
+        wait_2msec=false ; 
+      }
+
+  if (long (millis() - time_now > time_limit)) 
+    {
+
+    if ( dim >= 128) { 
+      dim =0;
+      }
+    else{
+    //dimphase = dim + dimthreshold; // Value to used by the timer interrupt due to real phase between interruption and mains
+    dimphase = dim_sinus [ dim ] + dimthreshold; // linear sinus
     
-  
-  }
+      //portENTER_CRITICAL_ISR(&timerMux); // critical phase it timer
+     // if (zero_cross == false ) {dimphaseit= dimphase;}
+      //portEXIT_CRITICAL_ISR(&timerMux); // critical phase it timer
+
+        dim_sinus_display = dim_sinus [ dim ] ;
+        dim++ ;
+              display.setColor(BLACK);        // clear first line
+              display.fillRect(0, 0, 128, 22);
+              display.setColor(WHITE); 
+
+              display.drawString(0, 0, String (dim));
+              display.display();
+              Serial.print (dim);
+              Serial.print (" ");
+              Serial.print (dim_sinus_display);
+              Serial.print (" ");
+              Serial.println (dimphase);
+      }        
+      time_now= millis() ;
+
+      }
+
+      esp_task_wdt_reset();  // Reset WDT   
+   }
 
   
 
