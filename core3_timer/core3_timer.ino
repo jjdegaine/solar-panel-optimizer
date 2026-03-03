@@ -12,6 +12,11 @@ const char *ssid = "freebox_ZPRLHQ_2GEXT";  // SSID WiFi
 const char *password = "Cairojude58";       // mot de passe WiFi
 
 #include <esp_task_wdt.h>
+#define WDT_TIMEOUT 5  // secondes
+
+TaskHandle_t taskUIcHandle = NULL;
+TaskHandle_t taskwifi_udpHandle = NULL;
+
 
 // time for reset at 00:00
 #include <time.h>
@@ -182,10 +187,9 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 {
   (void)pvParameters;
 
-  // init watch dog esp core 2
-  //esp_task_wdt_init(WDT_TIMEOUT, true);  // enable panic so ESP32 restarts
+  
    // init watch dog esp core 3
- // esp_task_wdt_add(NULL);                // add current thread to WDT watch
+    esp_task_wdt_add(NULL);                // add current thread to WDT watch
 
   
 
@@ -196,10 +200,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   if (flag_timer)
   {
     flag_timer = false;
-
-    // Code exécuté toutes les 73 us
-    //Serial.println("Tick 73us");
-    
+    esp_task_wdt_reset();  // Reset WDT   
     
   
   }
@@ -213,12 +214,14 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
   (void)pvParameters;
   
-  //esp_task_wdt_add(NULL); 
+  // init watch dog esp core 3
+  esp_task_wdt_add(NULL);                // add current thread to WDT watch 
   
   for (;;)  // A Task shall never return or exit.
   {
     //OTA
     
     ElegantOTA.loop();
+    esp_task_wdt_reset();  // Reset WDT
   }
 }
