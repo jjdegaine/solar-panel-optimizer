@@ -6,12 +6,30 @@
 
 #include <Esp.h>
 
-/OTA
+#include <WiFi.h>
+
+// time for reset at 00:00
+#include <time.h>
+
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;      // Décalage horaire (ex: France hiver = 3600)
+const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilisé)
+
+int lastDay = -1;
+
+//OTA
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <ElegantOTA.h>
 
 const char* hostname = "ESP32 test timer core 3";
+
+// oled
+
+#include "SSD1306.h"
+SSD1306Wire display(0x3c, SDA, SCL);  // ADDRESS, SDA, SCL
+const byte SDA_PIN = 21;
+const byte CLK_PIN = 22;
 
 hw_timer_t *timer = NULL;
 volatile bool flag_timer = false;
@@ -61,7 +79,43 @@ void setup()
   Serial.println("HTTP server started OTA version 2026_02_28_h13_mn40");
  
   ElegantOTA.begin(&server);  // Start ElegantOTA
+// work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
 
+  delay(2000);
+  // try i2c bus recovery at 100kHz = 5uS high, 5uS low
+  pinMode(SDA_PIN, OUTPUT);  // keeping SDA high during recovery
+  digitalWrite(SDA_PIN, HIGH);
+  pinMode(CLK_PIN, OUTPUT);
+  for (int i = 0; i < 10; i++) {  // 9nth cycle acts as NACK
+    digitalWrite(CLK_PIN, HIGH);
+    delayMicroseconds(5);
+    digitalWrite(CLK_PIN, LOW);
+    delayMicroseconds(5);
+  }
+
+  // a STOP signal (SDA from low to high while CLK is high)
+  digitalWrite(SDA_PIN, LOW);
+  delayMicroseconds(5);
+  digitalWrite(CLK_PIN, HIGH);
+  delayMicroseconds(2);
+  digitalWrite(SDA_PIN, HIGH);
+  delayMicroseconds(2);
+  // bus status is now : FREE
+
+  Serial.println("bus recovery done, starting scan in 2 secs");
+  // return to power up mode
+  pinMode(SDA_PIN, INPUT);
+  pinMode(CLK_PIN, INPUT);
+  delay(2000);
+
+  Wire.begin(SDA_PIN, CLK_PIN);
+
+  // init OLED
+  display.init();
+  display.flipScreenVertically();
+  display.setFont(ArialMT_Plain_24);
+  display.drawString(0, 0, "Ready");
+  display.display();
 }
 
 void loop()
