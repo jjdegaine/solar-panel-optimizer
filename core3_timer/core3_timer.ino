@@ -36,14 +36,31 @@ const char* hostname = "ESP32 test timer core 3";
 SSD1306Wire display(0x3c, SDA, SCL);  // ADDRESS, SDA, SCL
 const byte SDA_PIN = 21;
 const byte CLK_PIN = 22;
+const byte limiteLED = 18;
 
+
+
+
+// init timer IT
 hw_timer_t *timer = NULL;
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+
 volatile bool flag_timer = false;
+
+// init external PIN IT
+portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+
 
 // Routine d'interruption
 void IRAM_ATTR onTimer()
 {
+  portENTER_CRITICAL_ISR(&timerMux);
+
+  digitalWrite(limiteLED, HIGH) ; //for scope measurement
   flag_timer = true;   // faire le minimum dans l'ISR !
+  digitalWrite(limiteLED, LOW) ; //for scope measurement
+  
+  portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 void setup()
@@ -51,7 +68,9 @@ void setup()
   Serial.begin(115200);
   // init wifi
   delay(2000);
-  // try i2c bus recovery at 100kHz = 5uS high, 5uS low
+   pinMode(limiteLED, OUTPUT);           // Set the limite pin LED as output
+
+  // INIT OLED try i2c bus recovery at 100kHz = 5uS high, 5uS low
   pinMode(SDA_PIN, OUTPUT);  // keeping SDA high during recovery
   digitalWrite(SDA_PIN, HIGH);
   pinMode(CLK_PIN, OUTPUT);
@@ -124,12 +143,55 @@ void setup()
   
 
 // work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
+// Now set up two tasks to run independently.
+  xTaskCreatePinnedToCore(
+    TaskUI, "TaskUI"  // A name just for humans
+    ,
+    20000  // This stack size can be checked & adjusted by reading the Stack Highwater
+    ,
+    NULL, 2  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+    ,
+    NULL, ARDUINO_RUNNING_CORE);
 
+  xTaskCreatePinnedToCore(
+    Taskwifi_udp, "wifi_udp", 20000  // Stack size
+    ,
+    NULL, 1  // Priority
+    ,
+    NULL, ARDUINO_RUNNING_CORE);
+
+  // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
+}
+
+ 
+
+
+//____________________________________________________________________________________________
+// End setup
+//____________________________________________________________________________________________
+
+void loop() {
+  // Empty. Things are done in Tasks.
   
 }
 
-void loop()
+  
+
+void TaskUI(void *pvParameters)  // This is the task UI.
 {
+  (void)pvParameters;
+
+  // init watch dog esp core 2
+  //esp_task_wdt_init(WDT_TIMEOUT, true);  // enable panic so ESP32 restarts
+   // init watch dog esp core 3
+ // esp_task_wdt_add(NULL);                // add current thread to WDT watch
+
+  
+
+  for (;;)  // A Task shall never return or exit.
+  {
+
+
   if (flag_timer)
   {
     flag_timer = false;
@@ -140,5 +202,20 @@ void loop()
     //OTA
   
   }
-  ElegantOTA.loop();
+
+  
+
+  }
+}
+
+void Taskwifi_udp(void *pvParameters)  // This is a task.
+{
+  (void)pvParameters;
+  
+  //esp_task_wdt_add(NULL); 
+  
+  for (;;)  // A Task shall never return or exit.
+  {
+    ElegantOTA.loop();
+  }
 }
