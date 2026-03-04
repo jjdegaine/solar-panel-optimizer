@@ -270,8 +270,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   {
 
 
-  if (flag_timer)
-  {
+ 
+  
     if (first_it_zero_cross == true  )            // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
       {            
        
@@ -327,7 +327,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   
     esp_task_wdt_reset();  // Reset WDT  
   }
-}
+
 
 void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
