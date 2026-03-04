@@ -321,11 +321,11 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
       }
 
-       
+       esp_task_wdt_reset();  // Reset WDT
    }
 
   
-    esp_task_wdt_reset();  // Reset WDT  
+      
   }
 
 
