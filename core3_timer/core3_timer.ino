@@ -71,6 +71,8 @@ volatile bool wait_2msec ;
 
 byte zero_crossCount = 0;          // half period counter
 
+unsigned long time_now;
+unsigned long time_limit = 2500 ; // time 2000 sec
 
 // init timer IT
 hw_timer_t *timer = NULL;
