@@ -47,6 +47,7 @@ const byte SCR_pin = 5;
 const byte SCRLED  = 16;
 const byte zeroCrossPin= 19;
 
+
 // zero-crossing interruption  :
  
 byte dimthreshold=30 ;					// dimthreshold; value to added at dim to compensate phase shift
@@ -143,6 +144,7 @@ void setup()
   // init wifi
   delay(2000);
    pinMode(limiteLED, OUTPUT);           // Set the limite pin LED as output
+   pinMode(zeroCrossPin, INPUT_PULLUP);  // set the zerocross pin with pullup for interrupt
 
   // INIT OLED try i2c bus recovery at 100kHz = 5uS high, 5uS low
   pinMode(SDA_PIN, OUTPUT);  // keeping SDA high during recovery
@@ -208,6 +210,9 @@ void setup()
 
   // Attache l'interruption
   timerAttachInterrupt(timer, &onTimer);
+  
+  // init interrupt on PIN  zero_crossing
+  attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
 
   // Déclenche toutes les 73 µs = 73*128 => 10ms
   timerAlarm(timer, 73 , true, 0);
