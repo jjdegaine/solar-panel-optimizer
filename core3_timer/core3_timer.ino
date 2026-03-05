@@ -176,13 +176,15 @@ void IRAM_ATTR onTimer()
 void setup()
 {
   Serial.begin(115200);
-  // init wifi
+
   delay(2000);
    pinMode(limiteLED, OUTPUT);           // Set the limite pin LED as output
    pinMode(SCR_pin, OUTPUT);            // Set the SSR pin as output
    pinMode(SCRLED, OUTPUT);           // Set the SCR LED as output
    //pinMode(PIN_INTERRUPT, INPUT_PULLUP);  // set the zerocross pin with pullup for interrupt
     pinMode(PIN_INTERRUPT, INPUT);  // set the zerocross pin without pullup for interrupt
+
+    // work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
   // INIT OLED try i2c bus recovery at 100kHz = 5uS high, 5uS low
   pinMode(SDA_PIN, OUTPUT);  // keeping SDA high during recovery
   digitalWrite(SDA_PIN, HIGH);
@@ -209,6 +211,8 @@ void setup()
   pinMode(CLK_PIN, INPUT);
   delay(2000);
 
+
+  
   Wire.begin(SDA_PIN, CLK_PIN);
 
   // init OLED
@@ -218,6 +222,7 @@ void setup()
   display.drawString(0, 0, "Ready");
   display.display();
 
+  
   //Wifi
   WiFi.setHostname(hostname);  //define hostname
   WiFi.mode(WIFI_STA);
@@ -256,9 +261,19 @@ void setup()
 
   timerStart(timer);
 
+  // init watchdog
   
+  esp_task_wdt_config_t config = {
+    .timeout_ms = WDT_TIMEOUT * 1000,
+    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Core 0 + Core 1
+    .trigger_panic = true
+  };
 
-// work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
+  esp_task_wdt_init(&config);
+
+  Serial.println("Watchdog actif sur Core 0 et Core 1");
+
+
 // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
     TaskUI, "TaskUI"  // A name just for humans
