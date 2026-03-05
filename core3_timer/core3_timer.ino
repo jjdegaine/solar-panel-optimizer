@@ -154,6 +154,7 @@ void setup()
   // init wifi
   delay(2000);
    pinMode(limiteLED, OUTPUT);           // Set the limite pin LED as output
+   pinMode(SCRLED, OUTPUT);           // Set the SCR LED as output
    //pinMode(PIN_INTERRUPT, INPUT_PULLUP);  // set the zerocross pin with pullup for interrupt
     pinMode(PIN_INTERRUPT, INPUT);  // set the zerocross pin without pullup for interrupt
   // INIT OLED try i2c bus recovery at 100kHz = 5uS high, 5uS low
