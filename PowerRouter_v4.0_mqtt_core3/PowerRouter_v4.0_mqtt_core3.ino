@@ -265,7 +265,7 @@ volatile bool wait_2msec;                   // flag no IT on falling edge
 
 
 volatile bool led_zero = false;
-
+volatile uint32_t lastZeroTime = 0;
 
 // Voltage and current measurement  :
 
@@ -408,7 +408,7 @@ void setup() {  // Begin setup
   pinMode(unballast_relay2, OUTPUT);    // Set the Delest pin as output
   pinMode(SCRLED, OUTPUT);              // Set the LED pin as output
   pinMode(limiteLED, OUTPUT);           // Set the limite pin LED as output
-  pinMode(zeroCrossPin, INPUT_PULLUP);  // set the zerocross pin with pullup for interrupt
+  pinMode(PIN_INTERRUPT, INPUT);  // set the zerocross pin with pullup for interrupt
   pinMode(pin_winter, INPUT);
   pinMode(pin_verbose, INPUT);
   pinMode(pin_calibration, INPUT);
