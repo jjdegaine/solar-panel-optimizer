@@ -262,7 +262,7 @@ void setup()
   timerStart(timer);
 
   // init watchdog
-  
+
   esp_task_wdt_config_t config = {
     .timeout_ms = WDT_TIMEOUT * 1000,
     .idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Core 0 + Core 1
@@ -350,10 +350,9 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       }
 
        esp_task_wdt_reset();  // Reset WDT
+       
    }
 
-  
-      
   }
 
 
