@@ -603,266 +603,269 @@ void TaskUI(void *pvParameters)  // This is the task UI.
     }
 
     // Value are measure during totalcount half period
-    while (zero_crossCount < totalCount) {
-      if (zero_cross_flag == true) {  // Half period counter
-        zero_cross_flag = false;
-        zero_crossCount++;
-      }
-
-      numberOfSamples++;  // counter of samples U and I
-
-      memo_readV = readV;                        //
-      readV = analogRead(voltageSensorPin) / 4;  // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
-
-      if (memo_readV == 0 && readV == 0) {
-        //esp_task_wdt_reset();
-        break;
-      }                                          // exit the while if no powersupply
-      readI = analogRead(currentSensorPin) / 4;  // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
-
-      // RMS Current and Voltage
-
-      if (CALIBRATION == true) {                        //
-        sqV = (readV - ADC_V_0V) * (readV - ADC_V_0V);  // ADC_V_0V ==> 0volt
-        sumV += sqV;
-        sqI = (readI - ADC_I_0A) * (readI - ADC_I_0A);
-        sumI += sqI;
-      }
-
-      // instantaneous power calculation
-      instP = ((memo_readV - ADC_V_0V) + phasecalibration * ((readV - ADC_V_0V) - (memo_readV - ADC_V_0V))) * (readI - ADC_I_0A);
-      sumP += instP;
-
-    // Power calculation
-
-    if (numberOfSamples > 0) {
-      if (CALIBRATION == true) {
-        V = Vcalibration * sqrt(sumV / numberOfSamples);
-        I = Icalibration * sqrt(sumI / numberOfSamples);
-      }
-      rPower = Vcalibration * Icalibration * sumP / numberOfSamples;
-
-      Power_wifi = rPower / 1000;  // Power wifi using float
-    }
-
-    //____________________________________________________________________________________________
-    //
-    // Power to be unbalanced to avoid injection of electricity to the grid
-    //
-    //____________________________________________________________________________________________
-    //
-    // dimstep calculation.
-    //
-    if (rPower > 0) {
-      dimstep = (rPower / 1000) / reaction_coeff + 1;
-    } else {
-      dimstep = 1 - (rPower / 1000) / reaction_coeff;
-    }
-
-    // when rPower is less than tresholdP ==> unlalanced power must increased ==> DIM must be reduced
-
-    if (rPower < tresholdP) {
-      if (dim > dimstep)
-        dim -= dimstep;
-      else
-        dim = 0;
-    }
-
-    // when rPower is higher than tresholdP ==> unlalanced power must decreased ==> DIM must be increasad
-
-    else if (rPower > tresholdP) {
-      if (dim + dimstep < dimmax)
-        dim += dimstep;
-      else
-        dim = dimmax;
-    }
-
-    if (dim < 1) {
-      //digitalWrite(limiteLED, HIGH);
-    }  // if dim is at the minimum, control regulation is at the maximum
-    else {
-      //digitalWrite(limiteLED, LOW);
-    }
-    // when rPower is higher than Max power allowed on the grid Relay2 is activated
-
-    if (Power_wifi > PowerMax) {
-      digitalWrite(unballast_relay2, HIGH);  // set relay 2
-      relay_2 = true;
-    }
-    // Value to used by the timer interrupt due to real phase between interruption and mains
-    dimphase = dim_sinus[dim] + dimthreshold;
-
-    // Relay command. to avoid control regulation with a large power (which imply large harmonic) a relay are used to command fixed power charge.
-    // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
-    //  a thershold is added using dim_min and dim_max
-    //
-    if (long(millis() - unballasting_time > unballasting_timeout)) {
-
-      if (dim < unballasting_dim_min)  // DIM is minimum => power in SSR is maximum
+    while (zero_crossCount < totalCount) 
       {
-
-        if (unballasting_counter > 10)  // dim is < unballasting_dim_min during 10 half period
-        {
-
-
-          digitalWrite(unballast_relay1, HIGH);  // set relay 1
-          relay_1 = true;
-          unballasting_counter = 0;
-          unballasting_time = millis();
+        if (zero_cross_flag == true) {  // Half period counter
+          zero_cross_flag = false;
+          zero_crossCount++;
         }
-        unballasting_counter++;
+
+        numberOfSamples++;  // counter of samples U and I
+
+        memo_readV = readV;                        //
+        readV = analogRead(voltageSensorPin) / 4;  // Voltage Value  0V = bit ADC_V_0V. 12bits ADC ==> /4 ==> max 1024
+
+        if (memo_readV == 0 && readV == 0) {
+          //esp_task_wdt_reset();
+          break;
+        }                                          // exit the while if no powersupply
+        readI = analogRead(currentSensorPin) / 4;  // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
+
+        // RMS Current and Voltage
+
+        if (CALIBRATION == true) {                        //
+          sqV = (readV - ADC_V_0V) * (readV - ADC_V_0V);  // ADC_V_0V ==> 0volt
+          sumV += sqV;
+          sqI = (readI - ADC_I_0A) * (readI - ADC_I_0A);
+          sumI += sqI;
+        }
+
+        // instantaneous power calculation
+        instP = ((memo_readV - ADC_V_0V) + phasecalibration * ((readV - ADC_V_0V) - (memo_readV - ADC_V_0V))) * (readI - ADC_I_0A);
+        sumP += instP;
+
+      // Power calculation
+
+      if (numberOfSamples > 0) {
+        if (CALIBRATION == true) {
+          V = Vcalibration * sqrt(sumV / numberOfSamples);
+          I = Icalibration * sqrt(sumI / numberOfSamples);
+        }
+        rPower = Vcalibration * Icalibration * sumP / numberOfSamples;
+
+        Power_wifi = rPower / 1000;  // Power wifi using float
       }
 
-
+      //____________________________________________________________________________________________
       //
-      if (dim > unballasting_dim_max) {
+      // Power to be unbalanced to avoid injection of electricity to the grid
+      //
+      //____________________________________________________________________________________________
+      //
+      // dimstep calculation.
+      //
+      if (rPower > 0) {
+        dimstep = (rPower / 1000) / reaction_coeff + 1;
+      } else {
+        dimstep = 1 - (rPower / 1000) / reaction_coeff;
+      }
+
+      // when rPower is less than tresholdP ==> unlalanced power must increased ==> DIM must be reduced
+
+      if (rPower < tresholdP) {
+        if (dim > dimstep)
+          dim -= dimstep;
+        else
+          dim = 0;
+      }
+
+      // when rPower is higher than tresholdP ==> unlalanced power must decreased ==> DIM must be increasad
+
+      else if (rPower > tresholdP) {
+        if (dim + dimstep < dimmax)
+          dim += dimstep;
+        else
+          dim = dimmax;
+      }
+
+      if (dim < 1) {
+        //digitalWrite(limiteLED, HIGH);
+      }  // if dim is at the minimum, control regulation is at the maximum
+      else {
+        //digitalWrite(limiteLED, LOW);
+      }
+      // when rPower is higher than Max power allowed on the grid Relay2 is activated
+
+      if (Power_wifi > PowerMax) {
+        digitalWrite(unballast_relay2, HIGH);  // set relay 2
+        relay_2 = true;
+      }
+      // Value to used by the timer interrupt due to real phase between interruption and mains
+      dimphase = dim_sinus[dim] + dimthreshold;
+
+      // Relay command. to avoid control regulation with a large power (which imply large harmonic) a relay are used to command fixed power charge.
+      // to avoid instability the DIM value is confirm 10 times and the relay remains stable during unballasting_timeout time
+      //  a thershold is added using dim_min and dim_max
+      //
+      if (long(millis() - unballasting_time > unballasting_timeout)) {
+
+        if (dim < unballasting_dim_min)  // DIM is minimum => power in SSR is maximum
+        {
+
+          if (unballasting_counter > 10)  // dim is < unballasting_dim_min during 10 half period
+          {
+
+
+            digitalWrite(unballast_relay1, HIGH);  // set relay 1
+            relay_1 = true;
+            unballasting_counter = 0;
+            unballasting_time = millis();
+          }
+          unballasting_counter++;
+        }
+
+
         //
-        if (unballasting_counter > 10)  //
-        {
-          digitalWrite(unballast_relay1, LOW);
-          relay_1 = false;
-          unballasting_time = millis();
-          unballasting_counter = 0;
+        if (dim > unballasting_dim_max) {
+          //
+          if (unballasting_counter > 10)  //
+          {
+            digitalWrite(unballast_relay1, LOW);
+            relay_1 = false;
+            unballasting_time = millis();
+            unballasting_counter = 0;
+          }
+          unballasting_counter++;
         }
-        unballasting_counter++;
-      }
-      //
-      // relay2 verification, if power on the grid is lessthan PowerMax-Power_water_heater (6000-3000W)
-      //
-      if (relay_2 == true) {
-        if (Power_wifi < (PowerMax - Power_water_heater)) {
-          digitalWrite(unballast_relay2, LOW);
-          relay_2 = false;
+        //
+        // relay2 verification, if power on the grid is lessthan PowerMax-Power_water_heater (6000-3000W)
+        //
+        if (relay_2 == true) {
+          if (Power_wifi < (PowerMax - Power_water_heater)) {
+            digitalWrite(unballast_relay2, LOW);
+            relay_2 = false;
+          }
         }
       }
-    }
 
-    // meam_power calculation for MQTT 10 sec
-    if (long(millis() - mean_power_time > mean_power_timing)) {
-      mean_power_MQTT = (mean_power / mean_power_counter);
-      mean_power = 0;
-      mean_power_counter = 0;
-      mean_power_time = millis();
-      send_MQTT = true;  // ready to send MQTT
-      //Serial.print("mean_power_mq ");
-      //Serial.println(mean_power_MQTT);  // MQTT data
-    }
-
-    else {
-      mean_power = mean_power + Power_wifi;
-      mean_power_counter++;
-    }
-
-    // meam_power calculation for MQTT 5mn
-    if (long(millis() - mean_power_time_5mn > mean_power_timing_5mn)) {
-      mean_power_MQTT_5mn = (mean_power_5mn / mean_power_counter_5mn);
-      mean_power_5mn = 0;
-      mean_power_counter_5mn = 0;
-      mean_power_time_5mn = millis();
-      send_MQTT_5mn = true;  // ready to send MQTT
-      //Serial.print("mean_power_mq_5mn ");
-      //Serial.println(mean_power_MQTT_5mn);  // MQTT data
-    }
-
-    else {
-      mean_power_5mn = mean_power_5mn + Power_wifi;
-      mean_power_counter_5mn++;
-    }
-
-    // meam_power calculation for MQTT 10mn
-    if (long(millis() - mean_power_time_10mn > mean_power_timing_10mn)) {
-      mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
-      mean_power_10mn = 0;
-      mean_power_counter_10mn = 0;
-      mean_power_time_10mn = millis();
-      send_MQTT_10mn = true;  // ready to send MQTT
-      Serial.print("mean_power_mq_10mn ");
-      Serial.println(mean_power_MQTT_10mn);  // MQTT data
-    }
-
-    else {
-      mean_power_10mn = mean_power_10mn + Power_wifi;
-      mean_power_counter_10mn++;
-    }
-
-    // Display each 2 seconds
-
-    if (time_now_second >= memo_temps + 2) {
-
-      if ((CALIBRATION == false) || (VERBOSE == false)) {
-        memo_temps = time_now_second;
-
-        /*
-          Serial.print("P= ");
-          Serial.print(rPower/1000);
-          Serial.print("w");
-          Serial.print("dim: ");
-          Serial.print(dim);
-          Serial.print ("dimphase ");
-          Serial.println (dimphase) ;
-          Serial.print ("i_counter ");
-          Serial.println (i_counter) ;
-        */
-
-        display.setColor(BLACK);  // clear first line
-        display.fillRect(0, 0, 128, 22);
-        display.setColor(WHITE);
-
-        display.drawString(0, 0, String(int(Power_wifi)) + " || " + String(dim));
-        display.display();
-      }
-    }
-
-    //
-
-      if (CALIBRATION == true) {
-        Serial.print(V);
-        Serial.print("  |  ");
-        Serial.print(I / 1000);
-        Serial.print("  |  ");
-        Serial.print(rPower / 1000);
-        Serial.println();
-
-        display.clear();
-        display.drawString(0, 0, String(int(V)) + "||" + String(int(I / 1000)));
-        display.drawString(0, 22, String(int(Power_wifi)));
-        display.display();
-      }
-      if (VERBOSE == true) {
-        Serial.print(rPower / 1000);
-        Serial.print("  ||     ");
-        Serial.print(dimstep);
-        Serial.print("  ||  ");
-        Serial.print(dim);
-        Serial.print(" ||  ");
-        Serial.print(dimphase);
-        Serial.print(" ||  ");
-        Serial.print(relay_1);
-        Serial.print(" ||  ");
-        Serial.print(relay_2);
-        Serial.print(" ||  ");
-        Serial.print(unballasting_counter);
-        Serial.print(" ||  ");
-        Serial.print(millis() - unballasting_time);
-
-        Serial.println();
+      // meam_power calculation for MQTT 10 sec
+      if (long(millis() - mean_power_time > mean_power_timing)) {
+        mean_power_MQTT = (mean_power / mean_power_counter);
+        mean_power = 0;
+        mean_power_counter = 0;
+        mean_power_time = millis();
+        send_MQTT = true;  // ready to send MQTT
+        //Serial.print("mean_power_mq ");
+        //Serial.println(mean_power_MQTT);  // MQTT data
       }
 
       else {
-        delay(1);
-      }  // needed for stability
+        mean_power = mean_power + Power_wifi;
+        mean_power_counter++;
+      }
 
-      // update switches winter, verbose, calibration
+      // meam_power calculation for MQTT 5mn
+      if (long(millis() - mean_power_time_5mn > mean_power_timing_5mn)) {
+        mean_power_MQTT_5mn = (mean_power_5mn / mean_power_counter_5mn);
+        mean_power_5mn = 0;
+        mean_power_counter_5mn = 0;
+        mean_power_time_5mn = millis();
+        send_MQTT_5mn = true;  // ready to send MQTT
+        //Serial.print("mean_power_mq_5mn ");
+        //Serial.println(mean_power_MQTT_5mn);  // MQTT data
+      }
 
-      WINTER = digitalRead(pin_winter);
+      else {
+        mean_power_5mn = mean_power_5mn + Power_wifi;
+        mean_power_counter_5mn++;
+      }
 
-      VERBOSE = digitalRead(pin_verbose);
+      // meam_power calculation for MQTT 10mn
+      if (long(millis() - mean_power_time_10mn > mean_power_timing_10mn)) {
+        mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
+        mean_power_10mn = 0;
+        mean_power_counter_10mn = 0;
+        mean_power_time_10mn = millis();
+        send_MQTT_10mn = true;  // ready to send MQTT
+        Serial.print("mean_power_mq_10mn ");
+        Serial.println(mean_power_MQTT_10mn);  // MQTT data
+      }
 
-      CALIBRATION = digitalRead(pin_calibration);
+      else {
+        mean_power_10mn = mean_power_10mn + Power_wifi;
+        mean_power_counter_10mn++;
+      }
 
-    esp_task_wdt_reset();  // reset watch dog
-  }
+      // Display each 2 seconds
 
+      if (time_now_second >= memo_temps + 2) {
+
+        if ((CALIBRATION == false) || (VERBOSE == false)) {
+          memo_temps = time_now_second;
+
+          /*
+            Serial.print("P= ");
+            Serial.print(rPower/1000);
+            Serial.print("w");
+            Serial.print("dim: ");
+            Serial.print(dim);
+            Serial.print ("dimphase ");
+            Serial.println (dimphase) ;
+            Serial.print ("i_counter ");
+            Serial.println (i_counter) ;
+          */
+
+          display.setColor(BLACK);  // clear first line
+          display.fillRect(0, 0, 128, 22);
+          display.setColor(WHITE);
+
+          display.drawString(0, 0, String(int(Power_wifi)) + " || " + String(dim));
+          display.display();
+        }
+      }
+
+      //
+
+        if (CALIBRATION == true) {
+          Serial.print(V);
+          Serial.print("  |  ");
+          Serial.print(I / 1000);
+          Serial.print("  |  ");
+          Serial.print(rPower / 1000);
+          Serial.println();
+
+          display.clear();
+          display.drawString(0, 0, String(int(V)) + "||" + String(int(I / 1000)));
+          display.drawString(0, 22, String(int(Power_wifi)));
+          display.display();
+        }
+        if (VERBOSE == true) {
+          Serial.print(rPower / 1000);
+          Serial.print("  ||     ");
+          Serial.print(dimstep);
+          Serial.print("  ||  ");
+          Serial.print(dim);
+          Serial.print(" ||  ");
+          Serial.print(dimphase);
+          Serial.print(" ||  ");
+          Serial.print(relay_1);
+          Serial.print(" ||  ");
+          Serial.print(relay_2);
+          Serial.print(" ||  ");
+          Serial.print(unballasting_counter);
+          Serial.print(" ||  ");
+          Serial.print(millis() - unballasting_time);
+
+          Serial.println();
+        }
+
+        else {
+          delay(1);
+        }  // needed for stability
+
+        // update switches winter, verbose, calibration
+
+        WINTER = digitalRead(pin_winter);
+
+        VERBOSE = digitalRead(pin_verbose);
+
+        CALIBRATION = digitalRead(pin_calibration);
+
+      
+    }
+
+  esp_task_wdt_reset();  // reset watch dog
+  
   } // end for
 
 }  // end task UI
@@ -882,71 +885,71 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   for (;;)  // A Task shall never return or exit.
   {
     
-    while (send_MQTT == false) {
-      wifi_wait = 0;   
-                                     // loop to wait update MQTT
-      //esp_task_wdt_reset();
+      while (send_MQTT == false) {
+        wifi_wait = 0;   
+                                      // loop to wait update MQTT
+        //esp_task_wdt_reset();
 
-      if (long(millis() - MQTT_time > MQTT_timeout))  //timeout MQTT 3 minutes
-      {
-        dim_test = 1;
-        sprintf(mystring_dim, "%g", dim_test);  //send dim_test in case off timeout
-        client.publish(topic_dim, mystring_dim, true);
-        Serial.println("time out boucle mqtt");
-        delay(10000);  // delay 10 secondes
-        ESP.restart();
+        if (long(millis() - MQTT_time > MQTT_timeout))  //timeout MQTT 3 minutes
+        {
+          dim_test = 1;
+          sprintf(mystring_dim, "%g", dim_test);  //send dim_test in case off timeout
+          client.publish(topic_dim, mystring_dim, true);
+          Serial.println("time out boucle mqtt");
+          delay(10000);  // delay 10 secondes
+          ESP.restart();
 
-        break;
-      }
-    }
-
-    MQTT_time = millis();
-
-    if (Connect_MQTT()) {
-      /*
-      if (send_MQTT == true)
-      {
-        send_MQTT = false;
-        sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
-        client.publish(topic, mystring_power_wifi, true);
+          break;
+        }
       }
 
-      if (send_MQTT_5mn == true)
-      {
-        send_MQTT_5mn = false;
-        sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
-        client.publish(topic_5mn, mystring_power_wifi_5mn, true);
-      }
-       if (send_MQTT_10mn == true)
-      {
-        send_MQTT_10mn = false;
-        sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
-        client.publish(topic_10mn, mystring_power_wifi_10mn, true);
-      }
-      */
-      // for test only
-      if (send_MQTT == true) {
-        send_MQTT = false;
-        sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
-        client.publish(topic_test, mystring_power_wifi_10mn, true);
-        dim_test = 0;
-        sprintf(mystring_dim, "%g", dim_test);  //send dim_test
-        client.publish(topic_dim, mystring_dim, true);
-        
-      }
+      MQTT_time = millis();
+
+      if (Connect_MQTT()) {
+        /*
+        if (send_MQTT == true)
+        {
+          send_MQTT = false;
+          sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
+          client.publish(topic, mystring_power_wifi, true);
+        }
+
+        if (send_MQTT_5mn == true)
+        {
+          send_MQTT_5mn = false;
+          sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
+          client.publish(topic_5mn, mystring_power_wifi_5mn, true);
+        }
+        if (send_MQTT_10mn == true)
+        {
+          send_MQTT_10mn = false;
+          sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
+          client.publish(topic_10mn, mystring_power_wifi_10mn, true);
+        }
+        */
+        // for test only
+        if (send_MQTT == true) {
+          send_MQTT = false;
+          sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
+          client.publish(topic_test, mystring_power_wifi_10mn, true);
+          dim_test = 0;
+          sprintf(mystring_dim, "%g", dim_test);  //send dim_test
+          client.publish(topic_dim, mystring_dim, true);
+          
+        }
 
      
     };
   
 
   
-//reset at 00:00
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time");
-    return;
+    //reset at 00:00
+    struct tm timeinfo;
+    if(!getLocalTime(&timeinfo)){
+      Serial.println("Failed to obtain time");
+      return;
 
-  }
+    }
       int currentDay = timeinfo.tm_mday;
       int currentHour = timeinfo.tm_hour;
       int currentMinute = timeinfo.tm_min;
