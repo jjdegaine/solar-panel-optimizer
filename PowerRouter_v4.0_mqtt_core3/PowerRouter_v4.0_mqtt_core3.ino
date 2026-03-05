@@ -70,7 +70,10 @@ version 2.3 SSR LED improvement
 version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
-version 3.2 2026-02 test improvement timeout mqtt core 3 ESP32 and OTA
+version 3.2 2026-02 test improvement timeout mqtt 
+version 3.3 2026_03_05 adding ota reset 24h
+version 4.0 2026_03_05 using core 3 ESP32
+
 // https://randomnerdtutorials.com/esp32-ota-elegantota-arduino/
 */
 
@@ -97,8 +100,13 @@ const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilis�
 
 int lastDay = -1;
 
+// watchdog
+#include <esp_task_wdt.h>  // watch dog
+#define WDT_TIMEOUT 5  // watch dog time 5 seconds
 
-//#include <esp_task_wdt.h>  // watch dog
+TaskHandle_t taskUIcHandle = NULL;
+TaskHandle_t taskwifi_udpHandle = NULL;
+
 
 //OTA
 #include <AsyncTCP.h>
@@ -228,7 +236,8 @@ const byte pin_verbose = 26;
 const byte pin_calibration = 27;
 const byte voltageSensorPin = 34;
 const byte currentSensorPin = 35;
-const byte zeroCrossPin = 19;
+//const byte zeroCrossPin = 19;
+#define PIN_INTERRUPT 19
 
 // zero-crossing interruption  :
 
@@ -246,11 +255,6 @@ byte wifi_wait = 0;  // used for the waiting loop on task wifi
 unsigned long wait_it_limit = 3;  // delay 3msec
 unsigned long it_elapsed;         // counter for delay 3 msec
 
-//core 2 timer 1usec
-//char periodStep = 73;  //  73 * 127 => 10msec calibration using oscilloscope
-//core 3
-char periodStep = 10000; // 73?
-
 volatile int i_counter = 0;                 // Variable to use as a counter for SSR
 volatile int i = 0;                         // Variable to use as a counter for LCD
 volatile int I_led = 0;                     // Variable to use as a counter for LED
@@ -261,8 +265,6 @@ volatile bool wait_2msec;                   // flag no IT on falling edge
 
 
 volatile bool led_zero = false;
-
-//#define WDT_TIMEOUT 10000  // watch dog time
 
 
 // Voltage and current measurement  :
@@ -321,15 +323,6 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 // init external PIN IT
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
-/*
-// init wdt core 3
-  esp_task_wdt_config_t twdt_config = {
-    .timeout_ms = WDT_TIMEOUT,   //  maintenant en millisecondes
-    .idle_core_mask  = (1 << portNUM_PROCESSORS) - 1, // Tous les cœurs
-    .trigger_panic = true,
-  };
-*/
-
 // define two tasks for UI & wifi_udp (mqtt)
 void TaskUI(void *pvParameters);
 void Taskwifi_udp(void *pvParameters);
@@ -342,20 +335,21 @@ void Taskwifi_udp(void *pvParameters);
 // interruption on the falling edge ==> first_it_zero_cross with 3msec time delay
 //____________________________________________________________________________________________
 
-void IRAM_ATTR zero_cross_detect() {  //
+void IRAM_ATTR isrPin19() {   //  
   portENTER_CRITICAL_ISR(&mux);
 
-  //digitalWrite(limiteLED, HIGH) ; //for scope measurement
+  uint32_t now = micros();
 
-  detachInterrupt(digitalPinToInterrupt(zeroCrossPin));  // invalid interrupt during 3msec to avoid false interrupt during falling edge
+  if (now - lastZeroTime > 5000)   // ignore <5 ms
+    {
 
-  zero_cross_flag = true;      // Flag for power calculation
-  zero_cross = true;           // Flag for SSR
-  first_it_zero_cross = true;  // flag to start a delay 2msec
-  led_zero = true;
-  // digitalWrite(SCRLED, LOW); //reset SSR LED
-
-  //digitalWrite(limiteLED, LOW) ; //for scope measurement
+    zero_cross_flag = true;      // Flag for power calculation
+    zero_cross = true;           // Flag for SSR
+    //first_it_zero_cross = true;  // flag to start a delay 2msec
+    led_zero = true;
+    lastZeroTime = now;
+    
+    }
 
   portEXIT_CRITICAL_ISR(&mux);
 }
@@ -368,7 +362,7 @@ void IRAM_ATTR zero_cross_detect() {  //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
 
-  digitalWrite(limiteLED, HIGH) ; //for scope measurement
+  //digitalWrite(limiteLED, HIGH) ; //for scope measurement
   
   if (led_zero == true) {
     I_led = 0;
@@ -395,11 +389,9 @@ void IRAM_ATTR onTimer() {
       i_counter++;
     }  // If the dimming value has not been reached, incriment the counter
 
-  
-
   }  // End zero_cross check
 
-  digitalWrite(limiteLED, LOW) ; //for scope measurement
+  //digitalWrite(limiteLED, LOW) ; //for scope measurement
   
   portEXIT_CRITICAL_ISR(&timerMux);
 }
@@ -511,7 +503,7 @@ void setup() {  // Begin setup
   });
 
   server.begin();
-  Serial.println("HTTP server started OTA version 2026_03_02");
+  Serial.println("HTTP server started OTA version 2026_03_05");
  
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
@@ -522,27 +514,29 @@ void setup() {  // Begin setup
   // client.setCallback(callback);
   Connect_MQTT();
 
-  // init timer en core 2
-  //timer = timerBegin(0, 80, true);
-  //timerAttachInterrupt(timer, &onTimer, true);
-  //timerAlarmWrite(timer, periodStep, true);
-  //timerAlarmEnable(timer);
-
   // init timer en core 3
+  //Timer 0 avec prescaler 80 → 1 tick = 1 µs (80 MHz / 80)
   timer = timerBegin(1000000);
   timerAttachInterrupt(timer, &onTimer);
-  timerAlarm(timer, periodStep, true, 0);
+  // Déclenche toutes les 73 µs = 73*128 => 10ms
+  timerAlarm(timer, 73 , true, 0);
   timerStart(timer);
 
   // init interrupt on PIN  zero_crossing
-  attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
+  attachInterrupt(digitalPinToInterrupt(PIN_INTERRUPT), isrPin19, RISING);
 
-  /*
-    esp_task_wdt_deinit();          // Désactiver le WDT par défaut
-    esp_task_wdt_init(&twdt_config); // Initialiser avec notre config
-    //esp_task_wdt_add(NULL);         // Ajouter le thread courant au WDT
-*/
 
+  // init watchdog
+
+  esp_task_wdt_config_t config = {
+    .timeout_ms = WDT_TIMEOUT * 1000,
+    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Core 0 + Core 1
+    .trigger_panic = true
+  };
+
+  esp_task_wdt_init(&config);
+
+  Serial.println("Watchdog actif sur Core 0 et Core 1");
   
   // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
@@ -590,12 +584,8 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 {
   (void)pvParameters;
 
-  // init watch dog esp core 2
-  //esp_task_wdt_init(WDT_TIMEOUT, true);  // enable panic so ESP32 restarts
-   // init watch dog esp core 3
- // esp_task_wdt_add(NULL);                // add current thread to WDT watch
-
-  
+// init watch dog esp core 3
+    esp_task_wdt_add(NULL);                // add current thread to WDT watch
 
   for (;;)  // A Task shall never return or exit.
   {
@@ -642,27 +632,6 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       // instantaneous power calculation
       instP = ((memo_readV - ADC_V_0V) + phasecalibration * ((readV - ADC_V_0V) - (memo_readV - ADC_V_0V))) * (readI - ADC_I_0A);
       sumP += instP;
-
-      // function delay 2msec
-
-      if (first_it_zero_cross == true)  // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
-      {
-
-        it_elapsed = millis() + wait_it_limit;
-
-
-        first_it_zero_cross = false;  // flag for IT zero_cross
-        wait_2msec = true;
-      }
-
-      if (wait_2msec == true && long(millis() - it_elapsed) >= 0)  // check if delay > 3msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
-      {
-
-        attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
-        wait_2msec = false;
-      }
-
-    }  // end while sur zero_crossCount
 
     // Power calculation
 
@@ -774,7 +743,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       mean_power = 0;
       mean_power_counter = 0;
       mean_power_time = millis();
-      send_MQTT = true;  // ready to send UDP
+      send_MQTT = true;  // ready to send MQTT
       //Serial.print("mean_power_mq ");
       //Serial.println(mean_power_MQTT);  // MQTT data
     }
@@ -790,7 +759,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       mean_power_5mn = 0;
       mean_power_counter_5mn = 0;
       mean_power_time_5mn = millis();
-      send_MQTT_5mn = true;  // ready to send UDP
+      send_MQTT_5mn = true;  // ready to send MQTT
       //Serial.print("mean_power_mq_5mn ");
       //Serial.println(mean_power_MQTT_5mn);  // MQTT data
     }
@@ -806,7 +775,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       mean_power_10mn = 0;
       mean_power_counter_10mn = 0;
       mean_power_time_10mn = millis();
-      send_MQTT_10mn = true;  // ready to send UDP
+      send_MQTT_10mn = true;  // ready to send MQTT
       Serial.print("mean_power_mq_10mn ");
       Serial.println(mean_power_MQTT_10mn);  // MQTT data
     }
@@ -846,53 +815,55 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
     //
 
-    if (CALIBRATION == true) {
-      Serial.print(V);
-      Serial.print("  |  ");
-      Serial.print(I / 1000);
-      Serial.print("  |  ");
-      Serial.print(rPower / 1000);
-      Serial.println();
+      if (CALIBRATION == true) {
+        Serial.print(V);
+        Serial.print("  |  ");
+        Serial.print(I / 1000);
+        Serial.print("  |  ");
+        Serial.print(rPower / 1000);
+        Serial.println();
 
-      display.clear();
-      display.drawString(0, 0, String(int(V)) + "||" + String(int(I / 1000)));
-      display.drawString(0, 22, String(int(Power_wifi)));
-      display.display();
-    }
-    if (VERBOSE == true) {
-      Serial.print(rPower / 1000);
-      Serial.print("  ||     ");
-      Serial.print(dimstep);
-      Serial.print("  ||  ");
-      Serial.print(dim);
-      Serial.print(" ||  ");
-      Serial.print(dimphase);
-      Serial.print(" ||  ");
-      Serial.print(relay_1);
-      Serial.print(" ||  ");
-      Serial.print(relay_2);
-      Serial.print(" ||  ");
-      Serial.print(unballasting_counter);
-      Serial.print(" ||  ");
-      Serial.print(millis() - unballasting_time);
+        display.clear();
+        display.drawString(0, 0, String(int(V)) + "||" + String(int(I / 1000)));
+        display.drawString(0, 22, String(int(Power_wifi)));
+        display.display();
+      }
+      if (VERBOSE == true) {
+        Serial.print(rPower / 1000);
+        Serial.print("  ||     ");
+        Serial.print(dimstep);
+        Serial.print("  ||  ");
+        Serial.print(dim);
+        Serial.print(" ||  ");
+        Serial.print(dimphase);
+        Serial.print(" ||  ");
+        Serial.print(relay_1);
+        Serial.print(" ||  ");
+        Serial.print(relay_2);
+        Serial.print(" ||  ");
+        Serial.print(unballasting_counter);
+        Serial.print(" ||  ");
+        Serial.print(millis() - unballasting_time);
 
-      Serial.println();
-    }
+        Serial.println();
+      }
 
-    else {
-      delay(1);
-    }  // needed for stability
+      else {
+        delay(1);
+      }  // needed for stability
 
-    // update switches winter, verbose, calibration
+      // update switches winter, verbose, calibration
 
-    WINTER = digitalRead(pin_winter);
+      WINTER = digitalRead(pin_winter);
 
-    VERBOSE = digitalRead(pin_verbose);
+      VERBOSE = digitalRead(pin_verbose);
 
-    CALIBRATION = digitalRead(pin_calibration);
+      CALIBRATION = digitalRead(pin_calibration);
 
-   // esp_task_wdt_reset();  // reset watch dog
+    esp_task_wdt_reset();  // reset watch dog
   }
+
+  } // end for
 
 }  // end task UI
 
@@ -906,7 +877,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
   (void)pvParameters;
   
-  //esp_task_wdt_add(NULL); 
+  esp_task_wdt_add(NULL); 
   
   for (;;)  // A Task shall never return or exit.
   {
@@ -990,10 +961,10 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         ESP.restart();
       }
   
-  //OTA
+    // OTA
 
-  ElegantOTA.loop();
-
+    ElegantOTA.loop();
+    esp_task_wdt_reset();  // Reset WDT
   }
 
 }  // end for loop wifi
