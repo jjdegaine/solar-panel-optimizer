@@ -92,7 +92,7 @@ portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 //____________________________________________________________________________________________
 
 void IRAM_ATTR isrPin19() {   // 
-     portENTER_CRITICAL_ISR(&mux);
+     //portENTER_CRITICAL_ISR(&mux);
      digitalWrite(SCRLED, HIGH);      // for test only
     // portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
         zero_cross_flag = true;   // Flag for power calculation
@@ -102,7 +102,7 @@ void IRAM_ATTR isrPin19() {   //
         dimphaseit= dimphase;
      //portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
      digitalWrite(SCRLED, LOW); //for test only
-     portEXIT_CRITICAL_ISR(&mux);
+     //portEXIT_CRITICAL_ISR(&mux);
    
 }  
 
@@ -110,7 +110,7 @@ void IRAM_ATTR isrPin19() {   //
 // Routine d'interruption
 void IRAM_ATTR onTimer()
 {
-  portENTER_CRITICAL_ISR(&timerMux);
+  //portENTER_CRITICAL_ISR(&timerMux);
 
   digitalWrite(limiteLED, HIGH) ; //for scope measurement
    if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
@@ -139,7 +139,7 @@ void IRAM_ATTR onTimer()
 
   digitalWrite(limiteLED, LOW) ; //for scope measurement
   
-  portEXIT_CRITICAL_ISR(&timerMux);
+  //portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 void setup()
