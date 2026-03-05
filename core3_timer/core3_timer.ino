@@ -93,13 +93,15 @@ portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
+     digitalWrite(SCRLED, HIGH);      // for test only
     // portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
         zero_cross_flag = true;   // Flag for power calculation
         zero_cross = true;        // Flag for SCR
         first_it_zero_cross = true ;  // flag to start a delay 2msec
-        //digitalWrite(SCRLED, LOW); //reset SCR LED
+        
         dimphaseit= dimphase;
      //portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
+     digitalWrite(SCRLED, LOW); //for test only
      portEXIT_CRITICAL_ISR(&mux);
    
 }  
@@ -124,13 +126,13 @@ void IRAM_ATTR onTimer()
        digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
        i = 0;                             // Reset the accumulator
 
-          digitalWrite(SCRLED, HIGH);      // start led SCR
+          //digitalWrite(SCRLED, HIGH);      // start led SCR
           zero_cross = false;
           
      } 
       else {  
           i++; 
-          digitalWrite(SCRLED, LOW); //reset SCR LED
+          //digitalWrite(SCRLED, LOW); //reset SCR LED
           }           // If the dimming value has not been reached, incriment our counter
    
  }      // End zero_cross check
@@ -277,7 +279,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
        
        it_elapsed = millis () + wait_it_limit;
       
-       detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
+       //detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
        first_it_zero_cross = false;      // flag for IT zero_cross
        wait_2msec = true ;
       }
@@ -285,7 +287,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       if (wait_2msec == true && long (millis() - it_elapsed) >= 0 )        // check if delay > 3msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
       {
       
-        attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
+        //attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
         wait_2msec=false ; 
       }
 
