@@ -72,6 +72,8 @@ volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge
 volatile bool wait_2msec ;
 volatile bool led_zero = false;
 
+volatile uint32_t lastZeroTime = 0;
+
 byte zero_crossCount = 0;          // half period counter
 
 unsigned long time_now;
@@ -102,10 +104,9 @@ void IRAM_ATTR isrPin19() {   //
      digitalWrite(SCRLED, HIGH);      // for test only
     // portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
 
-  static uint32_t last = 0;
   uint32_t now = micros();
 
-  if (now - last > 5000)   // ignore <5 ms
+  if (now - lastZeroTime > 5000)   // ignore <5 ms
   {
     
     zero_cross_flag = true;   // Flag for power calculation
@@ -114,9 +115,6 @@ void IRAM_ATTR isrPin19() {   //
     led_zero = true;
     lastZeroTime = now;
   }
-
-  last = now;
-
 
      //portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
      digitalWrite(SCRLED, LOW); //for test only
