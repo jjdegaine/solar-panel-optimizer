@@ -93,13 +93,13 @@ portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
 void IRAM_ATTR zero_cross_detect() {   // 
      portENTER_CRITICAL_ISR(&mux);
-     portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
+    // portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
         zero_cross_flag = true;   // Flag for power calculation
         zero_cross = true;        // Flag for SCR
         first_it_zero_cross = true ;  // flag to start a delay 2msec
-        digitalWrite(SCRLED, LOW); //reset SCR LED
+        //digitalWrite(SCRLED, LOW); //reset SCR LED
         dimphaseit= dimphase;
-     portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
+     //portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
      portEXIT_CRITICAL_ISR(&mux);
    
 }  
