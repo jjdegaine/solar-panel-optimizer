@@ -74,11 +74,14 @@ byte zero_crossCount = 0;          // half period counter
 unsigned long time_now;
 unsigned long time_limit = 2500 ; // time 2000 sec
 
+byte test_it = 0;  //for test only
+/*
 // init timer IT
 hw_timer_t *timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 volatile bool flag_timer = false;
+*/
 
 // init external PIN IT
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
@@ -100,14 +103,15 @@ void IRAM_ATTR isrPin19() {   //
         first_it_zero_cross = true ;  // flag to start a delay 2msec
         
         dimphaseit= dimphase;
+        test_it++ ;
      //portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
      digitalWrite(SCRLED, LOW); //for test only
      //portEXIT_CRITICAL_ISR(&mux);
    
 }  
 
-
-// Routine d'interruption
+/*
+// Routine d'interruption timer
 void IRAM_ATTR onTimer()
 {
   //portENTER_CRITICAL_ISR(&timerMux);
@@ -142,6 +146,8 @@ void IRAM_ATTR onTimer()
   //portEXIT_CRITICAL_ISR(&timerMux);
 }
 
+
+*/
 void setup()
 {
   Serial.begin(115200);
@@ -210,18 +216,18 @@ void setup()
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
   // Timer 0 avec prescaler 80 → 1 tick = 1 µs (80 MHz / 80)
-  timer = timerBegin(1000000);  // fréquence 1 MHz
+  //timer = timerBegin(1000000);  // fréquence 1 MHz
 
   // Attache l'interruption
-  timerAttachInterrupt(timer, &onTimer);
+  //timerAttachInterrupt(timer, &onTimer);
   
   // init interrupt on PIN  zero_crossing
   attachInterrupt(digitalPinToInterrupt(PIN_INTERRUPT), isrPin19, RISING);
 
   // Déclenche toutes les 73 µs = 73*128 => 10ms
-  timerAlarm(timer, 73 , true, 0);
+  //timerAlarm(timer, 73 , true, 0);
 
-  timerStart(timer);
+  //timerStart(timer);
 
   
 
@@ -344,5 +350,6 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     
     ElegantOTA.loop();
     esp_task_wdt_reset();  // Reset WDT
+    Serial.println (test_it ); //for test only
   }
 }
