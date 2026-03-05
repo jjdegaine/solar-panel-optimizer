@@ -64,10 +64,13 @@ signed long wait_it_limit = 3 ;  // delay 3msec
 signed long it_elapsed; // counter for delay 3 msec
 
 volatile int i = 0;                              // Variable to use as a counter
+volatile int i_counter = 0;                      // Variable to use as a counter for SSR
+volatile int I_led = 0;                          // Variable to use as a counter for LED
 volatile bool zero_cross = false;                // zero cross flag for SCR
 volatile bool zero_cross_flag = false;           // zero cross flag for power calculation
 volatile bool first_it_zero_cross = false ;      // flag first IT on rising edge zero cross
 volatile bool wait_2msec ;
+volatile bool led_zero = false;
 
 byte zero_crossCount = 0;          // half period counter
 
@@ -95,17 +98,29 @@ portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 //____________________________________________________________________________________________
 
 void IRAM_ATTR isrPin19() {   // 
-     //portENTER_CRITICAL_ISR(&mux);
+     portENTER_CRITICAL_ISR(&mux);
      digitalWrite(SCRLED, HIGH);      // for test only
     // portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
-        zero_cross_flag = true;   // Flag for power calculation
-        zero_cross = true;        // Flag for SCR
-        first_it_zero_cross = true ;  // flag to start a delay 2msec
-        
-        dimphaseit= dimphase;
+
+  static uint32_t last = 0;
+  uint32_t now = micros();
+
+  if (now - last > 5000)   // ignore <5 ms
+  {
+    
+    zero_cross_flag = true;   // Flag for power calculation
+    zero_cross = true;        // Flag for SCR
+    //first_it_zero_cross = true ;  // flag to start a delay 2msec
+    led_zero = true;
+    lastZeroTime = now;
+  }
+
+  last = now;
+
+
      //portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
      digitalWrite(SCRLED, LOW); //for test only
-     //portEXIT_CRITICAL_ISR(&mux);
+     portEXIT_CRITICAL_ISR(&mux);
    
 }  
 
@@ -113,36 +128,48 @@ void IRAM_ATTR isrPin19() {   //
 // Routine d'interruption timer
 void IRAM_ATTR onTimer()
 {
-  //portENTER_CRITICAL_ISR(&timerMux);
+  portENTER_CRITICAL_ISR(&timerMux);
 
   digitalWrite(limiteLED, HIGH) ; //for scope measurement
-   if(zero_cross == true && dimphaseit <= dimphasemax )  // First check to make sure the zero-cross has 
-                                                        // happened else do nothing
- {                                                    
-      
-     
-     if(i>dimphaseit) {            // i is a counter which is used to SCR command delay 
-                                // i minimum ==> start SCR just after zero crossing half period ==> max power
-                                // i maximum ==> start SCR at the end of the zero crossing half period ==> minimum power
-       digitalWrite(SCR_pin, HIGH);     // start SCR
-       delayMicroseconds(5);             // Pause briefly to ensure the SCR turned on
-       digitalWrite(SCR_pin, LOW);      // Turn off the SCR gate, 
-       i = 0;                             // Reset the accumulator
-
-          //digitalWrite(SCRLED, HIGH);      // start led SCR
-          zero_cross = false;
-          
-     } 
-      else {  
-          i++; 
-          //digitalWrite(SCRLED, LOW); //reset SCR LED
-          }           // If the dimming value has not been reached, incriment our counter
    
- }      // End zero_cross check
 
   digitalWrite(limiteLED, LOW) ; //for scope measurement
   
-  //portEXIT_CRITICAL_ISR(&timerMux);
+  if (led_zero == true)
+  {
+    I_led = 0;
+    led_zero = false;
+  }
+  if (led_zero == false && I_led == dimthreshold)
+  {
+    //digitalWrite(SCRLED, LOW); // reset SSR LED
+  }
+  else
+  {
+    I_led++;
+  }
+
+  if (zero_cross == true && dimphase < dimphasemax) // First check to make sure the zero-cross has
+  {                                                 // happened else do nothing 
+    if (i_counter > dimphase)
+    {                              // i is a counter which is used to SSR command delay
+                                   // i minimum ==> start SSR just after zero crossing half period ==> max power
+                                   // i maximum ==> start SSR at the end of the zero crossing half period ==> minimum power
+      digitalWrite(SCR_pin, HIGH); // start SSR
+      delayMicroseconds(5);        // Pause briefly to ensure the SSR turned on
+      digitalWrite(SCR_pin, LOW);  // Turn off the SSR gate,
+      i_counter = 0;               // Reset the accumulator
+      // digitalWrite(SCRLED, HIGH);  // start led SSR
+      zero_cross = false;
+    }
+    else
+    {
+      i_counter++;
+    } // If the dimming value has not been reached, incriment the counter
+
+  } // End zero_cross check
+
+  portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 
@@ -264,8 +291,6 @@ void loop() {
   
 }
 
-  
-
 void TaskUI(void *pvParameters)  // This is the task UI.
 {
   (void)pvParameters;
@@ -276,26 +301,6 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
   for (;;)  // A Task shall never return or exit.
   {
-
-
- 
-  
-    if (first_it_zero_cross == true  )            // first IT on rising edge ==> start a delay during 3msec to avoid false zero cross detection
-      {            
-       
-       it_elapsed = millis () + wait_it_limit;
-      
-       //detachInterrupt(digitalPinToInterrupt(zeroCrossPin)); // invalid interrupt during 3msec to avoid false interrupt during falling edge
-       first_it_zero_cross = false;      // flag for IT zero_cross
-       wait_2msec = true ;
-      }
-      
-      if (wait_2msec == true && long (millis() - it_elapsed) >= 0 )        // check if delay > 3msec to validate interrupt zero cross, wait_it is incremeted by it timer ( 75usec)
-      {
-      
-        //attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
-        wait_2msec=false ; 
-      }
 
   if (long (millis() - time_now > time_limit)) 
     {
