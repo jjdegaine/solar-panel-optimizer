@@ -101,19 +101,20 @@ portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
 void IRAM_ATTR isrPin19() {   // 
      portENTER_CRITICAL_ISR(&mux);
-     digitalWrite(SCRLED, HIGH);      // for test only
+     
     // portENTER_CRITICAL_ISR(&timerMux);// critical sequence timer
 
   uint32_t now = micros();
 
   if (now - lastZeroTime > 5000)   // ignore <5 ms
   {
-    
+    digitalWrite(SCRLED, HIGH);      // for test only
     zero_cross_flag = true;   // Flag for power calculation
     zero_cross = true;        // Flag for SCR
     //first_it_zero_cross = true ;  // flag to start a delay 2msec
     led_zero = true;
     lastZeroTime = now;
+    digitalWrite(SCRLED, LOW); //for test only
   }
 
      //portEXIT_CRITICAL_ISR(&timerMux);// critical sequence timer
@@ -178,6 +179,7 @@ void setup()
   // init wifi
   delay(2000);
    pinMode(limiteLED, OUTPUT);           // Set the limite pin LED as output
+   pinMode(SCR_pin, OUTPUT);            // Set the SSR pin as output
    pinMode(SCRLED, OUTPUT);           // Set the SCR LED as output
    //pinMode(PIN_INTERRUPT, INPUT_PULLUP);  // set the zerocross pin with pullup for interrupt
     pinMode(PIN_INTERRUPT, INPUT);  // set the zerocross pin without pullup for interrupt
