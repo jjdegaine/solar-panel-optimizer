@@ -96,13 +96,16 @@ const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 3600;      // Décalage horaire (ex: France hiver = 3600)
 const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilisé)
 
+int lastDay = -1;
+
 //OTA
-#include <AsyncTCP.h>
+//#include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+//include <WebServer.h>
 #include <ElegantOTA.h>
 
-AsyncWebServer server(80);
-
+AsyncWebServer server(80); 
+//WebServer server(80);
 
 // oled
 
@@ -416,7 +419,7 @@ void setup()
   // USB init
   Serial.begin(115200);
 
-    ElegantOTA.begin(&server);  // Start ElegantOTA
+  ElegantOTA.begin(&server);  // Start ElegantOTA
 
   //init time for reset at 00:00:
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
