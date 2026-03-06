@@ -887,7 +887,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
   (void)pvParameters;
   
-  //esp_task_wdt_add(NULL); 
+  esp_task_wdt_add(NULL); 
   
   for (;;)  // A Task shall never return or exit.
   {
@@ -895,7 +895,6 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
       while (send_MQTT == false) {
         wifi_wait = 0;   
                                       // loop to wait update MQTT
-        //esp_task_wdt_reset();
 
         if (long(millis() - MQTT_time > MQTT_timeout))  //timeout MQTT 3 minutes
         {
@@ -974,7 +973,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     // OTA
 
     ElegantOTA.loop();
-    //esp_task_wdt_reset();  // Reset WDT
+    
+    esp_task_wdt_reset();  // Reset WDT
   }
 
 }  // end for loop wifi
