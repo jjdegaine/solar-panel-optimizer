@@ -530,7 +530,8 @@ void setup() {  // Begin setup
 
   esp_task_wdt_config_t config = {
     .timeout_ms = WDT_TIMEOUT * 1000,
-    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Core 0 + Core 1
+    .idle_core_mask = 0, 
+    //.idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Core 0 + Core 1
     .trigger_panic = true
   };
 
@@ -546,14 +547,20 @@ void setup() {  // Begin setup
     ,
     NULL, 2  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
     ,
-    NULL, ARDUINO_RUNNING_CORE);
+    &taskUIcHandle,
+    0); //core 0
+
+    //NULL, ARDUINO_RUNNING_CORE);
 
   xTaskCreatePinnedToCore(
     Taskwifi_udp, "wifi_udp", 20000  // Stack size
     ,
     NULL, 1  // Priority
     ,
-    NULL, ARDUINO_RUNNING_CORE);
+    &taskwifi_udpHandle,
+    1); //core 1
+
+    //NULL, ARDUINO_RUNNING_CORE);
 
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
 }
