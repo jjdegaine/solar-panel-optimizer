@@ -148,7 +148,7 @@ String client_id = "routeur";
 
 // Information to be displayed
 
-bool CALIBRATION = false;  // to calibrate Vcalibration and Icalibration
+bool CALIBRATION = true;  // to calibrate Vcalibration and Icalibration
 bool VERBOSE = false;      // to verify dim and dimstep
 bool WINTER = false;       // winter -> no wifi summer --> wifi
 
@@ -337,7 +337,7 @@ void Taskwifi_udp(void *pvParameters);
 
 void IRAM_ATTR isrPin19() {   //  
   portENTER_CRITICAL_ISR(&mux);
-
+    digitalWrite(SCRLED, HIGH);                    //  for test only
   uint32_t now = micros();
 
   if (now - lastZeroTime > 5000)   // ignore <5 ms
@@ -350,7 +350,7 @@ void IRAM_ATTR isrPin19() {   //
     lastZeroTime = now;
     
     }
-
+    digitalWrite(SCRLED, LOW);  // for test only
   portEXIT_CRITICAL_ISR(&mux);
 }
 
@@ -362,14 +362,14 @@ void IRAM_ATTR isrPin19() {   //
 void IRAM_ATTR onTimer() {
   portENTER_CRITICAL_ISR(&timerMux);
 
-  //digitalWrite(limiteLED, HIGH) ; //for scope measurement
+  digitalWrite(limiteLED, HIGH) ; //for scope measurement
   
   if (led_zero == true) {
     I_led = 0;
     led_zero = false;
   }
   if (led_zero == false && I_led == dimthreshold) {
-    digitalWrite(SCRLED, LOW);  // reset SSR LED
+    //digitalWrite(SCRLED, LOW);  // reset SSR LED disable for test only
   } else {
     I_led++;
   }
@@ -383,7 +383,7 @@ void IRAM_ATTR onTimer() {
       delayMicroseconds(5);                          // Pause briefly to ensure the SSR turned on
       digitalWrite(SCR_pin, LOW);                    // Turn off the SSR gate,
       i_counter = 0;                                 // Reset the accumulator
-      digitalWrite(SCRLED, HIGH);                    // start led SSR
+      // digitalWrite(SCRLED, HIGH);                    // start led SSR disable for test only
       zero_cross = false;
     } else {
       i_counter++;
@@ -391,7 +391,7 @@ void IRAM_ATTR onTimer() {
 
   }  // End zero_cross check
 
-  //digitalWrite(limiteLED, LOW) ; //for scope measurement
+  digitalWrite(limiteLED, LOW) ; //for scope measurement
   
   portEXIT_CRITICAL_ISR(&timerMux);
 }
@@ -862,11 +862,11 @@ void TaskUI(void *pvParameters)  // This is the task UI.
 
         // update switches winter, verbose, calibration
 
-        WINTER = digitalRead(pin_winter);
+        //WINTER = digitalRead(pin_winter);
 
-        VERBOSE = digitalRead(pin_verbose);
+        //VERBOSE = digitalRead(pin_verbose);
 
-        CALIBRATION = digitalRead(pin_calibration);
+        //CALIBRATION = digitalRead(pin_calibration);
 
       
     }
