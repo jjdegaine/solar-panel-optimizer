@@ -71,8 +71,8 @@ version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
 version 3.2 2026-02 test improvement timeout mqtt 
+version 3.3 2026_03 OTA reset 24h
 */
-
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
 
 #if CONFIG_FREERTOS_UNICORE
@@ -89,6 +89,19 @@ version 3.2 2026-02 test improvement timeout mqtt
 
 #include <esp_task_wdt.h> // watch dog
 
+// time for reset at 00:00
+#include <time.h>
+
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;      // Décalage horaire (ex: France hiver = 3600)
+const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilisé)
+
+//OTA
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <ElegantOTA.h>
+
+AsyncWebServer server(80);
 
 
 // oled
@@ -402,6 +415,11 @@ void setup()
 
   // USB init
   Serial.begin(115200);
+
+    ElegantOTA.begin(&server);  // Start ElegantOTA
+
+  //init time for reset at 00:00:
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
   // work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
 
@@ -934,6 +952,30 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
       }
 
     };
+    
+    //reset at 00:00
+    struct tm timeinfo;
+    if(!getLocalTime(&timeinfo)){
+      Serial.println("Failed to obtain time");
+      return;
+
+    }
+      int currentDay = timeinfo.tm_mday;
+      int currentHour = timeinfo.tm_hour;
+      int currentMinute = timeinfo.tm_min;
+      int currentSecond = timeinfo.tm_sec;
+      //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
+
+      // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
+      if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
+        Serial.println("Redémarrage quotidien...");
+        lastDay = currentDay;
+        delay(60000); // attente 1 minute pour ne pas refaire un reset 
+        ESP.restart();
+      }
+    // OTA
+
+    ElegantOTA.loop();
   }
 
 } // end for loop wifi
