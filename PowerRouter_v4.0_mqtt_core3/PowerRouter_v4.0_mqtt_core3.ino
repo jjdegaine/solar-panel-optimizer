@@ -102,7 +102,7 @@ int lastDay = -1;
 
 // watchdog
 #include <esp_task_wdt.h>  // watch dog
-#define WDT_TIMEOUT 5  // watch dog time 5 seconds
+#define WDT_TIMEOUT 60000  // watch dog time 60 seconds
 
 TaskHandle_t taskUIcHandle = NULL;
 TaskHandle_t taskwifi_udpHandle = NULL;
@@ -880,7 +880,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
   (void)pvParameters;
   
-  esp_task_wdt_add(NULL); 
+  //esp_task_wdt_add(NULL); 
   
   for (;;)  // A Task shall never return or exit.
   {
@@ -967,7 +967,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
     // OTA
 
     ElegantOTA.loop();
-    esp_task_wdt_reset();  // Reset WDT
+    //esp_task_wdt_reset();  // Reset WDT
   }
 
 }  // end for loop wifi
