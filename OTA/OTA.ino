@@ -11,13 +11,13 @@ _____________________________________________________________________
  2026_03 OTA only
 */
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
-
+/*
 #if CONFIG_FREERTOS_UNICORE
 #define ARDUINO_RUNNING_CORE 0
 #else
 #define ARDUINO_RUNNING_CORE 1
 #endif
-
+*/
 #include <Esp.h>
 
 #include <WiFi.h>
@@ -158,8 +158,9 @@ void setup()
   server.begin();
   Serial.println("HTTP server started");
   ElegantOTA.begin(&server);    // Start ElegantOTA
+}
 
-
+/*
   // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
       TaskUI, "TaskUI" // A name just for humans
@@ -179,7 +180,7 @@ void setup()
 
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
 }
-
+*/
 //____________________________________________________________________________________________
 // End setup
 //____________________________________________________________________________________________
@@ -187,8 +188,10 @@ void setup()
 void loop()
 {
   // Empty. Things are done in Tasks.
-}
+  Serial.println("loop started");
+   ElegantOTA.loop();
 
+}
 /*--------------------------------------------------*/
 /*---------------------- Tasks UI ------------------*/
 /*--------------------------------------------------*/
@@ -198,7 +201,7 @@ void loop()
 // Power calculation using ADC value ==> rPower
 //____________________________________________________________________________________________
 //
-
+/*
 void TaskUI(void *pvParameters) // This is the task UI.
 {
   (void)pvParameters;
@@ -214,15 +217,16 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
   } // end task UI
 }
+*/
 /*--------------------------------------------------*/
 /*---------------------- Tasks Wifi ----------------*/
 /*--------------------------------------------------*/
 //
-
+/*
 void Taskwifi_udp(void *pvParameters) // This is a task.
 {
   (void)pvParameters;
-  
+
   Serial.println("Taskwifi started");
 
   for (;;) // A Task shall never return or exit.
@@ -237,3 +241,4 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 
 } // end for loop wifi
 
+*/
