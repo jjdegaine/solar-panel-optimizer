@@ -87,7 +87,7 @@ version 3.3 2026_03 OTA reset 24h
 
 #include "PubSubClient.h" //wifi mqtt
 
-#include <esp_task_wdt.h> // watch dog
+//#include <esp_task_wdt.h> // watch dog
 
 // time for reset at 00:00
 #include <time.h>
@@ -259,7 +259,7 @@ volatile bool wait_2msec;                  // flag no IT on falling edge
 
 volatile bool led_zero = false;
 
-#define WDT_TIMEOUT 15 // watch dog time
+//#define WDT_TIMEOUT 15 // watch dog time
 
 
 // Voltage and current measurement  :
@@ -563,8 +563,8 @@ void TaskUI(void *pvParameters) // This is the task UI.
   (void)pvParameters;
 
   // init watch dog
-  esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL);               // add current thread to WDT watch
+  //esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
+ // esp_task_wdt_add(NULL);               // add current thread to WDT watch
 
   for (;;) // A Task shall never return or exit.
   {
@@ -598,7 +598,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
       if (memo_readV == 0 && readV == 0)
       {
-        esp_task_wdt_reset();
+       //esp_task_wdt_reset();
         break;
       }                                         // exit the while if no powersupply
       readI = analogRead(currentSensorPin) / 4; // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
@@ -891,7 +891,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
     CALIBRATION = digitalRead(pin_calibration);
 
-    esp_task_wdt_reset(); // reset watch dog
+    //esp_task_wdt_reset(); // reset watch dog
   }
 
 } // end task UI
