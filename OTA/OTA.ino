@@ -44,7 +44,7 @@ const int channel = 4; // define channel 4 seems to be the best for wifi....
 
 const char *ssid = "freebox_ZPRLHQ_2GEXT"; // SSID WiFi
 const char *password = "Cairojude58";      // mot de passe WiFi
-String hostname= "ESP32 OTA"; 
+String hostname= "ESP32 OTA "; 
 
 
 WiFiClient espClient;
