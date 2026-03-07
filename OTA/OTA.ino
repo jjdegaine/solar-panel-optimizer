@@ -78,7 +78,6 @@ void Taskwifi_udp(void *pvParameters);
 void setup()
 { // Begin setup
 
-  pinMode(SCR_pin, OUTPUT);            // Set the SSR pin as output
   
   // USB init
   Serial.begin(115200);
