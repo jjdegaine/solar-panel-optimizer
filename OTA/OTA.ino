@@ -158,7 +158,7 @@ void setup()
   server.begin();
   Serial.println("HTTP server started");
   ElegantOTA.begin(&server);    // Start ElegantOTA
-  
+
 
   // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
@@ -222,7 +222,8 @@ void TaskUI(void *pvParameters) // This is the task UI.
 void Taskwifi_udp(void *pvParameters) // This is a task.
 {
   (void)pvParameters;
-  Serial.println("TaskUI started");
+  
+  Serial.println("Taskwifi started");
 
   for (;;) // A Task shall never return or exit.
     {
