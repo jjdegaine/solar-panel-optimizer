@@ -212,12 +212,55 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
   for (;;) // A Task shall never return or exit.
     {
     Serial.println("TaskUI started");
-      while (stop == false)
-      { 
+    if (connect _MQTT)
+      {
         ElegantOTA.loop();
       }
     
     }
 
 } // end for loop wifi
+bool Connect_MQTT()
+{
+  if (client.connected())
+  {
+    return true;
+  }
+
+  while (!client.connected())
+  {
+    /*Serial.print(" state MQTT ");
+    Serial.println(client.state());
+    Serial.print(" state wifi ");
+    Serial.println(WiFi.status());
+    */
+    client.disconnect();
+    delay(2000); // wait 2 secondes before connecting again.
+
+    WiFi.disconnect();
+      delay(2000);
+    Serial.println("disConnecting to WiFi..");
+        // init wifi
+    WiFi.mode(WIFI_STA);
+    WiFi.setHostname(hostname.c_str()); //define hostname
+    WiFi.begin(ssid, password);
+      while (WiFi.status() != WL_CONNECTED)
+      {
+       delay(500);
+      Serial.println("Connecting to WiFi..");
+      display.drawString(0, 0, "connecting to WiFi...");
+      }
+      Serial.println("Connected to the WiFi network");
+      display.drawString(0, 0, "connected to WiFi");
+
+    String l_client_id = client_id;
+    l_client_id += String(WiFi.macAddress());
+
+
+    Serial.printf("The client is connected ", l_client_id.c_str());
+    Serial.println();
+
+    
+  }
+}
 
