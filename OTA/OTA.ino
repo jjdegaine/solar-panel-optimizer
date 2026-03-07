@@ -65,7 +65,7 @@ bool stop = false ;
 // other value :
 
 
-// define two tasks for UI & wifi_udp (mqtt)
+// define two tasks for UI & wifi
 void TaskUI(void *pvParameters);
 void Taskwifi_udp(void *pvParameters);
 
@@ -145,6 +145,20 @@ void setup()
   Serial.println("Connected to the WiFi network");
   display.drawString(0, 0, "connected to WiFi");
 
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "Hi! I am ESP32 OTA.");
+  });
+
+  server.begin();
+  Serial.println("HTTP server started");
+  ElegantOTA.begin(&server);    // Start ElegantOTA
+  
 
   // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
@@ -208,59 +222,17 @@ void TaskUI(void *pvParameters) // This is the task UI.
 void Taskwifi_udp(void *pvParameters) // This is a task.
 {
   (void)pvParameters;
+  Serial.println("TaskUI started");
 
   for (;;) // A Task shall never return or exit.
     {
-    Serial.println("TaskUI started");
-    if (connect _MQTT)
-      {
-        ElegantOTA.loop();
-      }
+    
+   
+      
+    ElegantOTA.loop();
+      
     
     }
 
 } // end for loop wifi
-bool Connect_MQTT()
-{
-  if (client.connected())
-  {
-    return true;
-  }
-
-  while (!client.connected())
-  {
-    /*Serial.print(" state MQTT ");
-    Serial.println(client.state());
-    Serial.print(" state wifi ");
-    Serial.println(WiFi.status());
-    */
-    client.disconnect();
-    delay(2000); // wait 2 secondes before connecting again.
-
-    WiFi.disconnect();
-      delay(2000);
-    Serial.println("disConnecting to WiFi..");
-        // init wifi
-    WiFi.mode(WIFI_STA);
-    WiFi.setHostname(hostname.c_str()); //define hostname
-    WiFi.begin(ssid, password);
-      while (WiFi.status() != WL_CONNECTED)
-      {
-       delay(500);
-      Serial.println("Connecting to WiFi..");
-      display.drawString(0, 0, "connecting to WiFi...");
-      }
-      Serial.println("Connected to the WiFi network");
-      display.drawString(0, 0, "connected to WiFi");
-
-    String l_client_id = client_id;
-    l_client_id += String(WiFi.macAddress());
-
-
-    Serial.printf("The client is connected ", l_client_id.c_str());
-    Serial.println();
-
-    
-  }
-}
 
