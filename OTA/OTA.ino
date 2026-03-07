@@ -158,6 +158,7 @@ void setup()
   server.begin();
   Serial.println("HTTP server started");
   ElegantOTA.begin(&server);    // Start ElegantOTA
+
 }
 
 /*
@@ -188,12 +189,9 @@ void setup()
 void loop()
 {
  
-  Serial.println("loop started");
-  for (;;) // A Task shall never return or exit.
-    {
-    
+  
    ElegantOTA.loop();
-    }
+
 }
 /*--------------------------------------------------*/
 /*---------------------- Tasks UI ------------------*/
