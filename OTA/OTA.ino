@@ -66,8 +66,8 @@ bool stop = false ;
 
 
 // define two tasks for UI & wifi
-void TaskUI(void *pvParameters);
-void Taskwifi_udp(void *pvParameters);
+//void TaskUI(void *pvParameters);
+//void Taskwifi_udp(void *pvParameters);
 
 
 //_____________________________________________________________________________________________
@@ -80,9 +80,7 @@ void setup()
 
   
   // USB init
-  Serial.begin(115200);
-  server.begin();
-  ElegantOTA.begin(&server);  // Start ElegantOTA
+
 
 
   // work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
@@ -155,10 +153,10 @@ void setup()
     request->send(200, "text/plain", "Hi! I am ESP32 OTA.");
   });
 
-  //server.begin();
-  Serial.println("HTTP server started");
-  ElegantOTA.begin(&server);    // Start ElegantOTA
-
+  Serial.begin(115200);
+  server.begin();
+  ElegantOTA.begin(&server);  // Start ElegantOTA
+  
 }
 
 /*
