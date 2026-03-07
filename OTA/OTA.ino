@@ -187,10 +187,13 @@ void setup()
 
 void loop()
 {
-  // Empty. Things are done in Tasks.
+ 
   Serial.println("loop started");
+  for (;;) // A Task shall never return or exit.
+    {
+    
    ElegantOTA.loop();
-
+    }
 }
 /*--------------------------------------------------*/
 /*---------------------- Tasks UI ------------------*/
