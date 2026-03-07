@@ -81,7 +81,7 @@ void setup()
   
   // USB init
   Serial.begin(115200);
-
+  server.begin();
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
 
