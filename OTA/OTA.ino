@@ -155,7 +155,7 @@ void setup()
     request->send(200, "text/plain", "Hi! I am ESP32 OTA.");
   });
 
-  server.begin();
+  //server.begin();
   Serial.println("HTTP server started");
   ElegantOTA.begin(&server);    // Start ElegantOTA
 
