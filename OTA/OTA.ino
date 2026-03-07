@@ -53,7 +53,7 @@ void loop()
       {
        delay(500);
       Serial.println("Connecting to WiFi..");
-      display.drawString(0, 0, "connecting to WiFi...");
+      
       }
     }
 
