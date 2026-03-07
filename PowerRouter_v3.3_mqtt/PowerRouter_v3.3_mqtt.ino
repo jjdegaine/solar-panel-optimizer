@@ -98,6 +98,9 @@ const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilis�
 
 int lastDay = -1;
 
+unsigned long timeout_24H = 86400000;       // timeout 24H si pool.ntp.org HS: 1s
+unsigned long time_24H;
+
 //OTA
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -507,6 +510,8 @@ void setup()
   Serial.println("HTTP server started"); 
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
+  time_24H = millis() ;
+
   // client.setCallback(callback);
   Connect_MQTT();
 
@@ -907,7 +912,7 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 
   for (;;) // A Task shall never return or exit.
   {
-
+    
     while (send_MQTT == false)
     {
       wifi_wait = 0; // loop to wait update DIM
@@ -916,6 +921,8 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
         dim_test = 1 ;
         sprintf(mystring_dim, "%g", dim_test); //send dim_test in case off timeout
         client.publish(topic_dim, mystring_dim, true);
+        Serial.println("time out MQTT time ");
+
         delay (100000)  ; // delay 100 secondes
         ESP.restart(); 
 
@@ -964,24 +971,38 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
     
     //reset at 00:00
     struct tm timeinfo;
-    if(!getLocalTime(&timeinfo)){
+    if(!getLocalTime(&timeinfo))
+      {
       Serial.println("Failed to obtain time");
-      return;
-
-    }
-      int currentDay = timeinfo.tm_mday;
-      int currentHour = timeinfo.tm_hour;
-      int currentMinute = timeinfo.tm_min;
-      int currentSecond = timeinfo.tm_sec;
-      //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
-
-      // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
-      if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
-        Serial.println("Redémarrage quotidien...");
-        lastDay = currentDay;
-        delay(60000); // attente 1 minute pour ne pas refaire un reset 
-        ESP.restart();
+      if (long(millis() - time_24H > timeout_24H))    //timeout 24H
+       {
+        
+        Serial.println("time out 24H time ");
+      
+        delay (100000)  ; // delay 100 secondes
+        ESP.restart(); 
+       }
       }
+    else
+      {
+        int currentDay = timeinfo.tm_mday;
+        int currentHour = timeinfo.tm_hour;
+        int currentMinute = timeinfo.tm_min;
+        int currentSecond = timeinfo.tm_sec;
+        
+        time_24H = millis() ;
+
+        //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
+
+        // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
+        if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
+          Serial.println("Redémarrage quotidien...");
+          lastDay = currentDay;
+          delay(60000); // attente 1 minute pour ne pas refaire un reset 
+          ESP.restart();
+          }
+        }
+  
     // OTA
 
     ElegantOTA.loop();
