@@ -61,7 +61,7 @@ bool stop = false ;
 
 
 
-/
+//
 // other value :
 
 
@@ -195,7 +195,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
   Serial.println("TaskUI started");
   while (stop == false)
   { 
-    stop == false ; // do nothing
+    stop = false ; // do nothing
   }
 
   } // end task UI
