@@ -44,19 +44,21 @@ void setup()
 void loop() 
 
 {
-  while (WiFi.status() != WL_CONNECTED) {
+ 
     delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+    if (WiFi.status() != WL_CONNECTED)
+    {
+     WiFi.begin(ssid, password);
+      while (WiFi.status() != WL_CONNECTED)
+      {
+       delay(500);
+      Serial.println("Connecting to WiFi..");
+      display.drawString(0, 0, "connecting to WiFi...");
+      }
+    }
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "ESP32 OTA");
-  });
+
   
+
   ElegantOTA.loop();
 }
