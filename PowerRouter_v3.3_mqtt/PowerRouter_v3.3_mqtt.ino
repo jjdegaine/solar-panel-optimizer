@@ -187,7 +187,7 @@ int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 
 
 */
 
- main board 6 test card
+ //main board 6 test card
 float Vcalibration = 0.91;   // to obtain the mains exact value
 float Icalibration = 90;     // current in milliampères
 float phasecalibration = -6; // value to compensate  the phase shift linked to the sensors.
