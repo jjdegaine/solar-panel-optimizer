@@ -105,8 +105,8 @@ unsigned long time_24H;
 
 
 // watchdog
-#include <esp_task_wdt.h>  // watch dog
-#define WDT_TIMEOUT 60000  // watch dog time 60 seconds
+//#include <esp_task_wdt.h>  // watch dog
+//#define WDT_TIMEOUT 60000  // watch dog time 60 seconds
 
 TaskHandle_t taskUIcHandle = NULL;
 TaskHandle_t taskwifi_udpHandle = NULL;
@@ -534,16 +534,16 @@ void setup() {  // Begin setup
 
   // init watchdog
 
-  esp_task_wdt_config_t config = {
-    .timeout_ms = WDT_TIMEOUT * 1000,
-    .idle_core_mask = 0, 
+  //esp_task_wdt_config_t config = {
+  //  .timeout_ms = WDT_TIMEOUT * 1000,
+ //   .idle_core_mask = 0, 
     //.idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Core 0 + Core 1
-    .trigger_panic = true
-  };
+ //   .trigger_panic = true
+  //};
 
-  esp_task_wdt_init(&config);
+  //esp_task_wdt_init(&config);
 
-  Serial.println("Watchdog actif sur Core 0 et Core 1");
+  //Serial.println("Watchdog actif sur Core 0 et Core 1");
   
   // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
@@ -598,7 +598,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   (void)pvParameters;
 
 // init watch dog esp core 3
-    esp_task_wdt_add(NULL);                // add current thread to WDT watch
+    //esp_task_wdt_add(NULL);                // add current thread to WDT watch
 
   for (;;)  // A Task shall never return or exit.
   {
@@ -877,7 +877,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       
     }
 
-  esp_task_wdt_reset();  // reset watch dog
+  //esp_task_wdt_reset();  // reset watch dog
   
   } // end for
 
@@ -893,7 +893,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
   (void)pvParameters;
   
-  esp_task_wdt_add(NULL); 
+  //esp_task_wdt_add(NULL); 
   
   for (;;)  // A Task shall never return or exit.
   {
@@ -993,7 +993,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
     ElegantOTA.loop();
     
-    esp_task_wdt_reset();  // Reset WDT
+    //esp_task_wdt_reset();  // Reset WDT
   }
 
 }  // end for loop wifi
