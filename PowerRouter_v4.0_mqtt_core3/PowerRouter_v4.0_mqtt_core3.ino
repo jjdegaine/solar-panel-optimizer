@@ -256,8 +256,8 @@ byte dimphasemax = dimmax + dimthreshold;
 byte wifi_wait = 0;  // used for the waiting loop on task wifi
 
 
-unsigned long wait_it_limit = 3;  // delay 3msec
-unsigned long it_elapsed;         // counter for delay 3 msec
+//unsigned long wait_it_limit = 3;  // delay 3msec
+//unsigned long it_elapsed;         // counter for delay 3 msec
 
 volatile int i_counter = 0;                 // Variable to use as a counter for SSR
 volatile int i = 0;                         // Variable to use as a counter for LCD
@@ -273,10 +273,10 @@ volatile uint32_t lastZeroTime = 0;
 
 // Voltage and current measurement  :
 
-int readV, memo_readV, readI;  // voltage and current withn ADC (0 à 1023 bits)
+int readV =0, memo_readV = 0 , readI = 0;  // voltage and current withn ADC (0 à 1023 bits)
 float rPower, V, I, sqV, sumV = 0, sqI, sumI = 0, instP, sumP = 0;
-float Power_wifi;
-float Power_wifi_5mn;
+float Power_wifi =0 ;
+float Power_wifi_5mn =0;
 byte zero_crossCount = 0;  // half period counter
 
 // 10 sec mean power mqtt
@@ -313,7 +313,7 @@ float Power_water_heater = 3000;  // 3000W Heater water
 
 // other value :
 
-int dimstep;  // DIM step value
+int dimstep = 0;  // DIM step value
 
 unsigned int memo_temps = 0;
 
