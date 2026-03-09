@@ -893,7 +893,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   for (;;)  // A Task shall never return or exit.
   {
     
-      while (send_MQTT == false) {
+      while (send_MQTT == false) 
+      {
         wifi_wait = 0;   
                                       // loop to wait update MQTT
 
@@ -944,39 +945,50 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
           //client.publish(topic_dim, mystring_dim, true);
           
         }
-
-     
-    };
-  
+ 
 
   
     //reset at 00:00
     struct tm timeinfo;
-    if(!getLocalTime(&timeinfo)){
-      Serial.println("Failed to obtain time");
-      return;
-
-    }
-      int currentDay = timeinfo.tm_mday;
-      int currentHour = timeinfo.tm_hour;
-      int currentMinute = timeinfo.tm_min;
-      int currentSecond = timeinfo.tm_sec;
-      //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
-
-      // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
-      if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
-        Serial.println("Redémarrage quotidien...");
-        lastDay = currentDay;
-        delay(60000); // attente 1 minute pour ne pas refaire un reset 
-        ESP.restart();
+    if(!getLocalTime(&timeinfo))
+      {
+          Serial.println("Failed to obtain time");
+          if (long(millis() - time_24H > timeout_24H))    //timeout 24H
+          {
+            
+            Serial.println("time out 24H time ");
+          
+            delay (100000)  ; // delay 100 secondes
+            ESP.restart(); 
+          }
       }
-  
-    // OTA
+    else
+      {
+        int currentDay = timeinfo.tm_mday;
+        int currentHour = timeinfo.tm_hour;
+        int currentMinute = timeinfo.tm_min;
+        int currentSecond = timeinfo.tm_sec;
+        
+        time_24H = millis() ;
 
+        //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
+
+        // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
+        if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay)
+         {
+          Serial.println("Redémarrage quotidien...");
+          lastDay = currentDay;
+          delay(60000); // attente 1 minute pour ne pas refaire un reset 
+          ESP.restart();
+          }
+      
+    
+      }
+
+    // OTA
     ElegantOTA.loop();
 
-   // esp_task_wdt_reset();  // Reset WDT
-    
+      // esp_task_wdt_reset();  // Reset WDT
   }
 
 }  // end for loop wifi
