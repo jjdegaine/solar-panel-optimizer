@@ -100,6 +100,10 @@ const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilis�
 
 int lastDay = -1;
 
+unsigned long timeout_24H = 86400000;       // timeout 24H si pool.ntp.org HS: 1s
+unsigned long time_24H;
+
+
 // watchdog
 //#include <esp_task_wdt.h>  // watch dog
 //#define WDT_TIMEOUT 60000  // watch dog time 60 seconds
