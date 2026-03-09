@@ -401,7 +401,8 @@ void IRAM_ATTR onTimer() {
 // SETUP
 //_____________________________________________________________________________________________
 
-void setup() {  // Begin setup
+void setup() 
+{  // Begin setup
 
   pinMode(SCR_pin, OUTPUT);             // Set the SSR pin as output
   pinMode(unballast_relay1, OUTPUT);    // Set the Delest pin as output
@@ -471,7 +472,9 @@ void setup() {  // Begin setup
   delay(500);
   if (VERBOSE == true) {
     Serial.print("  Pu (W) || dimstep |  dim || ");
-  } else {
+  } 
+  else 
+  {
     Serial.println("GO");
     Serial.println();
   }
@@ -487,7 +490,8 @@ void setup() {  // Begin setup
   WiFi.setHostname(hostname);  //define hostname
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED) 
+  {
     delay(500);
     Serial.println("Connecting to WiFi..");
     display.drawString(0, 0, "connecting to WiFi...");
@@ -498,7 +502,8 @@ void setup() {  // Begin setup
   Serial.println(WiFi.localIP());
 
   //OTA server
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { 
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) 
+  { 
     request->send(200, "text/plain", "ESP routeur server OTA");
   });
 
@@ -913,7 +918,8 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 
       MQTT_time = millis();
 
-      if (Connect_MQTT()) {
+      if (Connect_MQTT()) 
+      {
         /*
         if (send_MQTT == true)
         {
@@ -946,12 +952,12 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
           
         }
  
-
+      }
   
-    //reset at 00:00
-    struct tm timeinfo;
-    if(!getLocalTime(&timeinfo))
-      {
+        //reset at 00:00
+        struct tm timeinfo;
+        if(!getLocalTime(&timeinfo))
+        {
           Serial.println("Failed to obtain time");
           if (long(millis() - time_24H > timeout_24H))    //timeout 24H
           {
@@ -961,37 +967,35 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
             delay (100000)  ; // delay 100 secondes
             ESP.restart(); 
           }
-      }
-    else
-      {
-        int currentDay = timeinfo.tm_mday;
-        int currentHour = timeinfo.tm_hour;
-        int currentMinute = timeinfo.tm_min;
-        int currentSecond = timeinfo.tm_sec;
-        
-        time_24H = millis() ;
+        }
+        else
+        {
+          int currentDay = timeinfo.tm_mday;
+          int currentHour = timeinfo.tm_hour;
+          int currentMinute = timeinfo.tm_min;
+          int currentSecond = timeinfo.tm_sec;
+          
+          time_24H = millis() ;
 
-        //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
+          //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
 
-        // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
-        if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay)
-         {
-          Serial.println("Redémarrage quotidien...");
-          lastDay = currentDay;
-          delay(60000); // attente 1 minute pour ne pas refaire un reset 
-          ESP.restart();
+          // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
+          if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay)
+          {
+            Serial.println("Redémarrage quotidien...");
+            lastDay = currentDay;
+            delay(60000); // attente 1 minute pour ne pas refaire un reset 
+            ESP.restart();
           }
-      
-    
-      }
+        }
 
-    // OTA
-    ElegantOTA.loop();
+      // OTA
+      ElegantOTA.loop();
 
       // esp_task_wdt_reset();  // Reset WDT
-  }
-
-}  // end for loop wifi
+    
+  } 
+}// end for loop wifi
 
 
 bool Connect_MQTT() {
