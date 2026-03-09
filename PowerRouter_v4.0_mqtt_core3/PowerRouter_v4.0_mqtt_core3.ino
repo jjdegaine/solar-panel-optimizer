@@ -100,6 +100,10 @@ const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilis�
 
 int lastDay = -1;
 
+unsigned long timeout_24H = 86400000;       // timeout 24H si pool.ntp.org HS: 1s
+unsigned long time_24H;
+
+
 // watchdog
 #include <esp_task_wdt.h>  // watch dog
 #define WDT_TIMEOUT 60000  // watch dog time 60 seconds
@@ -126,7 +130,7 @@ const int channel = 4;  // define channel 4 seems to be the best for wifi....
 
 const char *ssid = "freebox_ZPRLHQ_2GEXT";  // SSID WiFi
 const char *password = "Cairojude58";       // mot de passe WiFi
-const char* hostname = "ESP32 routeur";
+const char* hostname = "ESP32 routeur core3";
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";
@@ -503,9 +507,11 @@ void setup() {  // Begin setup
   });
 
   server.begin();
-  Serial.println("HTTP server started OTA version 2026_03_05");
+  Serial.println("HTTP server started OTA version 2027_03_09");
  
   ElegantOTA.begin(&server);  // Start ElegantOTA
+
+   time_24H = millis() ;
 
   //init time for reset at 00:00:
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -900,7 +906,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         {
           dim_test = 1;
           sprintf(mystring_dim, "%g", dim_test);  //send dim_test in case off timeout
-          client.publish(topic_dim, mystring_dim, true);
+          //client.publish(topic_dim, mystring_dim, true);
           Serial.println("time out boucle mqtt");
           delay(10000);  // delay 10 secondes
           ESP.restart();
@@ -937,10 +943,10 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         if (send_MQTT == true) {
           send_MQTT = false;
           sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
-          client.publish(topic_test, mystring_power_wifi_10mn, true);
+          //client.publish(topic_test, mystring_power_wifi_10mn, true);
           dim_test = 0;
           sprintf(mystring_dim, "%g", dim_test);  //send dim_test
-          client.publish(topic_dim, mystring_dim, true);
+          //client.publish(topic_dim, mystring_dim, true);
           
         }
 
@@ -951,23 +957,36 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   
     //reset at 00:00
     struct tm timeinfo;
-    if(!getLocalTime(&timeinfo)){
+    if(!getLocalTime(&timeinfo))
+    {
       Serial.println("Failed to obtain time");
-      return;
+      if (long(millis() - time_24H > timeout_24H))    //timeout 24H
+       {
+        
+        Serial.println("time out 24H time ");
+      
+        delay (100000)  ; // delay 100 secondes
+        ESP.restart(); 
+       }
+      }
+    else
+      {
+        int currentDay = timeinfo.tm_mday;
+        int currentHour = timeinfo.tm_hour;
+        int currentMinute = timeinfo.tm_min;
+        int currentSecond = timeinfo.tm_sec;
+        
+        time_24H = millis() ;
 
-    }
-      int currentDay = timeinfo.tm_mday;
-      int currentHour = timeinfo.tm_hour;
-      int currentMinute = timeinfo.tm_min;
-      int currentSecond = timeinfo.tm_sec;
-      //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
+        //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
 
-      // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
-      if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
-        Serial.println("Redémarrage quotidien...");
-        lastDay = currentDay;
-        delay(60000); // attente 1 minute pour ne pas refaire un reset 
-        ESP.restart();
+        // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
+        if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
+          Serial.println("Redémarrage quotidien...");
+          lastDay = currentDay;
+          delay(60000); // attente 1 minute pour ne pas refaire un reset 
+          ESP.restart();
+          }
       }
   
     // OTA
