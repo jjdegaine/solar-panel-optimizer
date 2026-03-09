@@ -24,7 +24,7 @@ unsigned long timeAtLastDisplay = 0;
 
 byte displayLineCounter = 0;
 
- 
+
 
 void setup(void)
 
@@ -159,9 +159,6 @@ void displayVal(int intVal)
     Serial.print(' ');
 
   }
-
- 
-
   Serial.print(strVal);
 
 }
