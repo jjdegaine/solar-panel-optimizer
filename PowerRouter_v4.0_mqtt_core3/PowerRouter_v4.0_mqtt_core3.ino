@@ -100,13 +100,9 @@ const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilis�
 
 int lastDay = -1;
 
-unsigned long timeout_24H = 86400000;       // timeout 24H si pool.ntp.org HS: 1s
-unsigned long time_24H;
-
-
 // watchdog
-//#include <esp_task_wdt.h>  // watch dog
-//#define WDT_TIMEOUT 60000  // watch dog time 60 seconds
+#include <esp_task_wdt.h>  // watch dog
+#define WDT_TIMEOUT 60000  // watch dog time 60 seconds
 
 TaskHandle_t taskUIcHandle = NULL;
 TaskHandle_t taskwifi_udpHandle = NULL;
@@ -341,20 +337,20 @@ void Taskwifi_udp(void *pvParameters);
 
 void IRAM_ATTR isrPin19() {   //  
   portENTER_CRITICAL_ISR(&mux);
-    digitalWrite(SCRLED, HIGH);                    //  for test only
+    
   uint32_t now = micros();
 
   if (now - lastZeroTime > 5000)   // ignore <5 ms
     {
-
+    digitalWrite(SCRLED, HIGH);                    //  for test only
     zero_cross_flag = true;      // Flag for power calculation
     zero_cross = true;           // Flag for SSR
     //first_it_zero_cross = true;  // flag to start a delay 2msec
     led_zero = true;
     lastZeroTime = now;
-    
-    }
     digitalWrite(SCRLED, LOW);  // for test only
+    }
+    
   portEXIT_CRITICAL_ISR(&mux);
 }
 
@@ -507,11 +503,9 @@ void setup() {  // Begin setup
   });
 
   server.begin();
-  Serial.println("HTTP server started OTA version 2027_03_09");
+  Serial.println("HTTP server started OTA version 2026_03_05");
  
   ElegantOTA.begin(&server);  // Start ElegantOTA
-
-   time_24H = millis() ;
 
   //init time for reset at 00:00:
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -534,16 +528,16 @@ void setup() {  // Begin setup
 
   // init watchdog
 
-  //esp_task_wdt_config_t config = {
-  //  .timeout_ms = WDT_TIMEOUT * 1000,
- //   .idle_core_mask = 0, 
+  esp_task_wdt_config_t config = {
+    .timeout_ms = WDT_TIMEOUT * 1000,
+    .idle_core_mask = 0, 
     //.idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Core 0 + Core 1
- //   .trigger_panic = true
-  //};
+    .trigger_panic = true
+  };
 
-  //esp_task_wdt_init(&config);
+  esp_task_wdt_init(&config);
 
-  //Serial.println("Watchdog actif sur Core 0 et Core 1");
+  Serial.println("Watchdog actif sur Core 0 et Core 1");
   
   // Now set up two tasks to run independently.
   xTaskCreatePinnedToCore(
@@ -598,7 +592,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
   (void)pvParameters;
 
 // init watch dog esp core 3
-    //esp_task_wdt_add(NULL);                // add current thread to WDT watch
+    esp_task_wdt_add(NULL);                // add current thread to WDT watch
 
   for (;;)  // A Task shall never return or exit.
   {
@@ -877,7 +871,7 @@ void TaskUI(void *pvParameters)  // This is the task UI.
       
     }
 
-  //esp_task_wdt_reset();  // reset watch dog
+  esp_task_wdt_reset();  // reset watch dog
   
   } // end for
 
@@ -893,7 +887,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
 {
   (void)pvParameters;
   
-  //esp_task_wdt_add(NULL); 
+  esp_task_wdt_add(NULL); 
   
   for (;;)  // A Task shall never return or exit.
   {
@@ -906,7 +900,7 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         {
           dim_test = 1;
           sprintf(mystring_dim, "%g", dim_test);  //send dim_test in case off timeout
-          //client.publish(topic_dim, mystring_dim, true);
+          client.publish(topic_dim, mystring_dim, true);
           Serial.println("time out boucle mqtt");
           delay(10000);  // delay 10 secondes
           ESP.restart();
@@ -943,10 +937,10 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
         if (send_MQTT == true) {
           send_MQTT = false;
           sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
-          //client.publish(topic_test, mystring_power_wifi_10mn, true);
+          client.publish(topic_test, mystring_power_wifi_10mn, true);
           dim_test = 0;
           sprintf(mystring_dim, "%g", dim_test);  //send dim_test
-          //client.publish(topic_dim, mystring_dim, true);
+          client.publish(topic_dim, mystring_dim, true);
           
         }
 
@@ -957,43 +951,31 @@ void Taskwifi_udp(void *pvParameters)  // This is a task.
   
     //reset at 00:00
     struct tm timeinfo;
-    if(!getLocalTime(&timeinfo))
-    {
+    if(!getLocalTime(&timeinfo)){
       Serial.println("Failed to obtain time");
-      if (long(millis() - time_24H > timeout_24H))    //timeout 24H
-       {
-        
-        Serial.println("time out 24H time ");
-      
-        delay (100000)  ; // delay 100 secondes
-        ESP.restart(); 
-       }
-      }
-    else
-      {
-        int currentDay = timeinfo.tm_mday;
-        int currentHour = timeinfo.tm_hour;
-        int currentMinute = timeinfo.tm_min;
-        int currentSecond = timeinfo.tm_sec;
-        
-        time_24H = millis() ;
+      return;
 
-        //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
+    }
+      int currentDay = timeinfo.tm_mday;
+      int currentHour = timeinfo.tm_hour;
+      int currentMinute = timeinfo.tm_min;
+      int currentSecond = timeinfo.tm_sec;
+      //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
 
-        // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
-        if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
-          Serial.println("Redémarrage quotidien...");
-          lastDay = currentDay;
-          delay(60000); // attente 1 minute pour ne pas refaire un reset 
-          ESP.restart();
-          }
+      // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
+      if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
+        Serial.println("Redémarrage quotidien...");
+        lastDay = currentDay;
+        delay(60000); // attente 1 minute pour ne pas refaire un reset 
+        ESP.restart();
       }
   
     // OTA
 
     ElegantOTA.loop();
+
+    esp_task_wdt_reset();  // Reset WDT
     
-    //esp_task_wdt_reset();  // Reset WDT
   }
 
 }  // end for loop wifi
