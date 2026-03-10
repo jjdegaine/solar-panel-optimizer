@@ -788,8 +788,8 @@ bool Connect_MQTT() {
       Serial.println("WiFi timeout Connect_MQTT -> restart");
       ESP.restart();
     }
-    esp_task_wdt_reset();  // nourrit le WDT pendant la reconnexion WiFi
-    delay(500);
+    //esp_task_wdt_reset();  // nourrit le WDT pendant la reconnexion WiFi
+    //delay(500);
     Serial.println("Connecting to WiFi..");
   }
   Serial.print("WiFi OK - IP: "); Serial.println(WiFi.localIP());
