@@ -732,7 +732,7 @@ void Taskwifi_udp(void *pvParameters) {
       //if (do_20s)  { sprintf(mystring_power_wifi,      "%g", local_20s);  client.publish(topic,      mystring_power_wifi,      true); }
       //if (do_5mn)  { sprintf(mystring_power_wifi_5mn,  "%g", local_5mn);  client.publish(topic_5mn,  mystring_power_wifi_5mn,  true); }
       //if (do_10mn) { sprintf(mystring_power_wifi_10mn, "%g", local_10mn); client.publish(topic_10mn, mystring_power_wifi_10mn, true); }
-      if (do_10mn) { Serial.println ("topic 10mn boucle MQTT" ) } ; // for test only
+      if (do_10mn) { Serial.println ("topic 10mn boucle MQTT" ); }  // for test only
     }
 
     // Reset WDT apres publication
