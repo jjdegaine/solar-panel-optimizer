@@ -148,7 +148,7 @@ version 4.2  2026_03_09 watchdog materiel TWDT sur Core 0 et Core 1
 // Timeout 60 secondes :
 // - TaskUI  : cycle de 20 demi-periodes ~200 ms -> tres en dessous de 60 s
 // - TaskWifi: attente MQTT + reconnexion WiFi max 30 s -> en dessous de 60 s
-#define WDT_TIMEOUT_MS 60000
+// #define WDT_TIMEOUT_MS 60000
 
 // ============================================================
 //  Identifiants WiFi et MQTT
@@ -457,6 +457,7 @@ void setup() {
   //  Les taches metier (TaskUI, TaskWifi) sont ajoutees
   //  individuellement via esp_task_wdt_add(NULL) dans chaque tache.
   // ==========================================================
+  /* disable wdt
   Serial.println("Init WDT TWDT...");
   esp_task_wdt_deinit();
 
@@ -472,7 +473,7 @@ void setup() {
   } else {
     Serial.printf("WDT OK: timeout=%ds, Core0+Core1, panic=ON\n", WDT_TIMEOUT_MS / 1000);
   }
-
+*/
   // WiFi
   WiFi.setHostname(hostname);
   WiFi.mode(WIFI_STA);
@@ -532,12 +533,13 @@ void TaskUI(void *pvParameters) {
   //  Elle doit appeler esp_task_wdt_reset() au moins toutes
   //  les WDT_TIMEOUT_MS millisecondes
   // ---------------------------------------------------------
+  /* disable WDT
   esp_err_t err = esp_task_wdt_add(NULL);
   if (err != ESP_OK)
     Serial.printf("[TaskUI] WDT add error: %s\n", esp_err_to_name(err));
   else
     Serial.println("[TaskUI] WDT souscrit Core 0");
-
+*/
   for (;;) {
 
     unsigned int numberOfSamples = 0;
@@ -678,7 +680,7 @@ void TaskUI(void *pvParameters) {
     //  Appele a chaque fin de cycle de mesure (~200 ms)
     //  Largement en dessous du timeout de 60 s
     // ---------------------------------------------------------
-    esp_task_wdt_reset();
+    //esp_task_wdt_reset();
 
   }  // end for(;;)
 }
@@ -692,12 +694,13 @@ void Taskwifi_udp(void *pvParameters) {
   // ---------------------------------------------------------
   //  Abonnement au TWDT pour cette tache (Core 1)
   // ---------------------------------------------------------
+  /* disable WDT
   esp_err_t err = esp_task_wdt_add(NULL);
   if (err != ESP_OK)
     Serial.printf("[TaskWifi] WDT add error: %s\n", esp_err_to_name(err));
   else
     Serial.println("[TaskWifi] WDT souscrit Core 1");
-
+*/
   for (;;) {
 
     // Attente du flag d'envoi MQTT
@@ -712,7 +715,7 @@ void Taskwifi_udp(void *pvParameters) {
         delay(5000);
         ESP.restart();
       }
-      esp_task_wdt_reset();  // nourrit le WDT pendant l'attente (chaque 10 ms)
+      //esp_task_wdt_reset();  // nourrit le WDT pendant l'attente (chaque 10 ms)
       delay(10);
     }
 
@@ -736,7 +739,7 @@ void Taskwifi_udp(void *pvParameters) {
     }
 
     // Reset WDT apres publication
-    esp_task_wdt_reset();
+    //esp_task_wdt_reset();
 
     // Reset quotidien a minuit (NTP)
     struct tm timeinfo;
@@ -759,7 +762,7 @@ void Taskwifi_udp(void *pvParameters) {
     ElegantOTA.loop();
 
     // Reset WDT en fin de cycle complet
-    esp_task_wdt_reset();
+   // esp_task_wdt_reset();
 
   }  // end for(;;)
 }
@@ -790,7 +793,6 @@ bool Connect_MQTT() {
     }
     //esp_task_wdt_reset();  // nourrit le WDT pendant la reconnexion WiFi
     //delay(500);
-    Serial.println("Connecting to WiFi..");
   }
   Serial.print("WiFi OK - IP: "); Serial.println(WiFi.localIP());
 
@@ -798,7 +800,7 @@ bool Connect_MQTT() {
   String l_client_id = client_id + String(WiFi.macAddress());
   Serial.printf("MQTT connect as %s\n", l_client_id.c_str());
 
-  esp_task_wdt_reset();  // nourrit le WDT avant tentative MQTT
+  //esp_task_wdt_reset();  // nourrit le WDT avant tentative MQTT
 
   if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password)) {
     Serial.println("MQTT connecte");
