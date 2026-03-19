@@ -934,7 +934,7 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 
     if (Connect_MQTT()) 
     {
-        /*
+        
       if (send_MQTT == true)
       {
         send_MQTT = false;
@@ -954,8 +954,9 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
         sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
         client.publish(topic_10mn, mystring_power_wifi_10mn, true);
       }
-      */
+      
      // for test only
+     /*
       if (send_MQTT == true)
       {
         send_MQTT = false;
@@ -965,7 +966,7 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
         sprintf(mystring_dim, "%g", dim_test); //send dim_test
         client.publish(topic_dim, mystring_dim, true);
       }
-
+        */
     };
     
     //reset at 00:00
