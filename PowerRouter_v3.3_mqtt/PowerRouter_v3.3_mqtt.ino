@@ -69,7 +69,7 @@ version 2.1 phasecalibration = -10 to compensate U / I phase shift + adding watc
 version 2.3 SSR LED improvement
 version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
-version 3.1 2025_07 relay2 is used for overload (P > 6000W)
+version 3.1 2025_07 relay2 is used for overload (P > 8000W)
 version 3.2 2026-02 test improvement timeout mqtt 
 version 3.3 2026_03 OTA reset 24h  
 */
@@ -300,8 +300,8 @@ char mystring_power_wifi_10mn[50];             // string to be transmitted by wi
 int dim_test  = 0 ;
 char mystring_dim [50];             // string to be transmitted by wifi MQTT
 
-// max Power on grid (6000W)
-float PowerMax = 6000; // 6000W 
+// max Power on grid (8000W)
+float PowerMax = 8000; // 8000W 
 float Power_water_heater = 3000; // 3000W Heater water
 
 // other value :
