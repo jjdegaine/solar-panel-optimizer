@@ -71,7 +71,7 @@ version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
 version 3.2 2026-02 test improvement timeout mqtt 
-version 3.3 2026_03 OTA reset 24h test sur carte n°6 
+version 3.3 2026_03 OTA reset 24h  
 */
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
 
@@ -104,11 +104,10 @@ unsigned long time_24H;
 //OTA
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-//include <WebServer.h>
 #include <ElegantOTA.h>
 
 AsyncWebServer server(80); 
-//WebServer server(80);
+
 
 // oled
 
@@ -128,7 +127,7 @@ const char *mqtt_broker = "192.168.0.154";
 const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 const char *topic_10mn = "routeur/conso";
-const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
+//const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
 const char *topic_dim = "routeur/dim";  // for test only
 //const char *topic_10mn = "routeur/Wmqtt_10mn";
 const char *mqtt_username = "mqtt_adm";
@@ -167,14 +166,14 @@ float ADC_I_0A = 462 ; // ADC value for 0V input 3.3V/2
 int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 1mW ;
 */
 
-/*main board 4 (the main board used on the TGBT)
+//main board 4 (the main board used on the TGBT)
 float Vcalibration     = 0.975;   // to obtain the mains exact value
 float Icalibration     = 100;     // current in milliampères
 float phasecalibration = -6;    // value to compensate  the phase shift linked to the sensors.
 float ADC_V_0V = 446 ; // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 454 ; // ADC value for 0V input 3.3V/2
 int tresholdP     = -100000;           // Threshold to start power adjustment 1 = 1mW ;
-*/
+
 
 /*main board 5
 float Vcalibration     = 0.95;   // to obtain the mains exact value
@@ -186,15 +185,15 @@ int tresholdP     = 50000;           // Threshold to start power adjustment 1 = 
 !!!!!! wrover module !!!!!
 
 */
-
- //main board 6 test card
+/*
+main board 6 test card
 float Vcalibration = 0.91;   // to obtain the mains exact value
 float Icalibration = 90;     // current in milliampères
 float phasecalibration = -6; // value to compensate  the phase shift linked to the sensors.
 float ADC_V_0V = 480;        // ADC value for 0V input 3.3V/2
 float ADC_I_0A = 481;        // ADC value for 0V input 3.3V/2
 int tresholdP = 50000;       // Threshold to start power adjustment 1 = 1mW ;
-
+*/
 
 byte totalCount = 20; // number of half perid used for measurement
 // Threshold value for power adjustment:
