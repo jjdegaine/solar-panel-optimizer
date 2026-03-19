@@ -71,7 +71,8 @@ version 2.4 unsignedlong for all timer with millis
 version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 8000W)
 version 3.2 2026-02 test improvement timeout mqtt 
-version 3.3 2026_03 OTA reset 24h  
+version 3.3 2026_03 OTA reset 24h
+version 3.4 2026_03 reset 24h
 */
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
 
@@ -91,15 +92,14 @@ version 3.3 2026_03 OTA reset 24h
 
 // time for reset at 00:00
 
-/* suppression pour verif
 #include <time.h>
 
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 3600;      // Décalage horaire (ex: France hiver = 3600)
-const int   daylightOffset_sec = 3600; // Heure d'été (mettre 0 si non utilisé)
+const int   daylightOffset_sec = 0; // Heure d'été (mettre 0 si non utilisé)
 
 int lastDay = -1;
-*/
+
 unsigned long timeout_24H = 86400000;       // timeout 24H si pool.ntp.org HS: 1s
 unsigned long time_24H;
 
@@ -122,14 +122,14 @@ const int channel = 4; // define channel 4 seems to be the best for wifi....
 
 const char *ssid = "freebox_ZPRLHQ_2GEXT"; // SSID WiFi
 const char *password = "Cairojude58";      // mot de passe WiFi
-String hostname= "ESP32 routeur"; 
+String hostname= "ESP32 routeur v3.4"; 
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";
-const char *topic = "routeur/Wmqtt";
-const char *topic_5mn = "routeur/Wmqtt_5mn";
-const char *topic_10mn = "routeur/conso";
-//const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
+//const char *topic = "routeur/Wmqtt";
+//const char *topic_5mn = "routeur/Wmqtt_5mn";
+//const char *topic_10mn = "routeur/conso";
+const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
 const char *topic_dim = "routeur/dim";  // for test only dim= 1 => mqtt timeout
 //const char *topic_10mn = "routeur/Wmqtt_10mn";
 const char *mqtt_username = "mqtt_adm";
@@ -427,9 +427,9 @@ void setup()
 
   //init time for reset at 00:00:
 
-  /*
+  
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  */
+  
 
   // work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
 
@@ -939,7 +939,7 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 
     if (Connect_MQTT()) 
     {
-        
+        /*
       if (send_MQTT == true)
       {
         send_MQTT = false;
@@ -959,9 +959,9 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
         sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
         client.publish(topic_10mn, mystring_power_wifi_10mn, true);
       }
-      
+      */
      // for test only
-     /*
+     
       if (send_MQTT == true)
       {
         send_MQTT = false;
@@ -971,47 +971,38 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
         sprintf(mystring_dim, "%g", dim_test); //send dim_test
         client.publish(topic_dim, mystring_dim, true);
       }
-        */
+        
     }
 
 
     
     //reset at 00:00
 
-    /*
-    struct tm timeinfo;
-    if(!getLocalTime(&timeinfo))
-      {
-      Serial.println("Failed to obtain time");
-      if (long(millis() - time_24H > timeout_24H))    //timeout 24H
+    if (long(millis() - time_24H > timeout_24H))    //timeout 24H
        {
         
         Serial.println("time out 24H time ");
-      
-        delay (100000)  ; // delay 100 secondes
-        ESP.restart(); 
-       }
-      }
-    else
-      {
+        struct tm timeinfo;
+        if (!getLocalTime(&timeinfo))
+        {
+          Serial.println("Failed to obtain time");
+        }
+        else
+        {
         int currentDay = timeinfo.tm_mday;
         int currentHour = timeinfo.tm_hour;
         int currentMinute = timeinfo.tm_min;
         int currentSecond = timeinfo.tm_sec;
-        
-        time_24H = millis() ;
-
-        //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); ; // for test
-
-        // Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
-        if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
-          Serial.println("Redémarrage quotidien...");
-          lastDay = currentDay;
-          delay(60000); // attente 1 minute pour ne pas refaire un reset 
-          ESP.restart();
-          }
+// Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
+          if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
+            Serial.println("Redémarrage quotidien...");
+            lastDay = currentDay;
+            delay(60000); // attente 1 minute pour ne pas refaire un reset 
+            ESP.restart();
+            }
         }
-        */
+      }
+ 
 
     // OTA
 
