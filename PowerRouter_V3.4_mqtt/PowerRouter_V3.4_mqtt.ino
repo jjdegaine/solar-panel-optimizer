@@ -525,10 +525,12 @@ void setup()
     Serial.print(".");
     delay(500);
     wifi_wait ++ ;
-    if (wifi_wait == 20 ) //pour éviter une boucle infini 
+    if (wifi_wait == 20 ) //pour avoid infinit boucl
       {
         Serial.println("Failed to obtain time");
         unsigned long timeout_24H = 86400000;       // timeout 24H if no response from NTP
+        Serial.print ("mesc avant minuit=") ;
+        Serial.println (diffMsec);
         break ; // end of while
        }
   }
@@ -1019,8 +1021,7 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
     //reset at 00:00
 
     if (long(millis() - time_24H > timeout_24H))    //timeout 24H
-       {
-        
+       {  
         Serial.println("time out 24H time ");
         delay (100) ; 
         ESP.restart();
