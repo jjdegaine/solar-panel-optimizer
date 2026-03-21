@@ -100,7 +100,7 @@ const int   daylightOffset_sec = 0; // Heure d'été (mettre 0 si non utilisé)
 
 int lastDay = -1;
 
-unsigned long timeout_24H = 86400000;       // timeout 24H si pool.ntp.org HS: 1s
+unsigned long timeout_24H = 86400000;       // timeout 24H si pool.ntp.org HS
 unsigned long time_24H;
 
 //OTA
@@ -425,10 +425,6 @@ void setup()
 
  
 
-  //init time for reset at 00:00:
-
-  
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   
 
   // work around I²C bug at start up   https://github.com/esp8266/Arduino/issues/1025
@@ -514,7 +510,53 @@ void setup()
   Serial.println("HTTP server started"); 
   ElegantOTA.begin(&server);  // Start ElegantOTA
 
+  //reset 24H
+    
   time_24H = millis() ;
+
+  //init time for reset at 00:00:
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+
+  //Calcul nombre msec avant minuit
+  struct tm tmInfo;
+  while (!getLocalTime(&tmInfo)) 
+  {
+    Serial.println ("get time to calculate msec before midnight");
+    Serial.print(".");
+    delay(500);
+    wifi_wait ++ ;
+    if (wifi_wait == 20 ) //pour éviter une boucle infini 
+      {
+        Serial.println("Failed to obtain time");
+        unsigned long timeout_24H = 86400000;       // timeout 24H if no response from NTP
+        break ; // end of while
+       }
+  }
+  if (wifi_wait <20)
+    {
+    time_t maintenant = time(nullptr);
+
+    // Décomposer en struct tm
+    struct tm tmMaintenant;
+    localtime_r(&maintenant, &tmMaintenant);
+
+    // Construire un struct tm représentant le prochain minuit
+    struct tm tmMinuit = tmMaintenant;   // copie (même date)
+    tmMinuit.tm_hour = 0;
+    tmMinuit.tm_min  = 0;
+    tmMinuit.tm_sec  = 0;
+    tmMinuit.tm_mday += 1;              // jour suivant → minuit
+    // mktime normalise automatiquement le débordement de jour/mois/année
+    time_t prochainMinuit = mktime(&tmMinuit);
+
+    // Différence en secondes, convertie en millisecondes
+    double diffSec = difftime(prochainMinuit, maintenant);
+    long long diffMsec = (long long)(diffSec * 1000.0);
+
+    Serial.print ("mesc avant minuit=") ;
+    Serial.println (diffMsec);
+    timeout_24H = diffMsec ;
+  }
 
   // client.setCallback(callback);
   Connect_MQTT();
@@ -727,9 +769,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
       {
 
         if (unballasting_counter > 10) // dim is < unballasting_dim_min during 10 half period
-        {
-
-          
+        {         
             digitalWrite(unballast_relay1, HIGH); // set relay 1
             relay_1 = true;
             unballasting_counter = 0;
@@ -982,26 +1022,11 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
        {
         
         Serial.println("time out 24H time ");
-        struct tm timeinfo;
-        if (!getLocalTime(&timeinfo))
-        {
-          Serial.println("Failed to obtain time");
+        delay (100) ; 
+        ESP.restart();
         }
-        else
-        {
-        int currentDay = timeinfo.tm_mday;
-        int currentHour = timeinfo.tm_hour;
-        int currentMinute = timeinfo.tm_min;
-        int currentSecond = timeinfo.tm_sec;
-// Vérifie si minuit pile et si reset pas déjà fait aujourd’hui on ne teste pas les secondes car boucle de test chaque 30 secondes environ
-          if (currentHour == 0 && currentMinute == 0  && currentDay != lastDay) {
-            Serial.println("Redémarrage quotidien...");
-            lastDay = currentDay;
-            delay(60000); // attente 1 minute pour ne pas refaire un reset 
-            ESP.restart();
-            }
-        }
-      }
+      
+      
  
 
     // OTA
