@@ -530,7 +530,7 @@ void setup()
         Serial.println("Failed to obtain time");
         unsigned long timeout_24H = 86400000;       // timeout 24H if no response from NTP
         Serial.print ("mesc avant minuit=") ;
-        Serial.println (diffMsec);
+        Serial.println (timeout_24H);
         break ; // end of while
        }
   }
