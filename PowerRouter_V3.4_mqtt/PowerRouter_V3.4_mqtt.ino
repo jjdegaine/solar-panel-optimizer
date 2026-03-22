@@ -32,35 +32,21 @@ an ESP32 is used instead of an classic arduino Atmel AVR. The goal is to use the
 
 ESP32 DEV MODULE
 
-
 PIN description
 
  IN description
-
  - PIN 5 static relay command
-
  - PIN 14 input WINTER
-
  - PIN 15 relay command 2
-
  - PIN 16 LED power static relay
-
  - PIN 17 relay command 1
-
  - PIN 18 overflow LED
-
  - PIN 19 zero cross voltage
-
  - PIN 21 SDA for OLED SSD1306
-
  - PIN 22 SCL for OLED SSD1306
-
  - PIN26 input VERBOSE
-
  - PIN27 input CALIBRATION
-
  - PIN34 analog for voltage measuement
-
  - PIN35 analog for intensity measurement
 
 
@@ -796,7 +782,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
         unballasting_counter++;
       }
       //
-      // relay2 verification, if power on the grid is lessthan PowerMax-Power_water_heater (6000-3000W)
+      // relay2 verification, if power on the grid is lessthan PowerMax-Power_water_heater (8000-3000W)
       //
       if (relay_2 == true)
       {
@@ -1022,7 +1008,7 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
 
     if (long(millis() - time_24H > timeout_24H))    //timeout 24H
        {  
-        Serial.println("time out 24H time ");
+        Serial.println("time out 24H  ");
         delay (100) ; 
         ESP.restart();
         }
@@ -1046,12 +1032,7 @@ bool Connect_MQTT()
 
   while (!client.connected())
   {
-    /*Serial.print(" state MQTT ");
-    Serial.println(client.state());
-    Serial.print(" state wifi ");
-    Serial.println(WiFi.status());
-    */
-    client.disconnect();
+       client.disconnect();
     delay(2000); // wait 2 secondes before connecting again.
 
     WiFi.disconnect();
@@ -1094,11 +1075,6 @@ bool Connect_MQTT()
       delay(2000);
       return false;
     }
-    /*
-    Serial.print(" state MQTT ");
-    Serial.println(client.state());
-    Serial.print(" state wifi ");
-    Serial.println(WiFi.status());
-    */
+   
   }
 }
