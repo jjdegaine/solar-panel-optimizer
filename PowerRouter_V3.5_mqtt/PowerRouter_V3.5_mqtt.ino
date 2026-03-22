@@ -66,7 +66,7 @@ version 3.5 2026_03 code improvement using IA Claude
 // ============================================================
 //  Board selection
 // ============================================================
-#define BOARD 4   // 1, 3, 4, 5 ou 6
+#define BOARD 6   // 1, 3, 4, 5 ou 6
 
 // ============================================================
 //  Parametres de calibration par carte
@@ -99,7 +99,7 @@ version 3.5 2026_03 code improvement using IA Claude
   float ADC_V_0V         = 470;
   float ADC_I_0A         = 471;
   int   tresholdP        = 50000;
-#elif BOARD == 6
+#elif BOARD == 6 // for test
   float Vcalibration     = 0.91;
   float Icalibration     = 90;
   float phasecalibration = -6;
