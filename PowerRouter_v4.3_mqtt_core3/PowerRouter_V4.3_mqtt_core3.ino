@@ -134,7 +134,29 @@ Version 4.3 2026_03 based on V4.2 for Core 3
 
 #include "PubSubClient.h" //wifi mqtt
 
-#include <esp_task_wdt.h> // watch dog
+// ============================================================
+//  WATCHDOG TWDT - API Core 3 / ESP-IDF 5.x
+//
+//  DIFFERENCE AVEC CORE 2 :
+//    Core 2 : esp_task_wdt_init(timeout_seconds, panic_bool)
+//    Core 3 : esp_task_wdt_init(const esp_task_wdt_config_t*)
+//
+//  La structure esp_task_wdt_config_t contient :
+//    .timeout_ms     : timeout en millisecondes (et non en secondes)
+//    .idle_core_mask : bitmask des cores a surveiller (taches IDLE)
+//    .trigger_panic  : true = panic + restart si timeout
+//
+//  Utilisation dans les taches :
+//    esp_task_wdt_add(NULL)   : abonne la tache courante au WDT
+//    esp_task_wdt_reset()     : nourrit le WDT (a appeler regulierement)
+//    esp_task_wdt_delete(NULL): desabonne la tache courante
+// ============================================================
+#include <esp_task_wdt.h>
+
+// Timeout 60 secondes :
+// - TaskUI  : cycle de 20 demi-periodes ~200 ms -> tres en dessous de 60 s
+// - TaskWifi: attente MQTT + reconnexion WiFi max 30 s -> en dessous de 60 s
+ #define WDT_TIMEOUT_MS 60000
 
 // time for reset at 00:00
 
@@ -502,9 +524,38 @@ void setup()
   xMutex = xSemaphoreCreateMutex();
   if (xMutex == NULL) { Serial.println("ERREUR mutex!"); ESP.restart(); }
 
-  // disable wdt
+  // ==========================================================
+  //  INIT WATCHDOG TWDT - API Core 3
+  //
+  //  IMPORTANT : esp_task_wdt_deinit() desactive d'abord le WDT
+  //  par defaut du systeme, avant de le reconfigurer avec nos
+  //  parametres. Sans ce deinit, esp_task_wdt_init() retourne
+  //  ESP_ERR_INVALID_STATE.
+  //
+  //  idle_core_mask = (1 << portNUM_PROCESSORS) - 1
+  //    portNUM_PROCESSORS = 2 sur ESP32 dual-core
+  //    -> 0b11 = surveille Core 0 ET Core 1 (taches IDLE)
+  //
+  //  Les taches metier (TaskUI, TaskWifi) sont ajoutees
+  //  individuellement via esp_task_wdt_add(NULL) dans chaque tache.
+  // ==========================================================
+  //disable wdt
   Serial.println("Init WDT TWDT...");
   esp_task_wdt_deinit();
+
+  esp_task_wdt_config_t wdt_config = {
+    .timeout_ms    = WDT_TIMEOUT_MS,
+    .idle_core_mask= (1 << portNUM_PROCESSORS) - 1,  // Core 0 + Core 1
+    .trigger_panic = true                              // panic -> restart auto
+  };
+
+  esp_err_t wdt_err = esp_task_wdt_init(&wdt_config);
+  if (wdt_err != ESP_OK) {
+    Serial.printf("ERREUR WDT init: %s\n", esp_err_to_name(wdt_err));
+  } else {
+    Serial.printf("WDT OK: timeout=%ds, Core0+Core1, panic=ON\n", WDT_TIMEOUT_MS / 1000);
+  }
+
 
     // init wifi
 
@@ -653,10 +704,20 @@ void loop()
 void TaskUI(void *pvParameters) // This is the task UI.
 {
   (void)pvParameters;
+// ---------------------------------------------------------
+  //  Abonnement au TWDT pour cette tache (Core 0)
+  //  esp_task_wdt_add(NULL) = abonne la tache COURANTE
+  //  Elle doit appeler esp_task_wdt_reset() au moins toutes
+  //  les WDT_TIMEOUT_MS millisecondes
+  // ---------------------------------------------------------
+  // disable WDT
+  esp_err_t err = esp_task_wdt_add(NULL);
+  if (err != ESP_OK)
+    Serial.printf("[TaskUI] WDT add error: %s\n", esp_err_to_name(err));
+  else
+    Serial.println("[TaskUI] WDT souscrit Core 0");
 
-  // init watch dog
-  //esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts
- // esp_task_wdt_add(NULL);               // add current thread to WDT watch
+
 
   for (;;) // A Task shall never return or exit.
   {
@@ -993,6 +1054,12 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
     CALIBRATION = digitalRead(pin_calibration);
 
+    // ---------------------------------------------------------
+    //  RESET WATCHDOG Core 0
+    //  Appele a chaque fin de cycle de mesure (~200 ms)
+    //  Largement en dessous du timeout de 60 s
+    // ---------------------------------------------------------
+    esp_task_wdt_reset();
     
   }
 
@@ -1006,6 +1073,15 @@ void TaskUI(void *pvParameters) // This is the task UI.
 void Taskwifi(void *pvParameters) // This is a task.
 {
   (void)pvParameters;
+  // ---------------------------------------------------------
+  //  Abonnement au TWDT pour cette tache (Core 1)
+  // ---------------------------------------------------------
+  // disable WDT
+  esp_err_t err = esp_task_wdt_add(NULL);
+  if (err != ESP_OK)
+    Serial.printf("[TaskWifi] WDT add error: %s\n", esp_err_to_name(err));
+  else
+    Serial.println("[TaskWifi] WDT souscrit Core 1");
 
   for (;;) // A Task shall never return or exit.
   {
@@ -1117,6 +1193,9 @@ void Taskwifi(void *pvParameters) // This is a task.
     // OTA
 
     ElegantOTA.loop();
+
+     // Reset WDT en fin de cycle complet
+    esp_task_wdt_reset();
   }
 
 } // end for loop wifi
