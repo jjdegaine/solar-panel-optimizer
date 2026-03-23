@@ -134,7 +134,7 @@ Version 4.3 2026_03 based on V4.2 for Core 3
 
 #include "PubSubClient.h" //wifi mqtt
 
-//#include <esp_task_wdt.h> // watch dog
+#include <esp_task_wdt.h> // watch dog
 
 // time for reset at 00:00
 
