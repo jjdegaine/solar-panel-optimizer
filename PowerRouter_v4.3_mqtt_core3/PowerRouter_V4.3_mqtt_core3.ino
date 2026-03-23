@@ -502,6 +502,10 @@ void setup()
   xMutex = xSemaphoreCreateMutex();
   if (xMutex == NULL) { Serial.println("ERREUR mutex!"); ESP.restart(); }
 
+  // disable wdt
+  Serial.println("Init WDT TWDT...");
+  esp_task_wdt_deinit();
+
     // init wifi
 
   WiFi.setHostname(hostname.c_str()); //define hostname
