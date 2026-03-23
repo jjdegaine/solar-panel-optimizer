@@ -59,7 +59,7 @@ version 3.1 2025_07 relay2 is used for overload (P > 8000W)
 version 3.2 2026-02 test improvement timeout mqtt 
 version 3.3 2026_03 OTA reset 24h
 version 3.4 2026_03 reset 24h
-version 3.5 2026_03 code improvement using IA Claude
+version 3.5 2026_03 code improvement using IA Claude (Mutex, board selection )
 */
 
 
@@ -252,9 +252,6 @@ volatile bool wait_2msec;                  // flag no IT on falling edge
 
 
 volatile bool led_zero = false;
-
-//#define WDT_TIMEOUT 15 // watch dog time
-
 
 // Voltage and current measurement  :
 
@@ -537,20 +534,20 @@ void setup()
     {
     time_t maintenant = time(nullptr);
 
-    // Décomposer en struct tm
+    // struct tm
     struct tm tmMaintenant;
     localtime_r(&maintenant, &tmMaintenant);
 
-    // Construire un struct tm représentant le prochain minuit
-    struct tm tmMinuit = tmMaintenant;   // copie (même date)
+    //  struct tm next midnight
+    struct tm tmMinuit = tmMaintenant;   // 
     tmMinuit.tm_hour = 0;
     tmMinuit.tm_min  = 0;
     tmMinuit.tm_sec  = 0;
-    tmMinuit.tm_mday += 1;              // jour suivant → minuit
-    // mktime normalise automatiquement le débordement de jour/mois/année
+    tmMinuit.tm_mday += 1;              // next day
+    // mktime 
     time_t prochainMinuit = mktime(&tmMinuit);
 
-    // Différence en secondes, convertie en millisecondes
+    // Difference in milli secondes
     double diffSec = difftime(prochainMinuit, maintenant);
     long long diffMsec = (long long)(diffSec * 1000.0);
 
@@ -790,7 +787,6 @@ void TaskUI(void *pvParameters) // This is the task UI.
             relay_1 = false;
             unballasting_time = millis();
             unballasting_counter = 0;
-          
         }
         unballasting_counter++;
       }
@@ -812,7 +808,8 @@ void TaskUI(void *pvParameters) // This is the task UI.
     {
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
       {
-        mean_power_MQTT = (mean_power / mean_power_counter);
+       // mean_power_MQTT = (mean_power / mean_power_counter);
+        mean_power_MQTT    = (mean_power_counter > 0) ? mean_power / mean_power_counter : 0;
         mean_power = 0;
         mean_power_counter = 0;
         send_MQTT = true; // ready to send UDP
@@ -834,7 +831,8 @@ void TaskUI(void *pvParameters) // This is the task UI.
     {
        if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
        {
-        mean_power_MQTT_5mn = (mean_power_5mn / mean_power_counter_5mn);
+       // mean_power_MQTT_5mn = (mean_power_5mn / mean_power_counter_5mn);
+        mean_power_MQTT_5mn    = (mean_power_counter_5mn > 0) ? mean_power_5mn / mean_power_counter_5mn : 0;
         mean_power_5mn = 0;
         mean_power_counter_5mn = 0;
         send_MQTT_5mn = true; // ready to send UDP
@@ -856,7 +854,8 @@ void TaskUI(void *pvParameters) // This is the task UI.
     {
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
       {
-        mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
+       // mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
+        mean_power_MQTT_10mn    = (mean_power_counter_10mn > 0) ? mean_power_10mn / mean_power_counter_10mn : 0;
         mean_power_10mn = 0;
         mean_power_counter_10mn = 0;
         send_MQTT_10mn = true; // ready to send UDP
@@ -897,7 +896,6 @@ void TaskUI(void *pvParameters) // This is the task UI.
         display.setColor(BLACK); // clear first line
         display.fillRect(0, 0, 128, 22);
         display.setColor(WHITE);
-
         display.drawString(0, 0, String(int(Power_wifi)) + " || " + String(dim));
         display.display();
       }
@@ -936,7 +934,6 @@ void TaskUI(void *pvParameters) // This is the task UI.
       Serial.print(unballasting_counter);
       Serial.print(" ||  ");
       Serial.print(millis() - unballasting_time);
-
       Serial.println();
     }
 
@@ -953,7 +950,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
     CALIBRATION = digitalRead(pin_calibration);
 
-    //esp_task_wdt_reset(); // reset watch dog
+    
   }
 
 } // end task UI
@@ -972,18 +969,17 @@ void Taskwifi_udp(void *pvParameters) // This is a task.
     
     while (send_MQTT == false)
     {
-      wifi_wait = 0; // loop to wait update DIM
+      wifi_wait = 0; // loop to wait update MQTT
       if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
       {
         dim_test = 1 ;
         sprintf(mystring_dim, "%g", dim_test); //send dim_test in case off timeout
         client.publish(topic_dim, mystring_dim, true);
         Serial.println("time out MQTT time ");
-
         delay (100000)  ; // delay 100 secondes
         ESP.restart(); 
 
-          break;
+        break;
       }
       
     }
