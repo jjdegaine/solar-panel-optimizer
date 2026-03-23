@@ -751,7 +751,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
       if (memo_readV == 0 && readV == 0)
       {
-       //esp_task_wdt_reset();
+        esp_task_wdt_reset();
         break;
       }                                         // exit the while if no powersupply
       readI = analogRead(currentSensorPin) / 4; // Current value - 0A = bit ADC 12bits ADC ==> /4 ==> max 1024
@@ -1128,7 +1128,7 @@ void Taskwifi(void *pvParameters) // This is a task.
     }
 
     vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
-    
+
     // Reset WDT en fin de cycle complet
     esp_task_wdt_reset();
 }
@@ -1227,6 +1227,7 @@ bool Connect_MQTT()
        vTaskDelay(pdMS_TO_TICKS(500));
       Serial.println("Connecting to WiFi..");
       display.drawString(0, 0, "connecting to WiFi...");
+      esp_task_wdt_reset();
       }
       Serial.println("Connected to the WiFi network");
       display.drawString(0, 0, "connected to WiFi");
