@@ -49,7 +49,7 @@ version 3.2  2026-02 test improvement timeout mqtt
 version 3.3  2026_03_05 adding OTA + daily reset at 00:00
 version 4.0  2026_03_05 migration to ESP32 Arduino Core 3.x
 version 4.1  2026_03_09 mutex FreeRTOS, div/0 protection, timeout WiFi, timer 78us
-version 4.2  2026_03_09 watchdog materiel TWDT sur Core 0 et Core 1
+version 4.2  2026_03_09 watchdog materiel TWDT sur Core 0 et Core 1     //                            not to used not working
               API Core 3 : esp_task_wdt_config_t + esp_task_wdt_init()
               - WDT_TIMEOUT_MS = 60 s
               - idle_core_mask surveille Core 0 + Core 1
@@ -155,7 +155,7 @@ version 4.2  2026_03_09 watchdog materiel TWDT sur Core 0 et Core 1
 // ============================================================
 const char *ssid          = "freebox_ZPRLHQ_2GEXT";
 const char *password      = "Cairojude58";
-const char *hostname      = "ESP32 routeur core3";
+const char *hostname      = "ESP32 routeur core3 V4.2";
 
 const char *mqtt_broker   = "192.168.0.154";
 const char *mqtt_username = "mqtt_adm";

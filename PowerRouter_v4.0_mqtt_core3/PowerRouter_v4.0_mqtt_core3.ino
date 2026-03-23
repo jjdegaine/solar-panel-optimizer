@@ -72,7 +72,7 @@ version 3.0 2025_07 data is sent to mqtt instead of UDP
 version 3.1 2025_07 relay2 is used for overload (P > 6000W)
 version 3.2 2026-02 test improvement timeout mqtt 
 version 3.3 2026_03_05 adding ota reset 24h
-version 4.0 2026_03_05 using core 3 ESP32
+version 4.0 2026_03_05 using core 3 ESP32 / not to used not working
 
 // https://randomnerdtutorials.com/esp32-ota-elegantota-arduino/
 */
@@ -130,7 +130,7 @@ const int channel = 4;  // define channel 4 seems to be the best for wifi....
 
 const char *ssid = "freebox_ZPRLHQ_2GEXT";  // SSID WiFi
 const char *password = "Cairojude58";       // mot de passe WiFi
-const char* hostname = "ESP32 routeur core3";
+const char* hostname = "ESP32 routeur core3 V4.0";
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";

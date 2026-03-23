@@ -61,6 +61,7 @@ version 3.3 2026_03 OTA reset 24h
 version 3.4 2026_03 reset 24h
 version 3.5 2026_03 code improvement using IA Claude (Mutex, board selection )
 version 3.6 2026_03 secrets Vtaskdelay instead of delay for delay > 1mSec; meilleure séparation des task sur les 2 cores
+Version 4.3 2026_03 based on V4.2 for Core 3
 */
 
 
@@ -166,7 +167,7 @@ SSD1306Wire display(0x3c, SDA, SCL); // ADDRESS, SDA, SCL
 const int channel = 4; // define channel 4 seems to be the best for wifi....
 
 
-String hostname= "ESP32 routeur v3.6"; 
+String hostname= "ESP32 routeur v4.3 core 3"; 
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";
@@ -308,12 +309,22 @@ unsigned int memo_temps = 0;
 bool relay_1; // Flag relay 1
 bool relay_2; // Flag relay 2
 
-// init timer IT
+/*
+// init timer IT core 2
 hw_timer_t *timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 // init external PIN IT
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+*/
+
+// ============================================================
+//  Timer hardware (API Core 3)
+// ============================================================
+hw_timer_t   *timer    = NULL;
+portMUX_TYPE  timerMux = portMUX_INITIALIZER_UNLOCKED;
+portMUX_TYPE  mux      = portMUX_INITIALIZER_UNLOCKED;
+
 
 // ============================================================
 //  Mutex FreeRTOS - To protect data exchange between the two task
@@ -563,12 +574,20 @@ void setup()
 
   // client.setCallback(callback);
   Connect_MQTT();
-
-  // init timer
+/*
+  // init timer core 2
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &onTimer, true);
   timerAlarmWrite(timer, periodStep, true);
   timerAlarmEnable(timer);
+*/
+// Timer hardware - 78 us x 128 = 9984 us ≈ demi-periode 50 Hz 
+  timer = timerBegin(1000000);
+  timerAttachInterrupt(timer, &onTimer);
+  timerAlarm(timer, 73, true, 0); //73 is used as legacy value
+  timerStart(timer);
+
+
 
   // init interrupt on PIN  zero_crossing
   attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
