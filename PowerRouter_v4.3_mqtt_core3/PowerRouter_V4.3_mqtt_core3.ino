@@ -1128,6 +1128,9 @@ void Taskwifi(void *pvParameters) // This is a task.
     }
 
     vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
+    
+    // Reset WDT en fin de cycle complet
+    esp_task_wdt_reset();
 }
   
     MQTT_time = millis();
