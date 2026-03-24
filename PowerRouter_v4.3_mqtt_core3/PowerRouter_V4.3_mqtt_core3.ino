@@ -1131,6 +1131,7 @@ void Taskwifi(void *pvParameters) // This is a task.
 
     // Reset WDT en fin de cycle complet
     esp_task_wdt_reset();
+    Serial.println("reset wdg core 1 ");
 }
   
     MQTT_time = millis();
