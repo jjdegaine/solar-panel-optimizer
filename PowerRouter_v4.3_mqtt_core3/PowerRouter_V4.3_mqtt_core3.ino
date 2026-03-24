@@ -692,6 +692,7 @@ xTaskCreatePinnedToCore(
 
 void loop()
 {
+  
   // Empty. Things are done in Tasks.
 }
 
@@ -714,8 +715,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
   //  Elle doit appeler esp_task_wdt_reset() au moins toutes
   //  les WDT_TIMEOUT_MS millisecondes
   // ---------------------------------------------------------
-  // disable WDT
-   esp_task_wdt_deinit();
+ 
    /*
   esp_err_t err = esp_task_wdt_add(NULL);
   if (err != ESP_OK)
@@ -1082,8 +1082,7 @@ void Taskwifi(void *pvParameters) // This is a task.
   // ---------------------------------------------------------
   //  Abonnement au TWDT pour cette tache (Core 1)
   // ---------------------------------------------------------
-  // disable WDT
-   esp_task_wdt_deinit();
+
   /*
   esp_err_t err = esp_task_wdt_add(NULL);
   if (err != ESP_OK)
