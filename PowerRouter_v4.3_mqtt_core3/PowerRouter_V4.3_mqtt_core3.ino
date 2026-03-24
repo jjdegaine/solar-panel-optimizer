@@ -542,7 +542,9 @@ void setup()
   // ==========================================================
   //disable wdt
   Serial.println("Init WDT TWDT...");
-  esp_task_wdt_init(20, false);
+  esp_err_t ESP32_ERROR;
+  int i = 0;
+  int last = millis();
   esp_task_wdt_deinit();
   /*
   esp_task_wdt_config_t wdt_config = {
