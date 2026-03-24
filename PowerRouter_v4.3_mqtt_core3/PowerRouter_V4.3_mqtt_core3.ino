@@ -1060,7 +1060,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
     //  Largement en dessous du timeout de 60 s
     // ---------------------------------------------------------
     esp_task_wdt_reset();
-    
+     Serial.println("reset wdg core 0 ");
   }
 
 } // end task UI
@@ -1131,7 +1131,7 @@ void Taskwifi(void *pvParameters) // This is a task.
 
     // Reset WDT en fin de cycle complet
     esp_task_wdt_reset();
-    Serial.println("reset wdg core 1 ");
+    //Serial.println("reset wdg core 1 ");
 }
   
     MQTT_time = millis();
@@ -1228,7 +1228,7 @@ bool Connect_MQTT()
        vTaskDelay(pdMS_TO_TICKS(500));
       Serial.println("Connecting to WiFi..");
       display.drawString(0, 0, "connecting to WiFi...");
-      esp_task_wdt_reset();
+      
       }
       Serial.println("Connected to the WiFi network");
       display.drawString(0, 0, "connected to WiFi");
