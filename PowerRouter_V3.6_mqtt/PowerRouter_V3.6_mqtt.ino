@@ -67,7 +67,7 @@ version 3.6 2026_03 secrets Vtaskdelay instead of delay for delay > 1mSec; meill
 // ============================================================
 //  Board selection
 // ============================================================
-#define BOARD 6   // 1, 3, 4, 5 ou 6
+#define BOARD 4   // 1, 3, 4, 5 ou 6
 
 // ============================================================
 //  Parametres de calibration par carte
@@ -106,8 +106,8 @@ version 3.6 2026_03 secrets Vtaskdelay instead of delay for delay > 1mSec; meill
   float phasecalibration = -6;
   float ADC_V_0V         = 480;
   float ADC_I_0A         = 481;
-  //int   tresholdP        = 50000;
-  int   tresholdP        = 100000; // for test
+  int   tresholdP        = 50000;
+  //int   tresholdP        = 100000; // for test
 #else
   #error "BOARD invalid. Choose 1, 3, 4, 5 or 6."
 #endif
@@ -170,10 +170,10 @@ String hostname= "ESP32 routeur v3.6";
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";
-//const char *topic = "routeur/Wmqtt";
-//const char *topic_5mn = "routeur/Wmqtt_5mn";
-//const char *topic_10mn = "routeur/conso";
-const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
+const char *topic = "routeur/Wmqtt";
+const char *topic_5mn = "routeur/Wmqtt_5mn";
+const char *topic_10mn = "routeur/conso";
+//const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
 const char *topic_dim = "routeur/dim";  // for test only dim= 1 => mqtt timeout
 //const char *topic_10mn = "routeur/Wmqtt_10mn";
 
@@ -1035,7 +1035,7 @@ void Taskwifi(void *pvParameters) // This is a task.
 
     if (Connect_MQTT()) 
     {
-        /*
+        
       // without mutext send_MQTT; send_MQTT_5mn; send_MQTT_10mn not needed write every 1mn 5 mn 10 mn
         if (send_MQTT == true)
           {
@@ -1058,11 +1058,11 @@ void Taskwifi(void *pvParameters) // This is a task.
           }
         
      
-      */
+      
 
 
      // for test only
-     
+     /*
       if (send_MQTT == true)
         {
           
@@ -1074,7 +1074,7 @@ void Taskwifi(void *pvParameters) // This is a task.
             client.publish(topic_dim, mystring_dim, true);
           
         }
-         
+        */ 
     }
 
 
