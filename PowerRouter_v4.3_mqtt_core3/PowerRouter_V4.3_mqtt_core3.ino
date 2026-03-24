@@ -115,12 +115,13 @@ Version 4.3 2026_03 based on V4.2 for Core 3
 
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
 
-
+/*
 #if CONFIG_FREERTOS_UNICORE
 #define ARDUINO_RUNNING_CORE 0
 #else
 #define ARDUINO_RUNNING_CORE 1
 #endif
+*/
 
 // amélioration V3.6
 #define CORE_REALTIME  0   // Core 0 : mesure V/I/P, contrôle SSR
@@ -542,7 +543,7 @@ void setup()
   //disable wdt
   Serial.println("Init WDT TWDT...");
   esp_task_wdt_deinit();
-
+    /*
   esp_task_wdt_config_t wdt_config = {
     .timeout_ms    = WDT_TIMEOUT_MS,
     .idle_core_mask= (1 << portNUM_PROCESSORS) - 1,  // Core 0 + Core 1
@@ -555,7 +556,7 @@ void setup()
   } else {
     Serial.printf("WDT OK: timeout=%ds, Core0+Core1, panic=ON\n", WDT_TIMEOUT_MS / 1000);
   }
-
+*/
 
     // init wifi
 
@@ -711,13 +712,15 @@ void TaskUI(void *pvParameters) // This is the task UI.
   //  les WDT_TIMEOUT_MS millisecondes
   // ---------------------------------------------------------
   // disable WDT
+   esp_task_wdt_deinit();
+   /*
   esp_err_t err = esp_task_wdt_add(NULL);
   if (err != ESP_OK)
     Serial.printf("[TaskUI] WDT add error: %s\n", esp_err_to_name(err));
   else
     Serial.println("[TaskUI] WDT souscrit Core 0");
 
-
+*/
 
   for (;;) // A Task shall never return or exit.
   {
@@ -1059,8 +1062,8 @@ void TaskUI(void *pvParameters) // This is the task UI.
     //  Appele a chaque fin de cycle de mesure (~200 ms)
     //  Largement en dessous du timeout de 60 s
     // ---------------------------------------------------------
-    esp_task_wdt_reset();
-     Serial.println("reset wdg core 0 ");
+    //esp_task_wdt_reset();
+    // Serial.println("reset wdg core 0 ");
   }
 
 } // end task UI
@@ -1077,12 +1080,14 @@ void Taskwifi(void *pvParameters) // This is a task.
   //  Abonnement au TWDT pour cette tache (Core 1)
   // ---------------------------------------------------------
   // disable WDT
+   esp_task_wdt_deinit();
+  /*
   esp_err_t err = esp_task_wdt_add(NULL);
   if (err != ESP_OK)
     Serial.printf("[TaskWifi] WDT add error: %s\n", esp_err_to_name(err));
   else
     Serial.println("[TaskWifi] WDT souscrit Core 1");
-
+*/
   for (;;) // A Task shall never return or exit.
   {
     /* boucle d'attente sans mutex
@@ -1130,7 +1135,7 @@ void Taskwifi(void *pvParameters) // This is a task.
     vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
 
     // Reset WDT en fin de cycle complet
-    esp_task_wdt_reset();
+    //esp_task_wdt_reset();
     //Serial.println("reset wdg core 1 ");
 }
   
@@ -1199,7 +1204,7 @@ void Taskwifi(void *pvParameters) // This is a task.
     ElegantOTA.loop();
 
      // Reset WDT en fin de cycle complet
-    esp_task_wdt_reset();
+    //esp_task_wdt_reset();
   }
 
 } // end for loop wifi
