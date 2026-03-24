@@ -543,7 +543,7 @@ void setup()
   //disable wdt
   Serial.println("Init WDT TWDT...");
   esp_task_wdt_deinit();
-    
+  /*
   esp_task_wdt_config_t wdt_config = {
     .timeout_ms    = WDT_TIMEOUT_MS,
     .idle_core_mask= (1 << portNUM_PROCESSORS) - 1,  // Core 0 + Core 1
@@ -557,7 +557,7 @@ void setup()
     Serial.printf("WDT OK: timeout=%ds, Core0+Core1, panic=ON\n", WDT_TIMEOUT_MS / 1000);
   }
 
-
+*/
     // init wifi
 
   WiFi.setHostname(hostname.c_str()); //define hostname
