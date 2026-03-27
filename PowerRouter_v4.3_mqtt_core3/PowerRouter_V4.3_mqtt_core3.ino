@@ -115,12 +115,13 @@ Version 4.3 2026_03 based on V4.2 for Core 3
 
 // init to use the two core of the ESP32; one core for power calculation and one core for wifi
 
-
+/*
 #if CONFIG_FREERTOS_UNICORE
 #define ARDUINO_RUNNING_CORE 0
 #else
 #define ARDUINO_RUNNING_CORE 1
 #endif
+*/
 
 // amélioration V3.6
 #define CORE_REALTIME  0   // Core 0 : mesure V/I/P, contrôle SSR
@@ -134,23 +135,7 @@ Version 4.3 2026_03 based on V4.2 for Core 3
 
 #include "PubSubClient.h" //wifi mqtt
 
-// ============================================================
-//  WATCHDOG TWDT - API Core 3 / ESP-IDF 5.x
-//
-//  DIFFERENCE AVEC CORE 2 :
-//    Core 2 : esp_task_wdt_init(timeout_seconds, panic_bool)
-//    Core 3 : esp_task_wdt_init(const esp_task_wdt_config_t*)
-//
-//  La structure esp_task_wdt_config_t contient :
-//    .timeout_ms     : timeout en millisecondes (et non en secondes)
-//    .idle_core_mask : bitmask des cores a surveiller (taches IDLE)
-//    .trigger_panic  : true = panic + restart si timeout
-//
-//  Utilisation dans les taches :
-//    esp_task_wdt_add(NULL)   : abonne la tache courante au WDT
-//    esp_task_wdt_reset()     : nourrit le WDT (a appeler regulierement)
-//    esp_task_wdt_delete(NULL): desabonne la tache courante
-// ============================================================
+
 #include <esp_task_wdt.h>
 
 // Timeout 60 secondes :
@@ -331,14 +316,6 @@ unsigned int memo_temps = 0;
 bool relay_1; // Flag relay 1
 bool relay_2; // Flag relay 2
 
-/*
-// init timer IT core 2
-hw_timer_t *timer = NULL;
-portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
-
-// init external PIN IT
-portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-*/
 
 // ============================================================
 //  Timer hardware (API Core 3)
@@ -524,40 +501,12 @@ void setup()
   xMutex = xSemaphoreCreateMutex();
   if (xMutex == NULL) { Serial.println("ERREUR mutex!"); ESP.restart(); }
 
-  // ==========================================================
-  //  INIT WATCHDOG TWDT - API Core 3
-  //
-  //  IMPORTANT : esp_task_wdt_deinit() desactive d'abord le WDT
-  //  par defaut du systeme, avant de le reconfigurer avec nos
-  //  parametres. Sans ce deinit, esp_task_wdt_init() retourne
-  //  ESP_ERR_INVALID_STATE.
-  //
-  //  idle_core_mask = (1 << portNUM_PROCESSORS) - 1
-  //    portNUM_PROCESSORS = 2 sur ESP32 dual-core
-  //    -> 0b11 = surveille Core 0 ET Core 1 (taches IDLE)
-  //
-  //  Les taches metier (TaskUI, TaskWifi) sont ajoutees
-  //  individuellement via esp_task_wdt_add(NULL) dans chaque tache.
-  // ==========================================================
+  
   //disable wdt
   Serial.println("Init WDT TWDT...");
-  esp_task_wdt_deinit();
+  esp_task_wdt_delete(xTaskGetCurrentTaskHandle());
 
-  esp_task_wdt_config_t wdt_config = {
-    .timeout_ms    = WDT_TIMEOUT_MS,
-    .idle_core_mask= (1 << portNUM_PROCESSORS) - 1,  // Core 0 + Core 1
-    .trigger_panic = true                              // panic -> restart auto
-  };
-
-  esp_err_t wdt_err = esp_task_wdt_init(&wdt_config);
-  if (wdt_err != ESP_OK) {
-    Serial.printf("ERREUR WDT init: %s\n", esp_err_to_name(wdt_err));
-  } else {
-    Serial.printf("WDT OK: timeout=%ds, Core0+Core1, panic=ON\n", WDT_TIMEOUT_MS / 1000);
-  }
-
-
-    // init wifi
+     // init wifi
 
   WiFi.setHostname(hostname.c_str()); //define hostname
   WiFi.begin(ssid, password);
@@ -629,14 +578,9 @@ void setup()
 
   // client.setCallback(callback);
   Connect_MQTT();
-/*
-  // init timer core 2
-  timer = timerBegin(0, 80, true);
-  timerAttachInterrupt(timer, &onTimer, true);
-  timerAlarmWrite(timer, periodStep, true);
-  timerAlarmEnable(timer);
-*/
-// Timer hardware - 78 us x 128 = 9984 us ≈ demi-periode 50 Hz 
+
+
+// Timer hardware - 73 us x 128 = 9984 us ≈ demi-periode 50 Hz 
   timer = timerBegin(1000000);
   timerAttachInterrupt(timer, &onTimer);
   timerAlarm(timer, 73, true, 0); //73 is used as legacy value
@@ -647,26 +591,7 @@ void setup()
   // init interrupt on PIN  zero_crossing
   attachInterrupt(digitalPinToInterrupt(zeroCrossPin), zero_cross_detect, RISING);
 
-  /* avant version 3.6
-  // Now set up two tasks to run independently.
-  xTaskCreatePinnedToCore(
-      TaskUI, "TaskUI" // A name just for humans
-      ,
-      20000 // This stack size can be checked & adjusted by reading the Stack Highwater
-      ,
-      NULL, 2 // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-      ,
-      NULL, ARDUINO_RUNNING_CORE);
-
-  xTaskCreatePinnedToCore(
-      Taskwifi, "wifi", 20000 // Stack size
-      ,
-      NULL, 1 // Priority
-      ,
-      NULL, ARDUINO_RUNNING_CORE);
-*/
-
-// version V3.6
+// init task
 xTaskCreatePinnedToCore(
     TaskUI, "TaskUI",
     20000,
@@ -688,6 +613,7 @@ xTaskCreatePinnedToCore(
 
 void loop()
 {
+  
   // Empty. Things are done in Tasks.
 }
 
@@ -704,20 +630,6 @@ void loop()
 void TaskUI(void *pvParameters) // This is the task UI.
 {
   (void)pvParameters;
-// ---------------------------------------------------------
-  //  Abonnement au TWDT pour cette tache (Core 0)
-  //  esp_task_wdt_add(NULL) = abonne la tache COURANTE
-  //  Elle doit appeler esp_task_wdt_reset() au moins toutes
-  //  les WDT_TIMEOUT_MS millisecondes
-  // ---------------------------------------------------------
-  // disable WDT
-  esp_err_t err = esp_task_wdt_add(NULL);
-  if (err != ESP_OK)
-    Serial.printf("[TaskUI] WDT add error: %s\n", esp_err_to_name(err));
-  else
-    Serial.println("[TaskUI] WDT souscrit Core 0");
-
-
 
   for (;;) // A Task shall never return or exit.
   {
@@ -907,7 +819,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
       }
    }
 
-    // meam_power calculation for MQTT 10 sec
+    // meam_power calculation for MQTT 20 sec
     if (long(millis() - mean_power_time > mean_power_timing))
     {
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
@@ -920,8 +832,8 @@ void TaskUI(void *pvParameters) // This is the task UI.
         xSemaphoreGive(xMutex);
       }
       mean_power_time = millis();
-      Serial.print("mean_power_mq ");
-      Serial.println(mean_power_MQTT); // MQTT data
+      //Serial.print("mean_power_mq ");
+      //Serial.println(mean_power_MQTT); // MQTT data
     }
 
     else
@@ -1054,13 +966,6 @@ void TaskUI(void *pvParameters) // This is the task UI.
 
     CALIBRATION = digitalRead(pin_calibration);
 
-    // ---------------------------------------------------------
-    //  RESET WATCHDOG Core 0
-    //  Appele a chaque fin de cycle de mesure (~200 ms)
-    //  Largement en dessous du timeout de 60 s
-    // ---------------------------------------------------------
-    esp_task_wdt_reset();
-    
   }
 
 } // end task UI
@@ -1073,39 +978,13 @@ void TaskUI(void *pvParameters) // This is the task UI.
 void Taskwifi(void *pvParameters) // This is a task.
 {
   (void)pvParameters;
-  // ---------------------------------------------------------
-  //  Abonnement au TWDT pour cette tache (Core 1)
-  // ---------------------------------------------------------
-  // disable WDT
-  esp_err_t err = esp_task_wdt_add(NULL);
-  if (err != ESP_OK)
-    Serial.printf("[TaskWifi] WDT add error: %s\n", esp_err_to_name(err));
-  else
-    Serial.println("[TaskWifi] WDT souscrit Core 1");
-
+  
   for (;;) // A Task shall never return or exit.
   {
-    /* boucle d'attente sans mutex
-      while (send_MQTT == false)
-        {
-          
-          if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
-          {
-            dim_test = 1 ;
-            sprintf(mystring_dim, "%g", dim_test); //send dim_test in case off timeout
-            client.publish(topic_dim, mystring_dim, true);
-            Serial.println("time out MQTT time ");
-            vTaskDelay(pdMS_TO_TICKS(2000));  ; // delay 2 secondes
-            ESP.restart(); 
 
-            break;
-          }
-          
-        }
-      */
-     // boucle attente MQTT avec mutex
+   // boucle attente MQTT avec mutex
     while (true)
-{
+  {
     bool mqtt_ready = false;
 
     if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
@@ -1128,10 +1007,7 @@ void Taskwifi(void *pvParameters) // This is a task.
     }
 
     vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
-
-    // Reset WDT en fin de cycle complet
-    esp_task_wdt_reset();
-}
+  }
   
     MQTT_time = millis();
 
@@ -1197,8 +1073,6 @@ void Taskwifi(void *pvParameters) // This is a task.
 
     ElegantOTA.loop();
 
-     // Reset WDT en fin de cycle complet
-    esp_task_wdt_reset();
   }
 
 } // end for loop wifi
@@ -1227,7 +1101,7 @@ bool Connect_MQTT()
        vTaskDelay(pdMS_TO_TICKS(500));
       Serial.println("Connecting to WiFi..");
       display.drawString(0, 0, "connecting to WiFi...");
-      esp_task_wdt_reset();
+      
       }
       Serial.println("Connected to the WiFi network");
       display.drawString(0, 0, "connected to WiFi");
