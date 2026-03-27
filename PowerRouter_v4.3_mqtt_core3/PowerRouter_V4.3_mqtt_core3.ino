@@ -831,6 +831,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
         send_MQTT = true; // ready to send 
         xSemaphoreGive(xMutex);
       }
+      vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
       mean_power_time = millis();
       //Serial.print("mean_power_mq ");
       //Serial.println(mean_power_MQTT); // MQTT data
@@ -854,6 +855,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
         send_MQTT_5mn = true; // ready to send
         xSemaphoreGive(xMutex);
        }
+       vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
       mean_power_time_5mn = millis();
       Serial.print("mean_power_mq_5mn ");
       Serial.println(mean_power_MQTT_5mn); // MQTT data
@@ -877,6 +879,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
         send_MQTT_10mn = true; // ready to send
         xSemaphoreGive(xMutex);
       }
+      vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
       mean_power_time_10mn = millis();
       Serial.print("mean_power_mq_10mn ");
       Serial.println(mean_power_MQTT_10mn); // MQTT data
