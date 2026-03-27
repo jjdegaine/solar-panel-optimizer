@@ -1008,7 +1008,6 @@ void Taskwifi(void *pvParameters) // This is a task.
         break;
     }
 
-    vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
   }
   
     MQTT_time = millis();
@@ -1016,25 +1015,38 @@ void Taskwifi(void *pvParameters) // This is a task.
     if (Connect_MQTT()) 
     {
         /*
-      // without mutext send_MQTT; send_MQTT_5mn; send_MQTT_10mn not needed write every 1mn 5 mn 10 mn
+      // 
         if (send_MQTT == true)
           {
-            send_MQTT = false;
+           if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+             {
+             send_MQTT = false;
             sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
             client.publish(topic, mystring_power_wifi, true);
+             xSemaphoreGive(xMutex);
+             }
           } 
         if (send_MQTT_5mn == true)
           {
-            send_MQTT_5mn = false;
+          if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+             {
+             send_MQTT_5mn = false;
             sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
             client.publish(topic_5mn, mystring_power_wifi_5mn, true);
+            xSemaphoreGive(xMutex);
+             } 
           }
           if (send_MQTT_10mn == true)
           {
-            send_MQTT_10mn = false;
+          if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+             {
+             send_MQTT_10mn = false;
+           
             sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
             client.publish(topic_10mn, mystring_power_wifi_10mn, true);
-            xSemaphoreGive(xMutex);
+             xSemaphoreGive(xMutex);
+             } 
+            
           }
         
      
@@ -1046,19 +1058,23 @@ void Taskwifi(void *pvParameters) // This is a task.
       if (send_MQTT == true)
         {
           
-            send_MQTT = false;
-            sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
-            client.publish(topic_test, mystring_power_wifi_10mn, true);
-            dim_test = 0 ;
-            sprintf(mystring_dim, "%g", dim_test); //send dim_test
-            client.publish(topic_dim, mystring_dim, true);
+            if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+             {
+              send_MQTT = false;
+              sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
+              client.publish(topic_test, mystring_power_wifi_10mn, true);
+              dim_test = 0 ;
+              sprintf(mystring_dim, "%g", dim_test); //send dim_test
+              client.publish(topic_dim, mystring_dim, true);
+              xSemaphoreGive(xMutex);
+             } 
+             
             // for test
             Serial.print("timeout avant 24H dans boucle task Wifi");
             Serial.println(timeout_24H); //
             Serial.print("time24H dans boucle task Wifi");
             Serial.println(time_24H); //
-            Serial.print("millis - time_24H");
-            Serial.println(millis() - time_24H); //
+            
             
         }
          
