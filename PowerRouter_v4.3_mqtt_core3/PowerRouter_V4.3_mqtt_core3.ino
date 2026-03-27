@@ -825,12 +825,13 @@ void TaskUI(void *pvParameters) // This is the task UI.
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
       {
        // mean_power_MQTT = (mean_power / mean_power_counter);
+        send_MQTT = true; // ready to send 
         mean_power_MQTT    = (mean_power_counter > 0) ? mean_power / mean_power_counter : 0;
         mean_power = 0;
         mean_power_counter = 0;
-        send_MQTT = true; // ready to send 
-        xSemaphoreGive(xMutex);
         vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
+        xSemaphoreGive(xMutex);
+        
       }
       
       mean_power_time = millis();
@@ -849,13 +850,14 @@ void TaskUI(void *pvParameters) // This is the task UI.
     {
        if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
        {
+        send_MQTT_5mn = true; // ready to send
        // mean_power_MQTT_5mn = (mean_power_5mn / mean_power_counter_5mn);
         mean_power_MQTT_5mn    = (mean_power_counter_5mn > 0) ? mean_power_5mn / mean_power_counter_5mn : 0;
         mean_power_5mn = 0;
         mean_power_counter_5mn = 0;
-        send_MQTT_5mn = true; // ready to send
-        xSemaphoreGive(xMutex);
         vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
+        xSemaphoreGive(xMutex);
+        
        }
        
       mean_power_time_5mn = millis();
@@ -874,13 +876,14 @@ void TaskUI(void *pvParameters) // This is the task UI.
     {
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
       {
+        send_MQTT_10mn = true; // ready to send
        // mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
         mean_power_MQTT_10mn    = (mean_power_counter_10mn > 0) ? mean_power_10mn / mean_power_counter_10mn : 0;
         mean_power_10mn = 0;
         mean_power_counter_10mn = 0;
-        send_MQTT_10mn = true; // ready to send
-        xSemaphoreGive(xMutex);
         vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
+        xSemaphoreGive(xMutex);
+        
       }
       
       mean_power_time_10mn = millis();
