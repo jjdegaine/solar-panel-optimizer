@@ -857,8 +857,6 @@ void TaskUI(void *pvParameters) // This is the task UI.
       mean_power_time_5mn = millis();
       Serial.print("mean_power_mq_5mn ");
       Serial.println(mean_power_MQTT_5mn); // MQTT data
-      Serial.print("time24H");
-      Serial.println(time_24H); //
     }
 
     else
@@ -1062,12 +1060,13 @@ void Taskwifi(void *pvParameters) // This is a task.
              {
               send_MQTT = false;
               sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
+              xSemaphoreGive(xMutex);
+             }
               client.publish(topic_test, mystring_power_wifi_10mn, true);
               dim_test = 0 ;
               sprintf(mystring_dim, "%g", dim_test); //send dim_test
               client.publish(topic_dim, mystring_dim, true);
-              xSemaphoreGive(xMutex);
-             } 
+               
              
             // for test
             Serial.println("boucle MQTT");  
