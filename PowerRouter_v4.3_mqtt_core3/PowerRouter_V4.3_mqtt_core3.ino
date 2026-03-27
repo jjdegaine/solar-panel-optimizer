@@ -1070,11 +1070,7 @@ void Taskwifi(void *pvParameters) // This is a task.
              } 
              
             // for test
-            Serial.print("timeout avant 24H dans boucle task Wifi");
-            Serial.println(timeout_24H); //
-            Serial.print("time24H dans boucle task Wifi");
-            Serial.println(time_24H); //
-            
+            Serial.println("boucle MQTT");  
             
         }
          
