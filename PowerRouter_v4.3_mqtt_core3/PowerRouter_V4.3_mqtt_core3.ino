@@ -572,8 +572,8 @@ void setup()
     long long diffMsec = (long long)(diffSec * 1000.0);
 
     Serial.print ("mesc avant minuit=") ;
-    Serial.println (diffMsec);
     timeout_24H = diffMsec ;
+    Serial.println (timeout_24H);
   }
 
   // client.setCallback(callback);
@@ -857,6 +857,8 @@ void TaskUI(void *pvParameters) // This is the task UI.
       mean_power_time_5mn = millis();
       Serial.print("mean_power_mq_5mn ");
       Serial.println(mean_power_MQTT_5mn); // MQTT data
+      Serial.print("time24H");
+      Serial.println(time_24H); //
     }
 
     else
@@ -1050,7 +1052,10 @@ void Taskwifi(void *pvParameters) // This is a task.
             dim_test = 0 ;
             sprintf(mystring_dim, "%g", dim_test); //send dim_test
             client.publish(topic_dim, mystring_dim, true);
-          
+            Serial.print("timeout avant 24H dans boucle task Wifi");
+            Serial.println(timeout_24H); //
+            Serial.print("time24H dans boucle task Wifi");
+            Serial.println(time_24H); //
         }
          
     }
