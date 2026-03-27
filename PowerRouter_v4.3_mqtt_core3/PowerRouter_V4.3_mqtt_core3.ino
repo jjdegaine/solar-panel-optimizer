@@ -984,29 +984,29 @@ void Taskwifi(void *pvParameters) // This is a task.
 
    // boucle attente MQTT avec mutex
     while (true)
-  {
-    bool mqtt_ready = false;
-
-    if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
     {
-        mqtt_ready = send_MQTT;
-        xSemaphoreGive(xMutex);
+      bool mqtt_ready = false;
+
+      if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+      {
+          mqtt_ready = send_MQTT;
+          xSemaphoreGive(xMutex);
+      }
+
+      if (mqtt_ready) break;   // sort de la boucle d'attente
+
+      if (long(millis() - MQTT_time) > long(MQTT_timeout))
+      {
+          dim_test = 1;
+          sprintf(mystring_dim, "%g", dim_test);
+          client.publish(topic_dim, mystring_dim, true);
+          Serial.println("time out MQTT time ");
+          vTaskDelay(pdMS_TO_TICKS(2000));
+          ESP.restart();
+          break;
+      }
+
     }
-
-    if (mqtt_ready) break;   // sort de la boucle d'attente
-
-    if (long(millis() - MQTT_time) > long(MQTT_timeout))
-    {
-        dim_test = 1;
-        sprintf(mystring_dim, "%g", dim_test);
-        client.publish(topic_dim, mystring_dim, true);
-        Serial.println("time out MQTT time ");
-        vTaskDelay(pdMS_TO_TICKS(2000));
-        ESP.restart();
-        break;
-    }
-
-  }
   
     MQTT_time = millis();
 
@@ -1090,7 +1090,7 @@ void Taskwifi(void *pvParameters) // This is a task.
  
 
     // OTA
-
+    Serial.println("boucle OTA"); 
     ElegantOTA.loop();
 
   }
