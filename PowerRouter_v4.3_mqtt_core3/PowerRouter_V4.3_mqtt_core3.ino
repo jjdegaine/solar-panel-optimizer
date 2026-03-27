@@ -829,7 +829,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
         mean_power_MQTT    = (mean_power_counter > 0) ? mean_power / mean_power_counter : 0;
         mean_power = 0;
         mean_power_counter = 0;
-        vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
+        delayMicroseconds(1);  // yield : laisse TaskUI écrire send_MQTT
         xSemaphoreGive(xMutex);
         
       }
@@ -855,7 +855,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
         mean_power_MQTT_5mn    = (mean_power_counter_5mn > 0) ? mean_power_5mn / mean_power_counter_5mn : 0;
         mean_power_5mn = 0;
         mean_power_counter_5mn = 0;
-        vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
+        delayMicroseconds(1);  // yield : laisse TaskUI écrire send_MQTT
         xSemaphoreGive(xMutex);
         
        }
@@ -881,7 +881,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
         mean_power_MQTT_10mn    = (mean_power_counter_10mn > 0) ? mean_power_10mn / mean_power_counter_10mn : 0;
         mean_power_10mn = 0;
         mean_power_counter_10mn = 0;
-        vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
+        delayMicroseconds(1);  // yield : laisse TaskUI écrire send_MQTT
         xSemaphoreGive(xMutex);
         
       }
@@ -999,7 +999,7 @@ void Taskwifi(void *pvParameters) // This is a task.
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
       {
           mqtt_ready = send_MQTT;
-          vTaskDelay(pdMS_TO_TICKS(10));
+          delayMicroseconds(1);
           xSemaphoreGive(xMutex);
       }
 
