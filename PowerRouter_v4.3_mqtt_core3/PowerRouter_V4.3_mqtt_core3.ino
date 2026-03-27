@@ -571,7 +571,7 @@ void setup()
     double diffSec = difftime(prochainMinuit, maintenant);
     long long diffMsec = (long long)(diffSec * 1000.0);
 
-    Serial.print ("mesc avant minuit=") ;
+    Serial.print ("msec avant minuit=") ;
     timeout_24H = diffMsec ;
     Serial.println (timeout_24H);
   }
