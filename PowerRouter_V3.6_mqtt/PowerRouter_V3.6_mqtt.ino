@@ -1028,7 +1028,7 @@ void Taskwifi(void *pvParameters) // This is a task.
         break;
     }
 
-    vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT
+    vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT oubli??
 }
   
     MQTT_time = millis();
@@ -1054,7 +1054,7 @@ void Taskwifi(void *pvParameters) // This is a task.
             send_MQTT_10mn = false;
             sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
             client.publish(topic_10mn, mystring_power_wifi_10mn, true);
-            xSemaphoreGive(xMutex);
+            xSemaphoreGive(xMutex); // oublie??
           }
         
      
