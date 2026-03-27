@@ -999,6 +999,7 @@ void Taskwifi(void *pvParameters) // This is a task.
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
       {
           mqtt_ready = send_MQTT;
+          vTaskDelay(pdMS_TO_TICKS(10));
           xSemaphoreGive(xMutex);
       }
 
