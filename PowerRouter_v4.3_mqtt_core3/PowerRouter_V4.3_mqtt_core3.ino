@@ -1052,10 +1052,14 @@ void Taskwifi(void *pvParameters) // This is a task.
             dim_test = 0 ;
             sprintf(mystring_dim, "%g", dim_test); //send dim_test
             client.publish(topic_dim, mystring_dim, true);
+            // for test
             Serial.print("timeout avant 24H dans boucle task Wifi");
             Serial.println(timeout_24H); //
             Serial.print("time24H dans boucle task Wifi");
             Serial.println(time_24H); //
+            Serial.print("millis - time_24H");
+            Serial.println(millis() - time_24H); //
+            
         }
          
     }
@@ -1064,7 +1068,7 @@ void Taskwifi(void *pvParameters) // This is a task.
     
     //reset at 00:00
 
-    if (long(millis() - time_24H > timeout_24H))    //timeout 24H
+    if (millis() - time_24H > timeout_24H)    //timeout 24H
        {  
         Serial.println("time out 24H  ");
         vTaskDelay(pdMS_TO_TICKS(100)); 
