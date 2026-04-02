@@ -170,10 +170,10 @@ String hostname= "ESP32 routeur v3.6";
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.154";
-const char *topic = "routeur/Wmqtt";
-const char *topic_5mn = "routeur/Wmqtt_5mn";
-const char *topic_10mn = "routeur/conso";
-//const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
+//const char *topic = "routeur/Wmqtt";
+//const char *topic_5mn = "routeur/Wmqtt_5mn";
+//const char *topic_10mn = "routeur/conso";
+const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
 const char *topic_dim = "routeur/dim";  // for test only dim= 1 => mqtt timeout
 //const char *topic_10mn = "routeur/Wmqtt_10mn";
 
