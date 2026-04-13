@@ -1125,20 +1125,22 @@ bool Connect_MQTT()
       Serial.println("Connected to the WiFi network");
       display.drawString(0, 0, "connected to WiFi");
 
-    String l_client_id = client_id;
-    l_client_id += String(WiFi.macAddress());
+    //String l_client_id = client_id;
+    //l_client_id += String(WiFi.macAddress());
 
     // init wifi mqtt
     client.setServer(mqtt_broker, mqtt_port);
 
-    Serial.printf("The client %s connects to the public MQTT broker ", l_client_id.c_str());
-    Serial.println();
+    //Serial.printf("The client %s connects to the public MQTT broker ", l_client_id.c_str());
+    //Serial.println();
     // improvement for MQTT connect after software upadte
     String l_client_id = "PowerRouter_";
     String mac = WiFi.macAddress();
     mac.replace(":", "");
     l_client_id += mac;
-    Serial.println(l_client_id);
+    
+    Serial.printf("The client %s connects to the public MQTT broker ", l_client_id.c_str());
+    Serial.println();
     //
     if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password))
     {
