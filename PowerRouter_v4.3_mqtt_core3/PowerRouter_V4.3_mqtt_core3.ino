@@ -1133,7 +1133,13 @@ bool Connect_MQTT()
 
     Serial.printf("The client %s connects to the public MQTT broker ", l_client_id.c_str());
     Serial.println();
-
+    // improvement for MQTT connect after software upadte
+    String l_client_id = "PowerRouter_";
+    String mac = WiFi.macAddress();
+    mac.replace(":", "");
+    l_client_id += mac;
+    Serial.println(l_client_id);
+    //
     if (client.connect(l_client_id.c_str(), mqtt_username, mqtt_password))
     {
       Serial.println("Public EMQX MQTT broker connected");
