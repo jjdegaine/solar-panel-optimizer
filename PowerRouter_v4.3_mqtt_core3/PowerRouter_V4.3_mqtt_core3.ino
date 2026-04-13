@@ -1068,7 +1068,7 @@ void Taskwifi(void *pvParameters) // This is a task.
                
              
             // for test
-            Serial.println("boucle MQTT");  
+            // Serial.println("boucle MQTT");  
             
         }
          
@@ -1089,7 +1089,7 @@ void Taskwifi(void *pvParameters) // This is a task.
  
 
     // OTA
-    Serial.println("boucle OTA"); 
+    //Serial.println("boucle OTA"); 
     ElegantOTA.loop();
 
   }
