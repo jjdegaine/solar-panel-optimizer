@@ -1111,7 +1111,7 @@ void Taskwifi(void *pvParameters) // This is a task.
  
 
     // OTA
-    Serial.println("boucle OTA"); 
+    //Serial.println("boucle OTA"); 
     ElegantOTA.loop();
 
   }
