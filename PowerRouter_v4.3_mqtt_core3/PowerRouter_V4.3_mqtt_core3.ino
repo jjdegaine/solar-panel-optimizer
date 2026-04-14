@@ -570,7 +570,7 @@ void setup()
     double diffSec = difftime(prochainMinuit, maintenant);
     long long diffMsec = (long long)(diffSec * 1000.0);
 
-    Serial.print ("msec avant minuit=") ;
+    Serial.print ("msec before midnight=") ;
     timeout_24H = diffMsec ;
     Serial.println (timeout_24H);
   }
