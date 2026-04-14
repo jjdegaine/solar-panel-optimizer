@@ -986,9 +986,9 @@ void Taskwifi(void *pvParameters) // This is a task.
   {
 
     // boucle attente MQTT avec mutex
-    while (mqtt_ready == false)
+    while (true)
     {
-
+      bool mqtt_ready = false;
       //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
       //{
           mqtt_ready = send_MQTT_10mn;
