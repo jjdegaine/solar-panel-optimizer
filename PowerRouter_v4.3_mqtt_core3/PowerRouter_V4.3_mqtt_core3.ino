@@ -984,7 +984,7 @@ void Taskwifi(void *pvParameters) // This is a task.
   for (;;) // A Task shall never return or exit.
   {
 
-    boucle attente MQTT avec mutex
+    // boucle attente MQTT avec mutex
     while (true)
     {
       bool mqtt_ready = false;
@@ -1009,7 +1009,7 @@ void Taskwifi(void *pvParameters) // This is a task.
       }
 
     }
-      */
+      
   // boucle d'attente sans mutex
   /*
       while (send_MQTT == false)
