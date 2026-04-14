@@ -994,7 +994,7 @@ void Taskwifi(void *pvParameters) // This is a task.
           mqtt_ready = send_MQTT_10mn;
          // xSemaphoreGive(xMutex);
       //}
-
+      if (mqtt_ready) break;   // sort de la boucle d'attente
       if (long(millis() - MQTT_time) > long(MQTT_timeout))
       {
           dim_test = 1;
