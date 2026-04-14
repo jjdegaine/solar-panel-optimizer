@@ -192,6 +192,7 @@ volatile bool send_MQTT = false;
 volatile bool send_MQTT_5mn = false;
 volatile bool send_MQTT_10mn = false;
 String client_id = "routeur";
+volatile bool mqtt_ready = false;
 
 // Information to be displayed
 
@@ -829,7 +830,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
         send_MQTT = true; // ready to send 
         xSemaphoreGive(xMutex);
       }
-       mean_power = 0;
+      mean_power = 0;
       mean_power_counter = 0;
       mean_power_time = millis();
       //Serial.print("mean_power_mq ");
@@ -985,17 +986,14 @@ void Taskwifi(void *pvParameters) // This is a task.
   {
 
     // boucle attente MQTT avec mutex
-    while (true)
+    while (mqtt_ready == false)
     {
-      bool mqtt_ready = false;
 
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
       {
           mqtt_ready = send_MQTT;
           xSemaphoreGive(xMutex);
       }
-
-      if (mqtt_ready) break;   // sort de la boucle d'attente
 
       if (long(millis() - MQTT_time) > long(MQTT_timeout))
       {
@@ -1074,12 +1072,13 @@ void Taskwifi(void *pvParameters) // This is a task.
 
      // for test only
      
-      if (send_MQTT == true)
+      if (mqtt_ready == true)
         {
           
             if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
              {
               send_MQTT = false;
+              mqtt_ready = false ;
               sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
               xSemaphoreGive(xMutex);
              }
