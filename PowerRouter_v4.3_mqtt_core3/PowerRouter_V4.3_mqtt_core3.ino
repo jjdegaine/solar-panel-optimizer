@@ -982,7 +982,7 @@ void Taskwifi(void *pvParameters) // This is a task.
   {
 
    // boucle attente MQTT avec mutex
-    while (true)
+    /*while (true)
     {
       bool mqtt_ready = false;
 
@@ -1006,7 +1006,25 @@ void Taskwifi(void *pvParameters) // This is a task.
       }
 
     }
-  
+      */
+  // boucle d'attente sans mutex
+      while (send_MQTT == false)
+        {
+          
+          if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
+          {
+            dim_test = 1 ;
+            sprintf(mystring_dim, "%g", dim_test); //send dim_test in case off timeout
+            client.publish(topic_dim, mystring_dim, true);
+            Serial.println("time out MQTT time ");
+            vTaskDelay(pdMS_TO_TICKS(2000));  ; // delay 2 secondes
+            ESP.restart(); 
+
+            break;
+          }
+          
+        }
+    
     MQTT_time = millis();
 
     if (Connect_MQTT()) 
