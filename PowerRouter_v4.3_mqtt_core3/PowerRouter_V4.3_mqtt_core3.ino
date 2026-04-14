@@ -328,7 +328,7 @@ portMUX_TYPE  mux      = portMUX_INITIALIZER_UNLOCKED;
 // ============================================================
 //  Mutex FreeRTOS - To protect data exchange between the two task
 // ============================================================
- SemaphoreHandle_t xMutex = NULL;
+ //SemaphoreHandle_t xMutex = NULL;
 
 // define two tasks for UI & wifi (mqtt)
 void TaskUI(void *pvParameters);
@@ -498,8 +498,8 @@ void setup()
   digitalWrite(unballast_relay2, LOW); // unballast relay 2 init
 
  // Mutex
-  xMutex = xSemaphoreCreateMutex();
-  if (xMutex == NULL) { Serial.println("ERREUR mutex!"); ESP.restart(); }
+ // xMutex = xSemaphoreCreateMutex();
+  //if (xMutex == NULL) { Serial.println("ERREUR mutex!"); ESP.restart(); }
 
   
   //disable wdt
@@ -822,14 +822,14 @@ void TaskUI(void *pvParameters) // This is the task UI.
     // meam_power calculation for MQTT 20 sec
     if (long(millis() - mean_power_time > mean_power_timing))
     {
-      if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
-      {
+     // if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
+      //{
        // mean_power_MQTT = (mean_power / mean_power_counter);
         
         mean_power_MQTT    = (mean_power_counter > 0) ? mean_power / mean_power_counter : 0;
         send_MQTT = true; // ready to send 
-        xSemaphoreGive(xMutex);
-      }
+        //xSemaphoreGive(xMutex);
+     // }
       mean_power = 0;
       mean_power_counter = 0;
       mean_power_time = millis();
@@ -846,14 +846,14 @@ void TaskUI(void *pvParameters) // This is the task UI.
     // meam_power calculation for MQTT 5mn
     if (long(millis() - mean_power_time_5mn > mean_power_timing_5mn))
     {
-       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
-       {
+      // if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
+      // {
         
        // mean_power_MQTT_5mn = (mean_power_5mn / mean_power_counter_5mn);
         mean_power_MQTT_5mn    = (mean_power_counter_5mn > 0) ? mean_power_5mn / mean_power_counter_5mn : 0;
         send_MQTT_5mn = true; // ready to send
-        xSemaphoreGive(xMutex);
-       }
+        //xSemaphoreGive(xMutex);
+      // }
         mean_power_5mn = 0;
         mean_power_counter_5mn = 0;
         mean_power_time_5mn = millis();
@@ -870,14 +870,14 @@ void TaskUI(void *pvParameters) // This is the task UI.
     // meam_power calculation for MQTT 10mn
     if (long(millis() - mean_power_time_10mn > mean_power_timing_10mn))
     {
-      if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
-      {
+     // if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
+    //  {
        
        // mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
         mean_power_MQTT_10mn    = (mean_power_counter_10mn > 0) ? mean_power_10mn / mean_power_counter_10mn : 0;       
         send_MQTT_10mn = true; // ready to send
-        xSemaphoreGive(xMutex);
-      }
+       // xSemaphoreGive(xMutex);
+      //}
       mean_power_10mn = 0;
       mean_power_counter_10mn = 0;
       mean_power_time_10mn = millis();
@@ -989,11 +989,11 @@ void Taskwifi(void *pvParameters) // This is a task.
     while (mqtt_ready == false)
     {
 
-      if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
-      {
-          mqtt_ready = send_MQTT;
-          xSemaphoreGive(xMutex);
-      }
+      //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+      //{
+          mqtt_ready = send_MQTT_10mn;
+         // xSemaphoreGive(xMutex);
+      //}
 
       if (long(millis() - MQTT_time) > long(MQTT_timeout))
       {
@@ -1005,95 +1005,96 @@ void Taskwifi(void *pvParameters) // This is a task.
           ESP.restart();
           break;
       }
-
+      vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT oubli??
     }
       
-  // boucle d'attente sans mutex
-  /*
-      while (send_MQTT == false)
-        {
-          
-          if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
+    // boucle d'attente sans mutex
+    /*
+        while (send_MQTT == false)
           {
-            dim_test = 1 ;
-            sprintf(mystring_dim, "%g", dim_test); //send dim_test in case off timeout
-            client.publish(topic_dim, mystring_dim, true);
-            Serial.println("time out MQTT time ");
-            vTaskDelay(pdMS_TO_TICKS(2000));  ; // delay 2 secondes
-            ESP.restart(); 
-
-            break;
-          }
-          
-        }
-    */
-    MQTT_time = millis();
-
-    if (Connect_MQTT()) 
-    {
-        /*
-      // 
-        if (send_MQTT == true)
-          {
-           //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
-             //{
-             send_MQTT = false;
-            sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
-            client.publish(topic, mystring_power_wifi, true);
-            // xSemaphoreGive(xMutex);
-            // }
-          } 
-        if (send_MQTT_5mn == true)
-          {
-          //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
-           //  {
-             send_MQTT_5mn = false;
-            sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
-            client.publish(topic_5mn, mystring_power_wifi_5mn, true);
-           // xSemaphoreGive(xMutex);
-            // } 
-          }
-          if (send_MQTT_10mn == true)
-          {
-          //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
-           //  {
-             send_MQTT_10mn = false;
-           
-            sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
-            client.publish(topic_10mn, mystring_power_wifi_10mn, true);
-            // xSemaphoreGive(xMutex);
-            // } 
             
-          }
-        
-     
-      */
-
-
-     // for test only
-     
-      if (mqtt_ready == true)
-        {
-          
-            if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
-             {
-              send_MQTT = false;
-              mqtt_ready = false ;
-              sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
-              xSemaphoreGive(xMutex);
-             }
-              client.publish(topic_test, mystring_power_wifi_10mn, true);
-              dim_test = 0 ;
-              sprintf(mystring_dim, "%g", dim_test); //send dim_test
+            if (long(millis() - MQTT_time > MQTT_timeout))    //timeout MQTT 3 minutes
+            {
+              dim_test = 1 ;
+              sprintf(mystring_dim, "%g", dim_test); //send dim_test in case off timeout
               client.publish(topic_dim, mystring_dim, true);
-               
-             
-            // for test
-             Serial.println("boucle MQTT");  
+              Serial.println("time out MQTT time ");
+              vTaskDelay(pdMS_TO_TICKS(2000));  ; // delay 2 secondes
+              ESP.restart(); 
+
+              break;
+            }
             
-        }
-         
-    }
+          }
+      */
+      MQTT_time = millis();
+
+      if (Connect_MQTT()) 
+      {
+          /*
+        // 
+          if (send_MQTT == true)
+            {
+            //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+              //{
+              send_MQTT = false;
+              sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
+              client.publish(topic, mystring_power_wifi, true);
+              // xSemaphoreGive(xMutex);
+              // }
+            } 
+          if (send_MQTT_5mn == true)
+            {
+            //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+            //  {
+              send_MQTT_5mn = false;
+              sprintf(mystring_power_wifi_5mn, "%g", mean_power_MQTT_5mn);
+              client.publish(topic_5mn, mystring_power_wifi_5mn, true);
+            // xSemaphoreGive(xMutex);
+              // } 
+            }
+            if (send_MQTT_10mn == true)
+            {
+            //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+            //  {
+              send_MQTT_10mn = false;
+            
+              sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
+              client.publish(topic_10mn, mystring_power_wifi_10mn, true);
+              // xSemaphoreGive(xMutex);
+              // } 
+              
+            }
+          
+      
+        */
+
+
+      // for test only
+      
+        if (mqtt_ready == true)
+          {
+            
+              //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
+              //{
+                send_MQTT_10mn = false;
+                mqtt_ready = false ;
+              //  xSemaphoreGive(xMutex);
+              //}
+                sprintf(mystring_power_wifi_10mn, "%g", mean_power_MQTT_10mn);
+             
+                client.publish(topic_test, mystring_power_wifi_10mn, true);
+                dim_test = 0 ;
+                sprintf(mystring_dim, "%g", dim_test); //send dim_test
+                client.publish(topic_dim, mystring_dim, true);
+            
+              
+              // for test
+              Serial.println("boucle MQTT");  
+              
+          }
+          
+      }
 
 
     
