@@ -986,15 +986,15 @@ void Taskwifi(void *pvParameters) // This is a task.
   {
 
     // boucle attente MQTT avec mutex
-    while (false)
+    while (send_MQTT_10mn == false) ;
     {
-      bool mqtt_ready = false;
+      //bool mqtt_ready = false;
       //if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE)
       //{
-          mqtt_ready = send_MQTT_10mn;
+          //mqtt_ready = send_MQTT_10mn;
          // xSemaphoreGive(xMutex);
       //}
-      if (mqtt_ready) break;   // sort de la boucle d'attente
+      //if (mqtt_ready) break;   // sort de la boucle d'attente
       if (long(millis() - MQTT_time) > long(MQTT_timeout))
       {
           dim_test = 1;
@@ -1005,7 +1005,7 @@ void Taskwifi(void *pvParameters) // This is a task.
           ESP.restart();
           break;
       }
-      vTaskDelay(pdMS_TO_TICKS(10));  // yield : laisse TaskUI écrire send_MQTT oubli??
+      vTaskDelay(pdMS_TO_TICKS(100));  // yield : laisse TaskUI écrire send_MQTT oubli??
     }
       
     // boucle d'attente sans mutex
@@ -1028,6 +1028,7 @@ void Taskwifi(void *pvParameters) // This is a task.
           }
       */
       MQTT_time = millis();
+      bool mqtt_ready = true ;
 
       if (Connect_MQTT()) 
       {
