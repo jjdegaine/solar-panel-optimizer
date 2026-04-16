@@ -829,7 +829,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
         mean_power_MQTT    = (mean_power_counter > 0) ? mean_power / mean_power_counter : 0;
         send_MQTT = true; // ready to send 
         xSemaphoreGive(xMutex);
-     // }
+      }
       mean_power = 0;
       mean_power_counter = 0;
       mean_power_time = millis();
