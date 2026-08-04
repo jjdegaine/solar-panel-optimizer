@@ -823,7 +823,7 @@ void TaskUI(void *pvParameters) // This is the task UI.
       }
    }
 
-    // meam_power calculation for MQTT 10 sec
+    // meam_power calculation for MQTT 20 sec
     if (long(millis() - mean_power_time > mean_power_timing))
     {
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 

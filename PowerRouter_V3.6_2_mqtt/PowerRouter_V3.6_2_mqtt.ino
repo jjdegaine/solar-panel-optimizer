@@ -61,7 +61,7 @@ version 3.3 2026_03 OTA reset 24h
 version 3.4 2026_03 reset 24h
 version 3.5 2026_03 code improvement using IA Claude (Mutex, board selection )
 version 3.6 2026_03 secrets Vtaskdelay instead of delay for delay > 1mSec; meilleure séparation des task sur les 2 cores
-version 3.6.2 2026_07 same as 3.6 but mqtt value are sent to topic_test and topic_dim
+version 3.6.2 2026_07 same as 3.6 but mqtt value are sent to topic_test and topic_dim ; mean_power_timing = 10000 10sec
 */
 
 
@@ -273,7 +273,7 @@ float mean_power = 0;
 float mean_power_MQTT = 0;
 int mean_power_counter = 0;
 unsigned long mean_power_time;           // timer for mean power mqtt
-unsigned long mean_power_timing = 20000; // timer 20 secondes minutes to calculate mean power MQTT
+unsigned long mean_power_timing = 10000; // timer 10 secondes minutes to calculate mean power MQTT
 char mystring_power_wifi[50];            // string to be transmitted by wifi MQTT
 
 // 5 minutes mean power mqtt
