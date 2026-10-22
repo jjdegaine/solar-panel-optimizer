@@ -171,7 +171,7 @@ const int channel = 4; // define channel 4 seems to be the best for wifi....
 String hostname= "ESP32 routeur v3.7"; 
 
 // MQTT Broker
-const char *mqtt_broker = "192.168.0.154";
+const char *mqtt_broker = "192.168.50.52";
 const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 const char *topic_10mn = "routeur/conso";

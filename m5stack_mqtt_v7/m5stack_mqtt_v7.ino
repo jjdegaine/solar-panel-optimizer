@@ -44,7 +44,7 @@ String hostname= "M5 stack v7";
 
 
 // MQTT Broker
-const char *mqtt_broker = "192.168.0.154";
+const char *mqtt_broker = "192.168.50.52";
 const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
 const char *topic_10mn = "routeur/conso";
