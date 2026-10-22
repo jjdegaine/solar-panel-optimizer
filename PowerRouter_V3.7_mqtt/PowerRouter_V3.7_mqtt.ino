@@ -1149,7 +1149,7 @@ bool Connect_MQTT()
       Serial.print("failed with state ");
       Serial.println(client.state());
       display.drawString(0, 22, "MQTT KO " + client.state());
-      vTaskDelay(pdMS_TO_TICKS(2000));
+      vTaskDelay(pdMS_TO_TICKS(4000)); //wait 4seconds before connecting again.
       return false;
     }
    
