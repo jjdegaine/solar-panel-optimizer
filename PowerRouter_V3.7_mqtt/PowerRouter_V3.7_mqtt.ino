@@ -174,15 +174,15 @@ String hostname= "ESP32 routeur v3.7";
 const char *mqtt_broker = "192.168.50.52";
 const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
-const char *topic_10mn = "routeur/conso";
-//const char *topic_test = "routeur/Wmqtt_10mn"; // for test only
+const char *topic_10mn = "routeur/Wmqtt_10mn";
+const char *topic_1mn = "routeur/Wmqtt_1mn"; // 
 const char *topic_dim = "routeur/dim";  // for test only dim= 1 => mqtt timeout
-//const char *topic_10mn = "routeur/Wmqtt_10mn";
 
 const int mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
 volatile bool send_MQTT = false;
+volatile bool send_MQTT_1mn = false;
 volatile bool send_MQTT_5mn = false;
 volatile bool send_MQTT_10mn = false;
 String client_id = "routeur";
@@ -269,13 +269,21 @@ float Power_wifi;
 float Power_wifi_5mn;
 byte zero_crossCount = 0; // half period counter
 
-// 10 sec mean power mqtt
+// 20 sec mean power mqtt
 float mean_power = 0;
 float mean_power_MQTT = 0;
 int mean_power_counter = 0;
 unsigned long mean_power_time;           // timer for mean power mqtt
 unsigned long mean_power_timing = 20000; // timer 20 secondes minutes to calculate mean power MQTT
 char mystring_power_wifi[50];            // string to be transmitted by wifi MQTT
+
+// 1 minutes mean power mqtt
+float mean_power_1mn = 0;
+float mean_power_MQTT_1mn = 0;
+int mean_power_counter_1mn = 0;
+unsigned long mean_power_time_1mn;            // timer for mean power mqtt
+unsigned long mean_power_timing_1mn = 60000; // timer 1 minute to calculate mean power MQTT
+char mystring_power_wifi_1mn[50];             // string to be transmitted by wifi MQTT
 
 // 5 minutes mean power mqtt
 float mean_power_5mn = 0;
@@ -847,19 +855,62 @@ void TaskUI(void *pvParameters) // This is the task UI.
       mean_power = mean_power + Power_wifi;
       mean_power_counter++;
     }
+// meam_power calculation for MQTT 20 sec
+    if (long(millis() - mean_power_time > mean_power_timing))
+    {
+      if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
+      {
+       // mean_power_MQTT = (mean_power / mean_power_counter);
+        mean_power_MQTT    = (mean_power_counter > 0) ? mean_power / mean_power_counter : 0;
+        mean_power = 0;
+        mean_power_counter = 0;
+        send_MQTT = true; // ready to send 
+        xSemaphoreGive(xMutex);
+      }
+      mean_power_time = millis();
+      Serial.print("mean_power_mq ");
+      Serial.println(mean_power_MQTT); // MQTT data
+    }
 
-    // meam_power calculation for MQTT 5mn
-    if (long(millis() - mean_power_time_5mn > mean_power_timing_5mn))
+    else
+    {
+      mean_power = mean_power + Power_wifi;
+      mean_power_counter++;
+    }
+    // meam_power calculation for MQTT 1mn
+    if (long(millis() - mean_power_time_1mn > mean_power_timing_1mn))
     {
        if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
        {
-       // mean_power_MQTT_5mn = (mean_power_5mn / mean_power_counter_5mn);
+       // mean_power_MQTT_1mn = (mean_power_1mn / mean_power_counter_1mn);
+        mean_power_MQTT_1mn    = (mean_power_counter_1mn > 0) ? mean_power_1mn / mean_power_counter_1mn : 0;
+        mean_power_1mn = 0;
+        mean_power_counter_1mn = 0;
+        send_MQTT_1mn = true; // ready to send
+        xSemaphoreGive(xMutex);
+       }
+      mean_power_time_1mn = millis();
+      Serial.print("mean_power_mq_1mn ");
+      Serial.println(mean_power_MQTT_1mn); // MQTT data
+    }
+
+    else
+    {
+      mean_power_1mn = mean_power_1mn + Power_wifi;
+      mean_power_counter_1mn++;
+    }
+// meam_power calculation for MQTT 5mn
+    if (long(millis() - mean_power_time_5mn > mean_power_timing_10mn))
+    {
+      if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
+      {
+       // mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
         mean_power_MQTT_5mn    = (mean_power_counter_5mn > 0) ? mean_power_5mn / mean_power_counter_5mn : 0;
         mean_power_5mn = 0;
         mean_power_counter_5mn = 0;
         send_MQTT_5mn = true; // ready to send
         xSemaphoreGive(xMutex);
-       }
+      }
       mean_power_time_5mn = millis();
       Serial.print("mean_power_mq_5mn ");
       Serial.println(mean_power_MQTT_5mn); // MQTT data
@@ -1045,6 +1096,13 @@ void Taskwifi(void *pvParameters) // This is a task.
             sprintf(mystring_power_wifi, "%g", mean_power_MQTT);
             client.publish(topic, mystring_power_wifi, true);
           } 
+          if (send_MQTT_1mn == true)
+          {
+            send_MQTT_1mn = false;
+            sprintf(mystring_power_wifi_1mn, "%g", mean_power_MQTT_1mn);
+            client.publish(topic_1mn, mystring_power_wifi_1mn, true);
+          }
+          
         if (send_MQTT_5mn == true)
           {
             send_MQTT_5mn = false;
@@ -1146,7 +1204,7 @@ bool Connect_MQTT()
      }
     else
     {
-      Serial.print("failed with state ");
+      Serial.print("MQTT failed with state ");
       Serial.println(client.state());
       display.drawString(0, 22, "MQTT KO " + client.state());
       vTaskDelay(pdMS_TO_TICKS(4000)); //wait 4seconds before connecting again.
