@@ -165,7 +165,7 @@ SSD1306Wire display(0x3c, SDA, SCL); // ADDRESS, SDA, SCL
 
 // initialization wifi
 
-const int channel = 4; // define channel 4 seems to be the best for wifi....
+// const int channel = 4; // define channel 4 seems to be the best for wifi....
 
 
 String hostname= "ESP32 routeur v3.7"; 
