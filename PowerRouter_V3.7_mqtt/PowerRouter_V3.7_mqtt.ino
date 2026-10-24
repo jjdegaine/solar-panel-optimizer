@@ -423,6 +423,7 @@ void setup()
 
   unballasting_time = millis(); // set up timer unballasting
   mean_power_time = millis();
+  mean_power_time_1mn = millis();
   mean_power_time_5mn = millis();
   mean_power_time_10mn = millis();
   MQTT_time = millis();
@@ -900,11 +901,10 @@ void TaskUI(void *pvParameters) // This is the task UI.
       mean_power_counter_1mn++;
     }
 // meam_power calculation for MQTT 5mn
-    if (long(millis() - mean_power_time_5mn > mean_power_timing_10mn))
+    if (long(millis() - mean_power_time_5mn > mean_power_timing_5mn))
     {
       if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(10)) == pdTRUE) 
       {
-       // mean_power_MQTT_10mn = (mean_power_10mn / mean_power_counter_10mn);
         mean_power_MQTT_5mn    = (mean_power_counter_5mn > 0) ? mean_power_5mn / mean_power_counter_5mn : 0;
         mean_power_5mn = 0;
         mean_power_counter_5mn = 0;
