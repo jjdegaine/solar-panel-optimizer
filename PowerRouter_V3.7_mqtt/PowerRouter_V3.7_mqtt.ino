@@ -61,7 +61,7 @@ version 3.3 2026_03 OTA reset 24h
 version 3.4 2026_03 reset 24h
 version 3.5 2026_03 code improvement using IA Claude (Mutex, board selection )
 version 3.6 2026_03 secrets Vtaskdelay instead of delay for delay > 1mSec; meilleure séparation des task sur les 2 cores
-version 3.7 2026_10 modification mqtt adress timeout 4sec if mqtt broker is not responding version 3.7 displayed at startup on OLED
+version 3.7 2026_10 modification mqtt adress timeout 4sec if mqtt broker is not responding version 3.7 displayed at startup on OLED adding mqtt topic for 1mn, 5mn, 10mn mean power
 
 */
 
