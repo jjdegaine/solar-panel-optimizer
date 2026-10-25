@@ -47,7 +47,7 @@ String hostname= "M5 stack v7";
 const char *mqtt_broker = "192.168.50.52";
 const char *topic = "routeur/Wmqtt";
 const char *topic_5mn = "routeur/Wmqtt_5mn";
-const char *topic_10mn = "routeur/conso";
+const char *topic_10mn = "routeur/Wmqtt_10mn";
 //const char *topic_PV = "sensor.production_watt_pv";
 const char *topic_PV = "sensor.apsystems_fleet_solar_power";
 const char *topic_temp_in = "zigbee2mqtt/0xa4c1380333e7ffff";
@@ -240,7 +240,7 @@ if (strcmp(r_topic,"routeur/Wmqtt")==0){
     M5.Lcd.print (content);
     } 
 
-    if (strcmp(r_topic,"routeur/conso")==0){
+    if (strcmp(r_topic,"routeur/Wmqtt_10mn")==0){
     String content = "";
     for (size_t i = 0; i < length; i++)
     {
